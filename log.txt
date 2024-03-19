@@ -1,0 +1,16 @@
+2024/3/15 v0.1
+    description:
+        1. check pipenv and readme
+
+2024/3/14 v0.1
+    description:
+        1. modularized
+        2. an early version
+    bug:
+        1. Linear Lasso has bug to fix, substitude by bisection Lasso
+        2. plotting function
+    to do:
+        1. plotting 
+        2. auto ml
+        3. document
+        n. interactive interface
