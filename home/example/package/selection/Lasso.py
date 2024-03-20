@@ -19,8 +19,8 @@ def sample_weight(y):
     return y*sp + (1-y)*sq
 
 class Lasso_selection(base_selection):
-    def __init__(self, balanced = False, plotting = False):
-        super().__init__()
+    def __init__(self, balanced = False, plotting = False, center = True, scale = False, log_domain = True):
+        super().__init__(center = center, scale = scale, log_domain = log_domain)
         
         # parameters
         self.da = 0.01 # d alpha
@@ -29,10 +29,7 @@ class Lasso_selection(base_selection):
         self.balanced = balanced
         self.plotting = plotting
 
-    def scoring(self, x, y = None):        
-        # feature standarized
-        x = (x-x.mean())/x.std()
-
+    def scoring(self, x, y = None):
         # kfold
         # (blank)
 
@@ -107,8 +104,8 @@ class Lasso_selection(base_selection):
 
 
 class Lasso_bisection_selection(base_selection):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, center = True, scale = False, log_domain = True):
+        super().__init__(center = center, scale = scale, log_domain = log_domain)
         self.upper_init = 40
         self.lower_init = 1e-3
         self.plotting = False
@@ -117,7 +114,8 @@ class Lasso_bisection_selection(base_selection):
 
     def select(self, x, y, k):
         # feature standarized
-        x = (x-x.mean())/x.std()
+        print(x.values.std())
+        x = x / x.values.std()
 
         # kfold
         # (blank)

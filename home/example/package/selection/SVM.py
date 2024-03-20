@@ -4,14 +4,11 @@ from sklearn.svm import LinearSVC
 from .base import selection as base_selection
 
 class SVM_selection(base_selection):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, center = True, scale = False, log_domain = True):
+        super().__init__(center = center, scale = scale, log_domain = log_domain)
         self.kernel = LinearSVC(dual="auto", class_weight="balanced")
 
     def scoring(self, x, y = None):
-        # feature standarized
-        x = (x-x.mean())/x.std()
-
         self.kernel.fit(x, y)
         svm_weights = np.abs(self.kernel.coef_).sum(axis=0)
         svm_weights /= svm_weights.sum()

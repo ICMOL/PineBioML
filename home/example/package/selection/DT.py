@@ -5,8 +5,8 @@ from .base import selection as base_selection
 
 
 class DT_selection(base_selection):
-    def __init__(self, bins = 10, q = 0.05, strategy = "c45"):
-        super().__init__()
+    def __init__(self, bins = 10, q = 0.05, strategy = "c45", center = True, scale = False, log_domain = True):
+        super().__init__(center = False, scale = scale, log_domain = log_domain)
         self.bins = bins -1
         self.q = q
         self.strategy = strategy
@@ -15,10 +15,9 @@ class DT_selection(base_selection):
         upper = x.quantile(1-self.q)
         lower = x.quantile(self.q)
         #print(upper, lower)
-        
         normed = (x-lower)/(upper-lower)
         normed = normed.clip(0, 1)
-        bin_idx = (normed*self.bins - 0.5).round().astype(np.int8)
+        bin_idx = (normed*self.bins - 0.5).round().astype(np.int32)
         columns = bin_idx.columns
         
         bin_idx["label"] = y

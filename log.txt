@@ -1,4 +1,19 @@
-2024/3/15 v0.1
+2024/3/20 v0.2
+    description:
+        1. add normalizer
+        2. write readme.md
+    bug:
+        1. Linear Lasso has bug to fix, substitude by bisection Lasso
+        2. plotting function
+        3. bagging operation contradicts to log domain in selection method (the negative output of pca)
+    to do:
+        1. plotting 
+        2. auto ml
+        3. document (on going)
+        n. interactive interface
+
+
+2024/3/15 v0.11
     description:
         1. check pipenv and readme
 

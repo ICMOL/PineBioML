@@ -5,20 +5,23 @@ from scipy.stats import t
 from .base import selection as base_selection
 
 class Volcano_selection(base_selection):
-    def __init__(self, plotting = False, strategy = "fold", p_threshold = 0.05, fc_threshold = 2):
-        super().__init__()
+    def __init__(self, plotting = False, strategy = "fold", p_threshold = 0.05, fc_threshold = 2, center = True, scale = False, log_domain = True):
+        super().__init__(center = False, scale = False, log_domain = True)
+        self.log_domain  = log_domain
         self.plotting = plotting
         self.strategy = strategy
         self.fc_threshold = fc_threshold
         self.p_threshold = 0.05
 
-    def scoring(slef, x, y):
+    def scoring(self, x, y):
         positive = y == 1
         negative = y == 0
 
         # fold change
-        #log_fold = np.log2(x[positive].mean(axis= 0)/ x[negative].mean(axis= 0))
-        log_fold = x[positive].mean(axis= 0)- x[negative].mean(axis= 0)
+        if not self.log_domain:
+            log_fold = np.log2(x[positive].mean(axis= 0)/ x[negative].mean(axis= 0))
+        else:
+            log_fold = x[positive].mean(axis= 0)- x[negative].mean(axis= 0)
 
         # Welch t test:
         #     normal assumption
