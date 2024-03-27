@@ -5,8 +5,8 @@ from .base import selection as base_selection
 
 
 class DT_selection(base_selection):
-    def __init__(self, bins = 10, q = 0.05, strategy = "c45", center = True, scale = False, log_domain = True):
-        super().__init__(center = False, scale = scale, log_domain = log_domain)
+    def __init__(self, bins = 10, q = 0.05, strategy = "c45", center = True, scale = False, log_transform = True):
+        super().__init__(center = False, scale = scale, log_transform = log_transform)
         self.bins = bins -1
         self.q = q
         self.strategy = strategy

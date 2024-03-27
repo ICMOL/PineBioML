@@ -4,8 +4,8 @@ from sklearn.svm import LinearSVC
 from .base import selection as base_selection
 
 class SVM_selection(base_selection):
-    def __init__(self, center = True, scale = False, log_domain = True):
-        super().__init__(center = center, scale = scale, log_domain = log_domain)
+    def __init__(self, center = True, scale = False, log_transform = True):
+        super().__init__(center = center, scale = scale, log_transform = log_transform)
         self.kernel = LinearSVC(dual="auto", class_weight="balanced")
 
     def scoring(self, x, y = None):
