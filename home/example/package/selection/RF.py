@@ -3,8 +3,8 @@ from sklearn.ensemble import RandomForestClassifier
 from .base import selection as base_selection
 
 class RF_selection(base_selection):
-    def __init__(self, plotting = False, trees = 1024*32, unbalanced = True, strategy = "gini", center = True, scale = False, log_transform = True):
-        super().__init__(center = center, scale = scale, log_transform = log_transform)
+    def __init__(self, plotting = False, trees = 1024*32, unbalanced = True, strategy = "gini", center = True, scale = False):
+        super().__init__(center = center, scale = scale)
         self.strategy = strategy
         if unbalanced:
             class_weight = "balanced"

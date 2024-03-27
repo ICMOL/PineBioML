@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 
 class selection:
-    def __init__(self, center = True, scale = True, log_transform = False):
-        self.normalizer = normalizer(center = center, scale = scale, log_transform = log_transform)
+    def __init__(self, center = True, scale = True):
+        self.normalizer = normalizer(center = center, scale = scale)
         
 
     def select(self, x, y, k):
@@ -20,17 +20,17 @@ class selection:
     
 
 class normalizer:
-    def __init__(self, center = True, scale = True, log_transform = False):
+    def __init__(self, center = True, scale = True):
         self.center = center
         self.mean = 0
         self.scale = scale
         self.norm = 1
-        self.log_transform = log_transform
+        #self.log_transform = log_transform
         self.fitted = False
 
     def fit(self, x, y = None):
-        if self.log_transform:
-            x = np.log(x)
+        #if self.log_transform:
+         #   x = np.log(x)
         if self.center:
             self.mean = x.mean()
         if self.scale:
@@ -41,8 +41,8 @@ class normalizer:
     def transform(self, x, y = None):
         if not self.fitted:
             print("WARNING: please call fit before calling transform")
-        if self.log_transform:
-            x = np.log(x)
+        #if self.log_transform:
+         #   x = np.log(x)
         if self.center:
             x = x - self.mean
         if self.scale:
@@ -58,7 +58,6 @@ class normalizer:
             x = x * self.norm
         if self.center:
             x = x + self.mean
-        if self.log_transform:
-            x = np.exp(x)
-
+        #if self.log_transform:
+         #   x = np.exp(x)
         return x, y

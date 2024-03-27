@@ -1,5 +1,5 @@
-# _______ auto Bio Feature Selection
-This package aims to let biologists use ML method in python within few steps.
+# _______ auto Bio-Feature Selection
+This package aims to analysis multiomics data using ML method in python within few steps.
 
 # Usage
 1. ### Environment Setting
@@ -15,17 +15,17 @@ This package aims to let biologists use ML method in python within few steps.
     b. Open terminal/powershell, and you should see a black page with command line:
     > ps direction\\to\\repository\\home\> |
 
-    c. Enter (or you can copy and right-click on the command line. Which will paste and execute the command.):
+    c. Entering (or you can copy and right-click on the command line. Which will paste and execute the command.):
     > pip install --upgrade pip    
     > pip install -r ./requirements.txt
 
-    d. Open example code by:
+    d. Open ipython interface by entering:
     > jupyter notebook    
         
     This should open the browser and showing the folder ./home.   
     If you successfully see the browser opened, then the environment setting is complete.
 
-3. ### Execute the example:
+3. ### Run the example:
     The fowlling operation sould be done in jupyter notebook interface within your browser.    
 
     a. Click and open the folder ./example     
@@ -42,8 +42,8 @@ This package aims to let biologists use ML method in python within few steps.
         ．bagging
     b. slection
     ![image](./images/workflow_base_selector.png)
-        ．volvano
-        ．lasso
-        ．random forest
-        ．decision tree
-        ．SVM
+        ．volvano   
+        ．lasso   
+        ．random forest   
+        ．decision tree   
+        ．SVM   

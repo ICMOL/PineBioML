@@ -5,9 +5,8 @@ from scipy.stats import t
 from .base import selection as base_selection
 
 class Volcano_selection(base_selection):
-    def __init__(self, plotting = False, strategy = "fold", p_threshold = 0.05, fc_threshold = 2, center = True, scale = False, log_transform = True):
-        super().__init__(center = False, scale = False, log_transform = True)
-        self.log_transform = log_transform
+    def __init__(self, plotting = False, strategy = "fold", p_threshold = 0.05, fc_threshold = 2, center = True, scale = False):
+        super().__init__(center = False, scale = False)
         self.plotting = plotting
         self.strategy = strategy
         self.fc_threshold = fc_threshold
@@ -18,10 +17,10 @@ class Volcano_selection(base_selection):
         negative = y == 0
 
         # fold change
-        if not self.log_transform:
-            log_fold = np.log2(x[positive].mean(axis= 0)/ x[negative].mean(axis= 0))
-        else:
-            log_fold = x[positive].mean(axis= 0)- x[negative].mean(axis= 0)
+        #if not self.log_transform:
+        log_fold = np.log2(x[positive].mean(axis= 0)/ x[negative].mean(axis= 0))
+        #else:
+        #log_fold = x[positive].mean(axis= 0)- x[negative].mean(axis= 0)
 
         # Welch t test:
         #     normal assumption
