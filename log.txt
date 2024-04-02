@@ -1,9 +1,42 @@
+2024/3/31 v0.42
+    description:
+        1. add ablation notebook, GBM and ccRCC data.
+        2. fix variance of mean bug in global scale.
+        3. fix multi lasso scale problem.
+
+    bug:
+        1. bagging:
+             - contradicts to log domain in selection method (the negative output of pca)
+             - the variance of feature will change during bagging (variance matters)
+    to do:
+        1. add parameter dict(json or yaml-like)
+        2. auto ml (auto sklearn, mljar, H2O)
+        3. document (on going)
+        4. report
+        n. interactive interface or GUI
+
+
+2024/3/30 v0.4
+    description:
+        1. add adaboost, lightgbm and xgboost.
+
+    bug:
+        1. bagging:
+             - contradicts to log domain in selection method (the negative output of pca)
+             - the variance of feature will change during bagging (variance matters)
+    to do:
+        1. add parameter dict(json or yaml-like)
+        2. auto ml (auto sklearn, mljar, H2O)
+        3. document (on going)
+        4. report
+        n. interactive interface or GUI
+
 2024/3/27 v0.3
     description:
         1. Deprecate log in normalizer
         2. update readme.md
-        _ fix lasso
-        _ fix plotting 
+        3. fix lasso
+        4. fix plotting function
 
     bug:
         1. Linear Lasso has bug to fix, substitude by bisection Lasso (solved)
@@ -12,10 +45,12 @@
              - contradicts to log domain in selection method (the negative output of pca)
              - the variance of feature will change during bagging (variance matters)
     to do:
-        1. auto ml
-        2. document (on going)
-        3. report
-        n. interactive interface
+        0. add xgboost, adaboost, lightgbm
+        1. add parameter dict(json or yaml-like)
+        2. auto ml (auto sklearn, mljar, H2O)
+        3. document (on going)
+        4. report
+        n. interactive interface or GUI
 
 
 2024/3/20 v0.2
