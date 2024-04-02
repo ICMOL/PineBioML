@@ -1,6 +1,9 @@
 # _______ auto Bio-Feature Selection
 This package aims to analysis multiomics data using ML method in python within few steps.
 
+### !! WARNING: It's a pre-released version, which is unstable and lack of testing.
+### If you meet any problem or have any idea, just pop an issue or contact me.
+
 # Usage
 1. ### Environment Setting
     If you already have python installed in your PC, then skip this step. Otherwise please follow microsoft's tutorial to install python:    
