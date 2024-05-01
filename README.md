@@ -1,19 +1,28 @@
 # _______ auto Bio-Feature Selection
-This package aims to analysis multiomics data using ML method in python within few steps.
+This package aims to help you analysis bio data in tabular format using ML method in python. In the First step, we will provide feature selection and autoML.
 
-### !! WARNING: It's a pre-released version, which is unstable and lack of testing.
-### If you meet any problem or have any idea, just pop an issue or contact me.
+# Index
+1. Installation
+2. Usage
+3. Method
 
-# Usage
+
+### !! WARNING: It's a pre-released version, which is unstable and lack of testing. Wellcome to be the first user.
+### If you meet any problem or have any idea, just raise an issue or contact author.
+
+# Installation
+0. ### Requirement
+    ．OS: windows10 or 11
+
 1. ### Environment Setting
-    If you already have python installed in your PC, then skip this step. Otherwise please follow microsoft's tutorial to install python:    
+    If you already have python >= 3.7 installed in your PC, then skip to step2. Otherwise please follow microsoft's tutorial to install python:    
+    ! You only need to follow the first step in the turorial, wheather to use visual studio code is optional.
+    https://learn.microsoft.com/en-us/windows/python/beginners
     
-    https://learn.microsoft.com/zh-tw/windows/python/beginners
     
-    ! You only need to follow the first step, using visual studio code is optional.
 
 2. ### Update modules and install depqndency
-    a. Download this repository and open the folder ./home/ in file explore.
+    a. Download release.
 
     b. Open terminal/powershell, and you should see a black page with command line:
     > ps direction\\to\\repository\\home\> |
