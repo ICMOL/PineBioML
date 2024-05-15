@@ -5,3 +5,5 @@ matplotlib
 seaborn
 tqdm
 jupyter
+lightgbm
+xgboost

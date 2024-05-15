@@ -1,3 +1,18 @@
+2024/4/30 v0.421
+    description:
+        update readme.
+
+    bug:
+        1. bagging:
+             - contradicts to log domain in selection method (the negative output of pca)
+             - the variance of feature will change during bagging (variance matters)
+    to do:
+        1. add parameter dict(json or yaml-like)
+        2. auto ml (auto sklearn, mljar, H2O)
+        3. document (on going)
+        4. report
+        n. interactive interface or GUI
+
 2024/3/31 v0.42
     description:
         1. add ablation notebook, GBM and ccRCC data.
