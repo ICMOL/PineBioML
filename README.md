@@ -9,20 +9,15 @@ In the First stage, we will provide feature selection and autoML.
 
 # Index
 - Installation
-    - Requirement
-    - Python Installation
-    
 - Usage example
-    - Feature selection
-    - auto ml
 - [Documents](./documents/main.md)
 
 
 # Installation
 0. ### Requirement
-    - Windows10 or 11
-    - Python >= 3.9
-    - dependency in requirements.txt
+    1. Windows10 or 11
+    2. Python >= 3.9
+    3. dependency in requirements.txt    
 
 1. ### Python Installation
     If you already have python >= 3.9 installed in your PC, then skip to next step *Powershell and Python*.   
@@ -48,7 +43,7 @@ In the First stage, we will provide feature selection and autoML.
 3. ### Update modules and dependency
     1. Download release.
 
-    2. Open Powershell (as step 2.2), and move to the direction to the repository by entering:
+    2. Open Powershell (as step 2.ii), and move to the direction to the repository by entering:
         > cd direction\\to\\repository\
 
     3. Update pip and install dependency:
@@ -65,7 +60,7 @@ In the First stage, we will provide feature selection and autoML.
 
 
 # Usage example    
-The fowlling operation sould be done in jupyter notebook interface within your browser (as 3.4).    
+The fowlling operation sould be done in jupyter notebook interface within your browser (as 3.iv).    
 
 Try one of the following examples:    
 - example_feature_selection.ipynb
