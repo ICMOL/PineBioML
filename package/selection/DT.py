@@ -10,6 +10,7 @@ class DT_selection(base_selection):
         self.bins = bins -1
         self.q = q
         self.strategy = strategy
+        self.name = "DT_score_"+ self.strategy
 
     def scoring(self, x, y = None):
         upper = x.quantile(1-self.q)
@@ -36,12 +37,10 @@ class DT_selection(base_selection):
                 split_info = -p*np.log(p)
                 gain /= split_info.sum()
             scores.append(gain)
-        scores = pd.Series(scores, index = columns, name = "DT_score_"+ self.strategy)
+        scores = pd.Series(scores, index = columns, name = self.name).sort_values()
+        scores = scores - scores.min()
         return scores
 
-    def choose(self, score, k):
-        score = score+ score.min()
-        return score.sort_values().tail(k)
 
     def entropy(self, x):
         x = x["label"]

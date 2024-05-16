@@ -1,8 +1,9 @@
+from .base import selection as base_selection
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from sklearn.linear_model import Lasso
-from .base import selection as base_selection
+
 
 def find_alpha(line):
     i = len(line)-1
@@ -19,21 +20,19 @@ def sample_weight(y):
     return y*sp + (1-y)*sq
 
 class Lasso_selection(base_selection):
-    def __init__(self, balanced = False, plotting = False, center = True, scale = False):
-        super().__init__(center = center, scale = scale)
+    def __init__(self, balanced = False, center = True, scale = False):
+        super().__init__(center = center, scale = scale, global_scale = True)
         
         # parameters
-        self.da = 0.1 # d alpha
+        self.da = 0.01 # d alpha
         self.blind = True
-        self.upper_init = 40
+        self.upper_init = 10
         self.balanced = balanced
-        self.plotting = plotting
+        self.name = "LassoLinear"
 
     def scoring(self, x, y = None):
         # kfold
         # (blank)
-        
-        x = x/x.values.std()
 
         # train test split
         if not self.blind:
@@ -49,13 +48,11 @@ class Lasso_selection(base_selection):
 
         lassoes = []
         score = []
-        lifetime = []
         # grid searching
-        for alpha in tqdm(np.arange(1e-3, self.upper_init, self.da)):
+        for alpha in tqdm(np.arange(self.da, self.upper_init, self.da)):
             lassoes.append(Lasso(alpha=alpha))
             lassoes[-1].fit(X_train, y_train, weights)
             alive = (lassoes[-1].coef_ != 0).sum()
-            lifetime.append(alive)
             
             if not self.blind:
                 score.append(((lassoes[-1].predict(X_test)>0.5)== y_test).mean())
@@ -65,61 +62,26 @@ class Lasso_selection(base_selection):
                 break
 
         coef = np.array([clr.coef_ for clr in lassoes])
-        lifetime = np.array(lifetime)
-        score = [lifetime, coef, x.columns]
 
-        return score
-
-    def choose(self, score, k):
-        lifetime = score[0]
-        coef = score[1]
-        names = score[2]
-
-
-        idx = 0
-        threshold = lifetime>k
-        while threshold[idx]:
-            idx += 1
-        
-        idx -= 1
-        top_k = coef[idx] != 0
-        coef_k = coef[:, top_k].T
-        name_k = names[top_k]
-
-        if self.plotting:
-            for i in range(len(coef)):
-                plt.plot(coef[i], label = name_20[i])
-
-            plt.xlabel("alpha")
-            plt.ylabel("coef")
-            plt.legend()
-            plt.show()
-
-            plt.plot(score)
-            plt.xlabel("alpha")
-            plt.ylabel("test acc")
-            plt.title("model accuracy")
-            plt.show()
-        
-        LS_importance = pd.Series([find_alpha(i) for i in coef_k], index = name_k, name = "LassoLinear").sort_values()[-k:]*self.da
-        return LS_importance
+        self.scores = pd.Series(np.logical_not(coef == 0).sum(axis = 0)*self.da, index = x.columns, name = self.name).sort_values()
+        return self.scores.copy()
 
 
 class Lasso_bisection_selection(base_selection):
-    def __init__(self, center = True, scale = False):
-        super().__init__(center = center, scale = scale)
-        self.upper_init = 40
+    def __init__(self, center = True, scale = False, balanced = False):
+        super().__init__(center = center, scale = scale, global_scale = True)
+        self.upper_init = 10
         self.lower_init = 1e-3
-        self.plotting = False
-        self.balanced = False
+        self.balanced = balanced
         self.blind = True
+        self.name = "LassoLinear"
 
     def select(self, x, y, k):
-        # feature standarized
-        x = x / x.values.std()
-
         # kfold
         # (blank)
+
+        # normalize
+        x, y = self.normalizer.fit_transform(x, y)
 
         # train test split
         if not self.blind:
@@ -166,29 +128,34 @@ class Lasso_bisection_selection(base_selection):
             else:
                 upper = alpha
                 upper_alive = alive
-            
+
         coef = np.array([clr.coef_ for clr in lassoes])
         
-        top_k = coef[-1] != 0
-        coef_k = coef[:, k].T
-        name_k = x.columns[top_k]
-
-        
-        LS_importance = pd.Series(0, index = name_k, name = "LassoLinear")
-        return LS_importance
+        self.scores = pd.Series(np.abs(coef[-1]), index = x.columns, name = self.name).sort_values()
+        self.selected_score = self.scores.tail(k)
+        return self.selected_score
 
 
 
 class multi_Lasso_selection(base_selection):
-    def __init__(self):
+    def __init__(self, center = True, scale = True):
         super().__init__()
+        self.center = center
+        self.scale = scale
+        self.name = "multi_Lasso"
+
     def select(self, x, y, k, batch_k= 5):
         result = []
+        if k == -1:
+            k = x.shape[0]
         for i in range(k//batch_k):
-            result.append(Lasso_bisection_selection().select(x, y, k = batch_k))
+            result.append(Lasso_bisection_selection(center = self.center, scale = self.scale).select(x, y, k = batch_k))
             x = x.drop(result[-1].index, axis = 1)
         result = pd.concat(result)
-        result.name = "multi_Lasso"
-        return result-result.min()
+        result = result-result.min()
+        result.name = self.name
+
+        self.selected_score = result.sort_values()
+        return self.selected_score.copy()
             
         
