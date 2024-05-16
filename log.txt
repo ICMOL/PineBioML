@@ -1,3 +1,13 @@
+2024/5/16 0.52-pre
+    description:
+        readme format changes
+
+
+2024/5/16 0.51-pre
+    description:
+        Some changes about gradient boosting or IO functions was missed.
+        
+
 2024/5/13 0.5-pre
     description:
         1. update readme.md
