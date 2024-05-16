@@ -1,11 +1,9 @@
 # _______ auto Bio-Feature Selection
 ### Overview
 ![image](./images/workflow/auto_selection_workflow.png) 
-This package aims to help you analysis bio data in tabular format using ML method in python.   
+This package aims to help analysis bio-data using ML method in python.   
 
 In the First stage, we will provide feature selection and autoML.
-
-(Somemore description or some stuff)
 
 # Index
 - Installation
@@ -55,13 +53,19 @@ In the First stage, we will provide feature selection and autoML.
 
         This should open the browser and showing the repostory folder.    
 
-    If the browser is opened, then the dependency is required.
     ![image](./images/tutorial/browser_jupyter.png)
+    If the browser shows jupyter's main page, the dependency is satisfied.
 
 
 # Usage example    
 The fowlling operation sould be done in jupyter notebook interface within your browser (as 3.iv).    
 
-Try one of the following examples:    
+Chosse one of the following examples, double click it in jupyter interface:    
 - example_feature_selection.ipynb
 
+![image](./images/tutorial/jupyter_runall.png)
+click the buttom and the script should start.
+
+
+# [Documents](./documents/main.md)
+For further details.
