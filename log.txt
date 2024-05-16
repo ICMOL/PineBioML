@@ -1,7 +1,24 @@
+2024/5/13 0.5-pre
+    description:
+        1. update readme.
+        2. flatten package
+    On going:
+        1. selection result with volcano plot
+        2. tutorial github page
+    bug:
+        1. bagging:
+             - contradicts to log domain in selection method (the negative output of pca)
+             - the variance of feature will change during bagging (variance matters)
+    to do:
+        1. add parameter dict(json or yaml-like)
+        2. auto ml (auto sklearn, mljar, H2O)
+        3. document (on going)
+        4. report
+        n. interactive interface or GUI
+
 2024/4/30 v0.421
     description:
         update readme.
-
     bug:
         1. bagging:
              - contradicts to log domain in selection method (the negative output of pca)

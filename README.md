@@ -1,5 +1,5 @@
 # _______ auto Bio-Feature Selection
-This package aims to help you analysis bio data in tabular format using ML method in python.    
+This package aims to help you analysis bio data in tabular format using ML method in python. It will include 4 parts Preprocessing, EDA, Modeling and Report.
 In the First stage, we will provide feature selection and autoML.
 
 # Index
@@ -13,7 +13,7 @@ In the First stage, we will provide feature selection and autoML.
     Windows10 or 11
 
 1. ### Environment Setting
-    If you already have python >= 3.9 installed in your PC, then skip to next step.   
+    If you already have python >= 3.9 installed in your PC, then skip to next step(2. Update modules and install dependency).   
 
     a. Please follow microsoft's tutorial to install python:    
     https://learn.microsoft.com/en-us/windows/python/beginners    
@@ -59,10 +59,11 @@ In the First stage, we will provide feature selection and autoML.
 
 
 # Usage example
-    The fowlling operation sould be done in jupyter notebook interface within your browser (as 2.).    
+The fowlling operation sould be done in jupyter notebook interface within your browser (as 2.).    
 
-    a. Click and open the ipython notebook package_test.ipynb    
-    b. Find the button "Run all" and click it    
+a. Click and open the ipython notebook package_test.ipynb    
+b. Find the button "Run all" and click it    
+c. check if there is file generated in ./output folder.
 
 # Method
 ### Overview
