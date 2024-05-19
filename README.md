@@ -1,4 +1,4 @@
-# _______ auto Bio-Feature Selection
+# AutoBioML
 ### Overview
 ![image](./images/workflow/auto_selection_workflow.png) 
 This package aims to help analysis bio-data using ML method in python.   
