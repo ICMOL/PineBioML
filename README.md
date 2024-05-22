@@ -6,13 +6,6 @@ This package aims to help analysis biomedical data using ML method in python.
 
 ![image](./images/workflow/auto_selection_workflow.png) 
 
-
-# Index
-- Installation
-- Usage example
-- [Documents](./documents/main.md)
-
-
 # Installation
 0. ### Requirement
     1. Windows10 or 11
