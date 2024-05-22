@@ -10,8 +10,8 @@ This package aims to help analysis biomedical data using ML method in python.
    2. Dependencies listed in requirements.txt are required.    
 
 # Installation
-   ### Install Python 
-   Please skip to the next step *Powershell and Python*, if you have python 3.9+ installed in your PC. 
+   ### 1. Install Python 
+   Please skip this step, if you have python 3.9+ installed in your PC. 
 
     Please follow microsoft's tutorial to install python:    
     https://learn.microsoft.com/en-us/windows/python/beginners    
