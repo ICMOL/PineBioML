@@ -11,11 +11,10 @@ This package aims to help analysis biomedical data using ML method in python.
 
 # Installation
    ### 1. Install Python 
-   Please skip this step, if you have python 3.9+ installed in your PC. 
+    Please skip this step, if you have python 3.9+ installed in your PC. 
 
-    Please follow microsoft's tutorial to install python:    
-    https://learn.microsoft.com/en-us/windows/python/beginners    
-    You only need to finish the first part *Install Python* in the turorial, wheather to use visual studio code is optional. In this project, we use ipython notebook mainly. 
+    Please follow the tutorial to install python:    
+    https://learn.microsoft.com/en-us/windows/python/beginners 
 
 2. ### Powershell and Python
     1. Open the Start menu, searching for Windows PowerShell.    
