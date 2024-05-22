@@ -16,6 +16,8 @@ This package aims to help analysis biomedical data using ML method in python.
     Please follow the tutorial to install python:    
     https://learn.microsoft.com/en-us/windows/python/beginners 
 
+    The "Visual Studio Code" and "Git" are optional.
+
 2. ### Powershell and Python
     1. Open the Start menu, searching for Windows PowerShell.    
         ![image](./images/tutorial/open_powershell.png)
