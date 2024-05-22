@@ -5,12 +5,11 @@ This package aims to help analysis biomedical data using ML method in python.
 
 ![image](./images/workflow/auto_selection_workflow.png) 
 
-# Installation
-## System Requirement
+# System Requirement
    1. Python 3.9+
    2. Dependencies listed in requirements.txt are required.    
 
-1. ### Python Installation
+### Python Installation
     If you already have python >= 3.9 installed in your PC, then skip to next step *Powershell and Python*.   
 
     Please follow microsoft's tutorial to install python:    
