@@ -7,16 +7,7 @@ This package aims to help analysis biomedical data using ML method in python.
 
 # System Requirements
    1. Python 3.9+
-   2. The following dependencies are required:
-      a. numpy
-      b. pandas
-      c. scikit-learn
-      d. matplotlib
-      e. seaborn
-      f. tqdm
-      g. jupyter
-      h. lightgbm
-      i. xgboost
+   2. The following dependencies are required: numpy, pandas, scikit-learn, matplotlib, seaborn, tqdm, jupyter, lightgbm, xgboost
 
 # Installation
 ### 1. Install Python 
