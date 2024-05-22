@@ -7,10 +7,19 @@ This package aims to help analysis biomedical data using ML method in python.
 
 # System Requirements
    1. Python 3.9+
-   2. Dependencies listed in requirements.txt are required.    
+   2. The following dependencies are required:
+      a. numpy
+      b. pandas
+      c. scikit-learn
+      d. matplotlib
+      e. seaborn
+      f. tqdm
+      g. jupyter
+      h. lightgbm
+      i. xgboost
 
 # Installation
-   ### 1. Install Python 
+### 1. Install Python 
     Please skip this step, if you have python 3.9+ installed in your PC. 
 
     Please follow the tutorial to install python:    
@@ -18,17 +27,7 @@ This package aims to help analysis biomedical data using ML method in python.
 
     The "Visual Studio Code" and "Git" are optional.
 
-2. ### Powershell and Python
-    1. Open the Start menu, searching for Windows PowerShell.    
-        ![image](./images/tutorial/open_powershell.png)
-    2. It will open a terminal like this:
-        ![image](./images/tutorial/powershell_window.png)    
-    3. Type in python.    
-        ![image](./images/tutorial/powershell_python.png)    
-    4. You should see the version information of python that you just installed. 
-        ![image](./images/tutorial/powershell_python_result.png)
-    5. In final to exit python terminal, type in exit()
-        ![image](./images/tutorial/powershell_exit.png)
+### 2. Install Dependencies
 
 
 
