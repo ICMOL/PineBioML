@@ -1,7 +1,8 @@
 # AutoBioML
 ### Overview
-(麻煩用中文寫三百字引言,介紹軟體目的) This package aims to help analysis bio-data using ML method in python.   
-In the First stage, we will provide feature selection and autoML.
+(麻煩用中文寫三百字引言,介紹軟體目的)
+This package aims to help analysis biomedical data using ML method in python.
+
 
 ![image](./images/workflow/auto_selection_workflow.png) 
 
