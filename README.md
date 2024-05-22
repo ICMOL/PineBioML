@@ -18,24 +18,16 @@ This package aims to help analysis biomedical data using ML method in python.
 
     The "Visual Studio Code" and "Git" are optional.
 
-### 2. Install Dependencies
+### 2. Install Dependencies and Execute the Program
+    Step 1. Download our scripts from Release (https://github.com/ICMOL/undetermined/releases).
 
+    Step 2. Install dependencies
+    Please open Windows PowerShell, move to the directory of our scripts, and execute the following command.
+    > pip install -r ./requirements.txt          
 
-
-3. ### Update modules and dependency
-    1. Download release.
-
-    2. Open Powershell (as step 2.ii), and move to the direction to the repository by entering:
-        > cd direction\\to\\repository\
-
-    3. Update pip and install dependency:
-        > pip install --upgrade pip    
-        > pip install -r ./requirements.txt    
-
-    4. Open ipython interface by entering:    
+    Step 3. Open ipytho
+    Please execute the following command to open the interface of python (ipython).
         > jupyter notebook    
-
-        This should open the browser and showing the repostory folder.    
 
     ![image](./images/tutorial/browser_jupyter.png)
     If the browser shows jupyter's main page, the dependency is satisfied.
