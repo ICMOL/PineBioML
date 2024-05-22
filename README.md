@@ -1,5 +1,4 @@
-# AutoBioML
-### Overview
+# Overview
 (麻煩用中文寫三百字引言,介紹軟體目的)
 This package aims to help analysis biomedical data using ML method in python.
 
