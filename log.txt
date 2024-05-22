@@ -24,7 +24,7 @@
         2. auto ml (auto sklearn, mljar, H2O)
         3. document (on going)
         4. report
-        n. interactive interface or GUI (maybe nicegui)
+        n. interactive interface or GUI (maybe nicegui/ plotly)
 
 2024/4/30 v0.421
     description:
