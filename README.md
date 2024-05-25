@@ -13,13 +13,11 @@ This package aims to help analysis biomedical data using ML method in python.
 # Installation
 
 ### 1. Install Python
-Please skip this step, if you have python 3.9+ installed in your PC.
-Please follow the tutorial to install python:
-        
+Please follow the tutorial to install python (the "Visual Studio Code" and "Git" are optional):
     https://learn.microsoft.com/en-us/windows/python/beginners 
-
     
-The "Visual Studio Code" and "Git" are optional.
+Please skip this step, if you have python 3.9+ installed in your PC.
+
 ### 2. Install Dependencies and Execute the Program
     Step 1. Download our scripts from Release (https://github.com/ICMOL/undetermined/releases).
 
