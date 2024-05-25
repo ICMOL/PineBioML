@@ -46,23 +46,23 @@ The input data should be tabular and placed in the ./input folder. We accept .cs
 
 # Process
 
-## 1. Missing value imputation
+### 1. Missing value imputation
 
 
-## 2. Data transformation
+### 2. Data transformation
 
 
-## 3. Feature Selection
+### 3. Feature Selection
 
 
-## 4. Model building
+### 4. Model building
 
 
 
-## 5. Validation
+### 5. Validation
 
 
-## 6. Report and visualization
+### 6. Report and visualization
 
 
 
@@ -76,6 +76,3 @@ Chosse one of the following examples, double click it in jupyter interface:
 ![image](./images/tutorial/jupyter_runall.png)
 click the buttom and the script should start.
 
-
-# [Documents](./documents/main.md)
-For further details.
