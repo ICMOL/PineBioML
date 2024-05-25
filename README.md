@@ -25,10 +25,11 @@ Step 1. Download our scripts from Release
     https://github.com/ICMOL/undetermined/releases
 
 Step 2. Install dependencies: Please open Windows PowerShell, move to the directory of our scripts, and execute the following command.
+
     > pip install -r ./requirements.txt          
 
-Step 3. Open ipytho
-Please execute the following command to open the interface of python (ipython). If the browser shows jupyter's main page, the dependency is satisfied.
+Step 3. Open the interface of python (ipython)
+Please execute the following command to open ipython. You will see the figure, if the program execute correctly.
         > jupyter notebook    
 
 ![image](./images/tutorial/browser_jupyter.png)
