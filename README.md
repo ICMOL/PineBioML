@@ -47,7 +47,7 @@ The input data should be tabular and placed in the ./input folder. We accept .cs
 # Process
 
 ### 1. Missing value imputation
-|        ID         |        Option         |  Definiation |
+|        ID         |        Option         |  Definition |
 |---------------------|----------------|------------------------------|
 |  1 | Deletion              | (請用英文說明)    |
 |  2 | Imputation with a constant value  | (請用英文說明) |
@@ -56,7 +56,7 @@ The input data should be tabular and placed in the ./input folder. We accept .cs
 
 
 ### 2. Data transformation
-|        ID         |        Option         |  Definiation |
+|        ID         |        Option         |  Definition |
 |---------------------|----------------|------------------------------|
 |  1 | PCA              | (請用英文說明)    |  |
 |  2 | Power transofmation  | (請用英文說明) |   |
@@ -64,7 +64,7 @@ The input data should be tabular and placed in the ./input folder. We accept .cs
 
 
 ### 3. Feature Selection
-|        ID         |        Option         |  Definiation |
+|        ID         |        Option         |  Definition |
 |---------------------|----------------|------------------------------|
 |  1 | Volcano plot  | (請用英文說明)    |  |
 |  2 | Lasso regression | (請用英文說明) |   |
