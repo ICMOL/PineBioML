@@ -19,7 +19,7 @@ Please follow the tutorial to install python (the "Visual Studio Code" and "Git"
     
 Please skip this step, if you have python 3.9+ installed in your PC.
 
-### 2. Install Dependencies and Execute the Program
+### 2. Install Dependencies and Execute the Scripts
 Step 1. Download our scripts from Release
 
     https://github.com/ICMOL/undetermined/releases
@@ -37,8 +37,15 @@ Please execute the following command to open ipython. You will see the figure, i
 ![image](./images/tutorial/browser_jupyter.png)
 
 
-# Usage example    
-The fowlling operation sould be done in jupyter notebook interface within your browser (as 3.iv).    
+# The Format of Input Table
+
+The input data should be tabular and placed in the ./input folder. We accept .csv, .tsv, and .xlsx formats as input.
+*Note: A Sample ID is required. You can designate a column name as the indexing ID. An error will occur if the IDs of x and y do not match. (甚麼是x,甚麼是y?)
+
+
+# An Example for Program Demonstration    
+
+<請描述你提供的資料內容是甚麼>
 
 Chosse one of the following examples, double click it in jupyter interface:    
 - example_feature_selection.ipynb
