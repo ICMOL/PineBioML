@@ -5,7 +5,7 @@ This package aims to help analysis biomedical data using ML method in python.
 
 ![image](./images/workflow/auto_selection_workflow.png) 
 
-# System Requirements
+# System requirements
    1. Python 3.9+
    2. The following dependencies are required: numpy, pandas, scikit-learn, matplotlib, seaborn, tqdm, jupyter, lightgbm, xgboost
 
@@ -19,7 +19,7 @@ Please follow the tutorial to install python (the "Visual Studio Code" and "Git"
     
 Please skip this step, if you have python 3.9+ installed in your PC.
 
-### 2. Install Dependencies and Execute the Scripts
+### 2. Install dependencies and execute the scripts
 Step 1. Download our scripts from Release
 
     https://github.com/ICMOL/undetermined/releases
@@ -37,11 +37,33 @@ Please execute the following command to open ipython. You will see the figure, i
 ![image](./images/tutorial/browser_jupyter.png)
 
 
-# The Format of Input Table
+# Input Table Format
 
 The input data should be tabular and placed in the ./input folder. We accept .csv, .tsv, and .xlsx formats as input.
 
 *Note: A Sample ID is required. You can designate a column name as the indexing ID. An error will occur if the IDs of x and y do not match. (甚麼是x,甚麼是y?)
+
+
+# Process
+
+## 1. Missing value imputation
+
+
+## 2. Data transformation
+
+
+## 3. Feature Selection
+
+
+## 4. Model building
+
+
+
+## 5. Validation
+
+
+## 6. Report and visualization
+
 
 
 # An Example for Program Demonstration    
