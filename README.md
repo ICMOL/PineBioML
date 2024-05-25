@@ -47,32 +47,32 @@ The input data should be tabular and placed in the ./input folder. We accept .cs
 # Process
 
 ### 1. Missing value imputation
-|        Option         |  Definiation | Note |
+|        ID         |        Option         |  Definiation |
 |---------------------|----------------|------------------------------|
-| Deletion              | (請用英文說明)    |  |
-| Imputation with a constant value  | (請用英文說明) |   |
-| Imputation using K-NN algorithm        | (請用英文說明)  |  |
-| Self regression        |  (請用英文說明)  |  |
+|  1 | Deletion              | (請用英文說明)    |
+|  2 | Imputation with a constant value  | (請用英文說明) |
+|  3 | Imputation using K-NN algorithm        | (請用英文說明)  |
+|  4 | Self regression        |  (請用英文說明)  |
 
 
 ### 2. Data transformation
-|        Option         |  Definiation | Note |
+|        ID         |        Option         |  Definiation |
 |---------------------|----------------|------------------------------|
-| PCA              | (請用英文說明)    |  |
-| Power transofmation  | (請用英文說明) |   |
-| Feature bagging        | (請用英文說明)  |  |
+|  1 | PCA              | (請用英文說明)    |  |
+|  2 | Power transofmation  | (請用英文說明) |   |
+|  3 | Feature bagging        | (請用英文說明)  |  |
 
 
 ### 3. Feature Selection
-|        Option         |  Definiation | Note |
+|        ID         |        Option         |  Definiation |
 |---------------------|----------------|------------------------------|
-| Volcano plot  | (請用英文說明)    |  |
-| Lasso regression | (請用英文說明) |   |
-| Decision stump        | (請用英文說明)  |  |
-| Random Forest        | (請用英文說明)  |  |
-| AdaBoost        | (請用英文說明)  |  |
-| Gradient boosting        | (請用英文說明)  |  |
-| SVM        | (請用英文說明)  |  |
+|  1 | Volcano plot  | (請用英文說明)    |  |
+|  2 | Lasso regression | (請用英文說明) |   |
+|  3 | Decision stump        | (請用英文說明)  |  |
+|  4 | Random Forest        | (請用英文說明)  |  |
+|  5 | AdaBoost        | (請用英文說明)  |  |
+|  6 | Gradient boosting        | (請用英文說明)  |  |
+|  7 | SVM        | (請用英文說明)  |  |
 
 
 ### 4. Model building
