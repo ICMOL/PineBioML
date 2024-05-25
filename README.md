@@ -20,7 +20,9 @@ Please follow the tutorial to install python (the "Visual Studio Code" and "Git"
 Please skip this step, if you have python 3.9+ installed in your PC.
 
 ### 2. Install Dependencies and Execute the Program
-Step 1. Download our scripts from Release (https://github.com/ICMOL/undetermined/releases).
+Step 1. Download our scripts from Release
+
+    https://github.com/ICMOL/undetermined/releases
 
 Step 2. Install dependencies: Please open Windows PowerShell, move to the directory of our scripts, and execute the following command.
     > pip install -r ./requirements.txt          
