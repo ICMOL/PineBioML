@@ -14,6 +14,7 @@ This package aims to help analysis biomedical data using ML method in python.
 
 ### 1. Install Python
 Please follow the tutorial to install python (the "Visual Studio Code" and "Git" are optional):
+
     https://learn.microsoft.com/en-us/windows/python/beginners 
     
 Please skip this step, if you have python 3.9+ installed in your PC.
