@@ -29,7 +29,9 @@ Step 2. Install dependencies: Please open Windows PowerShell, move to the direct
     > pip install -r ./requirements.txt          
 
 Step 3. Open the interface of python (ipython)
+
 Please execute the following command to open ipython. You will see the figure, if the program execute correctly.
+
         > jupyter notebook    
 
 ![image](./images/tutorial/browser_jupyter.png)
