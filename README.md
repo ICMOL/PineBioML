@@ -40,6 +40,7 @@ Please execute the following command to open ipython. You will see the figure, i
 # The Format of Input Table
 
 The input data should be tabular and placed in the ./input folder. We accept .csv, .tsv, and .xlsx formats as input.
+
 *Note: A Sample ID is required. You can designate a column name as the indexing ID. An error will occur if the IDs of x and y do not match. (甚麼是x,甚麼是y?)
 
 
