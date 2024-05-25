@@ -9,17 +9,16 @@ This package aims to help analysis biomedical data using ML method in python.
    1. Python 3.9+
    2. The following dependencies are required: numpy, pandas, scikit-learn, matplotlib, seaborn, tqdm, jupyter, lightgbm, xgboost
 
+
 # Installation
 
+### 1. Install Python 
     Please skip this step, if you have python 3.9+ installed in your PC. 
 
     Please follow the tutorial to install python:    
     https://learn.microsoft.com/en-us/windows/python/beginners 
 
     The "Visual Studio Code" and "Git" are optional.
-
-### 1. Install Python 
-
 
 ### 2. Install Dependencies and Execute the Program
     Step 1. Download our scripts from Release (https://github.com/ICMOL/undetermined/releases).
