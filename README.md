@@ -30,7 +30,7 @@ Step 2. Install dependencies: Please open Windows PowerShell, move to the direct
 
 Step 3. Open the interface of python (ipython)
 
-Please execute the following command to open ipython. You will see the figure, if the program execute correctly.
+Please execute the following command to open ipython. You will see the figure, if the scripts execute correctly.
 
     > jupyter notebook    
 
@@ -47,16 +47,35 @@ The input data should be tabular and placed in the ./input folder. We accept .cs
 # Process
 
 ### 1. Missing value imputation
+|        Option         |  Definiation | Note |
+|---------------------|----------------|------------------------------|
+| Deletion              | (請用英文說明)    |  |
+| Imputation with a constant value  | (請用英文說明) |   |
+| Imputation using K-NN algorithm        | (請用英文說明)  |  |
+| Self regression        |  (請用英文說明)  |  |
 
 
 ### 2. Data transformation
+|        Option         |  Definiation | Note |
+|---------------------|----------------|------------------------------|
+| PCA              | (請用英文說明)    |  |
+| Power transofmation  | (請用英文說明) |   |
+| Feature bagging        | (請用英文說明)  |  |
 
 
 ### 3. Feature Selection
+|        Option         |  Definiation | Note |
+|---------------------|----------------|------------------------------|
+| Volcano plot  | (請用英文說明)    |  |
+| Lasso regression | (請用英文說明) |   |
+| Decision stump        | (請用英文說明)  |  |
+| Random Forest        | (請用英文說明)  |  |
+| AdaBoost        | (請用英文說明)  |  |
+| Gradient boosting        | (請用英文說明)  |  |
+| SVM        | (請用英文說明)  |  |
 
 
 ### 4. Model building
-
 
 
 ### 5. Validation
