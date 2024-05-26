@@ -5,12 +5,13 @@ from scipy.stats import t
 from .base import selection as base_selection
 
 class Volcano_selection(base_selection):
-    def __init__(self, strategy = "fold", p_threshold = 0.05, fc_threshold = 2, log_domain = False, center = True, scale = False):
+    def __init__(self, strategy = "fold", p_threshold = 0.05, fc_threshold = 2, log_domain = False, center = True, scale = False, absolute = True):
         super().__init__(center = False, scale = False)
         self.strategy = strategy
         self.fc_threshold = fc_threshold
         self.p_threshold = p_threshold
         self.log_domain = log_domain
+        self.absolute = absolute
         self.name = "Volcano Plot_"+ self.strategy
 
     def scoring(self, x, y):
@@ -60,6 +61,7 @@ class Volcano_selection(base_selection):
             np.abs(log_fold)>= np.log2(self.fc_threshold),
             log_p> -np.log10(self.p_threshold)
             )
+        self.significant = significant
         
         # choose top k logged p-value 
         if self.strategy == "fold":
@@ -67,7 +69,10 @@ class Volcano_selection(base_selection):
             selected_score = pd.Series(log_p.loc[selected.index], index = selected.index, name = self.name)
         elif self.strategy == "p":
             selected = log_p.loc[significant].sort_values().tail(k)
-            selected_score = pd.Series(np.abs(log_fold.loc[selected.index]), index = selected.index, name = self.name)
+            if self.absolute:
+                selected_score = pd.Series(np.abs(log_fold.loc[selected.index]), index = selected.index, name = self.name).sort_values(ascending = False)
+            else:
+                selected_score = pd.Series(log_fold.loc[selected.index], index = selected.index, name = self.name).sort_values(ascending = False)
         else:
             raise "select_by must be one of {fold} or {p}"
 
@@ -75,7 +80,7 @@ class Volcano_selection(base_selection):
         self.selected_score = selected_score
         return self.selected_score.copy()
 
-    def plotting(self):
+    def plotting(self, external = False, external_score = None, title = "Welch t-test volcano", show = True, saving = False, save_path = "./output/"):
         log_fold = self.scores["log_fold_change"]
         log_p = self.scores["log_p_value"]
         # choose fold change > 2 and p value < 0.05 in log scale
@@ -83,22 +88,33 @@ class Volcano_selection(base_selection):
             np.abs(log_fold)>= np.log2(self.fc_threshold),
             log_p> -np.log10(self.p_threshold)
         )
-        selected = pd.Series(False, index = significant.index)
-        selected.loc[self.selected_score.index] = True
+        
+
+        if external:
+            selected = pd.Series(False, index = self.scores.index)
+            selected.loc[external_score.index] = True
+        else:
+            selected = pd.Series(False, index = significant.index)
+            selected.loc[self.selected_score.index] = True
 
         # silent
         plt.scatter(x = log_fold[~significant], y = log_p[~significant], s = 0.5, color = 'gray')
         # not selected
         plt.scatter(x = log_fold[significant][~selected], y = log_p[significant][~selected], s = 2)
         # selected
-        plt.scatter(x = log_fold[significant][selected], y = log_p[significant][selected], s = 2)
+        if external:
+            plt.scatter(x = log_fold[selected], y = log_p[selected], s = 2)
+        else:
+            plt.scatter(x = log_fold[selected], y = log_p[selected], s = 2)
 
-        plt.title("Welch t-test volcano")
+        plt.title(title)
         plt.xlabel("log_2 fold")
         plt.axvline(1, linestyle="dotted", color = "gray")
         plt.axvline(-1, linestyle="dotted", color = "gray")
         plt.axhline(-np.log10(0.05), linestyle="dotted", color = "gray")
         plt.ylabel("log_10 p")
+        if saving:
+            plt.savefig(save_path + title, format = "png")
         plt.show()
 
 

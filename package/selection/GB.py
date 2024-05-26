@@ -6,7 +6,7 @@ import lightgbm as lgbm
 
 
 class XGboost_selection(base_selection):
-    def __init__(self, unbalanced= True, center = True, scale = False):
+    def __init__(self, unbalanced= True, center = True, scale = True):
         super().__init__(center = center, scale = scale)
         self.unbalanced = unbalanced
             
@@ -21,7 +21,7 @@ class XGboost_selection(base_selection):
             
         self.kernel.fit(x, y, sample_weight = sample_weight)
         score = self.kernel.feature_importances_
-        self.scores = pd.Series(score, index=x.columns, name = self.name).sort_values()
+        self.scores = pd.Series(score, index=x.columns, name = self.name).sort_values(ascending = False)
         return self.scores.copy()
 
 class Lightgbm_selection(base_selection):
@@ -40,7 +40,7 @@ class Lightgbm_selection(base_selection):
             
         self.kernel.fit(x, y, sample_weight = sample_weight)
         score = self.kernel.feature_importances_
-        self.scores = pd.Series(score, index=x.columns, name = self.name).sort_values()
+        self.scores = pd.Series(score, index=x.columns, name = self.name).sort_values(ascending = False)
         return self.scores.copy()
 
 

@@ -1,0 +1,655 @@
+,method,source,native,parents,p_value,description,intersection_size
+0,DT_score_c45,GO:CC,GO:0030684,['GO:1990904'],2.439645289447784e-21,"""Any complex of pre-rRNAs, ribosomal proteins, and associated proteins formed during ribosome biogenesis."" [PMID:10567516]",18
+1,DT_score_c45,GO:BP,GO:0042254,['GO:0022613'],6.098748546446341e-18,"""A cellular process that results in the biosynthesis of constituent macromolecules, assembly, and arrangement of constituent parts of ribosome subunits; includes transport to the sites of protein synthesis."" [GOC:ma, PMID:26404467, Wikipedia:Ribosome_biogenesis]",23
+2,DT_score_c45,GO:BP,GO:0006364,"['GO:0016072', 'GO:0034470', 'GO:0042254']",2.4430151741664475e-14,"""Any process involved in the conversion of a primary ribosomal RNA (rRNA) transcript into one or more mature rRNA molecules."" [GOC:curators]",18
+3,DT_score_c45,GO:BP,GO:0016072,['GO:0034660'],4.253593592424783e-13,"""The chemical reactions and pathways involving rRNA, ribosomal RNA, a structural constituent of ribosomes."" [ISBN:0198506732]",18
+4,DT_score_c45,GO:BP,GO:0034470,"['GO:0006396', 'GO:0034660']",1.3512872804948064e-12,"""Any process that results in the conversion of one or more primary non-coding RNA (ncRNA) transcripts into one or more mature ncRNA molecules."" [GOC:mah, PMID:27573892]",21
+5,DT_score_c45,GO:BP,GO:0034660,['GO:0016070'],2.072086084507205e-12,"""The chemical reactions and pathways involving non-coding RNA transcripts (ncRNAs)."" [GOC:mah]",24
+6,DT_score_c45,REAC,REAC:R-HSA-8953854,['REAC:0000000'],2.8593726930569635e-12,Metabolism of RNA,26
+7,DT_score_c45,GO:CC,GO:0032040,['GO:0030684'],5.905203543007476e-12,"""A large ribonucleoprotein complex that is an early preribosomal complex. In S. cerevisiae, it has a size of 80S and consists of the 35S pre-rRNA, early-associating ribosomal proteins most of which are part of the small ribosomal subunit, the U3 snoRNA and associated proteins."" [GOC:krc, GOC:vw, PMID:12068309, PMID:12957375, PMID:15120992, PMID:15590835]",11
+8,DT_score_c45,GO:CC,GO:0043233,"['GO:0031974', 'GO:0043226']",4.0954778347318725e-11,"""The internal volume enclosed by the membranes of a particular organelle; includes the volume enclosed by a single organelle membrane, e.g. endoplasmic reticulum lumen, or the volume enclosed by the innermost of the two lipid bilayers of an organelle envelope, e.g. nuclear lumen."" [GOC:jl, GOC:mah]",65
+9,DT_score_c45,GO:CC,GO:0031974,['GO:0110165'],4.0954778347318725e-11,"""The enclosed volume within a sealed membrane or between two sealed membranes. Encompasses the volume enclosed by the membranes of a particular organelle, e.g. endoplasmic reticulum lumen, or the space between the two lipid bilayers of a double membrane surrounding an organelle, e.g. nuclear envelope lumen."" [GOC:add, GOC:mah]",65
+10,DT_score_c45,GO:CC,GO:0070013,"['GO:0043229', 'GO:0043233']",4.0954778347318725e-11,"""An organelle lumen that is part of an intracellular organelle."" [GOC:mah]",65
+11,DT_score_c45,GO:CC,GO:0030687,['GO:0030684'],3.719099615454015e-10,"""A preribosomal complex consisting of 27SA, 27SB, and/or 7S pre-rRNA, 5S rRNA, ribosomal proteins including late-associating large subunit proteins, and associated proteins; a precursor of the eukaryotic cytoplasmic large ribosomal subunit."" [PMID:10567516]",7
+12,DT_score_c45,GO:CC,GO:0031981,"['GO:0005634', 'GO:0070013']",8.029466719074452e-10,"""The volume enclosed by the nuclear inner membrane."" [GOC:mah, GOC:pz]",57
+13,DT_score_c45,REAC,REAC:R-HSA-6791226,['REAC:R-HSA-8868773'],1.0285325892646016e-09,Major pathway of rRNA processing in the nucleolus and cytosol,14
+14,DT_score_c45,GO:MF,GO:0003723,['GO:0003676'],1.8544796867319375e-09,"""Binding to an RNA molecule or a portion thereof."" [GOC:jl, GOC:mah]",44
+15,DT_score_c45,REAC,REAC:R-HSA-8868773,['REAC:R-HSA-72312'],2.1378053681004198e-09,rRNA processing in the nucleus and cytosol,14
+16,DT_score_c45,GO:BP,GO:0042274,"['GO:0022613', 'GO:0042254']",2.6851059100240964e-09,"""A cellular process that results in the biosynthesis of constituent macromolecules, assembly, and arrangement of constituent parts of a small ribosomal subunit; includes transport to the sites of protein synthesis."" [GOC:jl]",11
+17,DT_score_c45,REAC,REAC:R-HSA-72312,['REAC:R-HSA-8953854'],4.265649963610112e-09,rRNA processing,14
+18,DT_score_c45,REAC,REAC:R-HSA-6790901,['REAC:R-HSA-8868773'],2.330997344067585e-08,rRNA modification in the nucleus and cytosol,9
+19,DT_score_c45,GO:CC,GO:0005654,"['GO:0031981', 'GO:0110165']",2.569404236034991e-08,"""That part of the nuclear content other than the chromosomes or the nucleolus."" [GOC:ma, ISBN:0124325653]",47
+20,DT_score_c45,GO:CC,GO:0043232,"['GO:0043228', 'GO:0043229']",3.218997671013419e-08,"""Organized structure of distinctive morphology and function, not bounded by a lipid bilayer membrane and occurring within the cell. Includes ribosomes, the cytoskeleton and chromosomes."" [GOC:go_curators]",60
+21,DT_score_c45,GO:CC,GO:0043228,['GO:0043226'],3.2408471656491545e-08,"""Organized structure of distinctive morphology and function, not bounded by a lipid bilayer membrane. Includes ribosomes, the cytoskeleton and chromosomes."" [GOC:go_curators]",60
+22,DT_score_c45,GO:CC,GO:0005730,"['GO:0031981', 'GO:0043232']",7.876708349442587e-08,"""A small, dense body one or more of which are present in the nucleus of eukaryotic cells. It is rich in RNA and protein, is not bounded by a limiting membrane, and is not seen during mitosis. Its prime function is the transcription of the nucleolar DNA into 45S ribosomal-precursor RNA, the processing of this RNA into 5.8S, 18S, and 28S components of ribosomal RNA, and the association of these components with 5S RNA and proteins synthesized outside the nucleolus. This association results in the formation of ribonucleoprotein precursors; these pass into the cytoplasm and mature into the 40S and 60S subunits of the ribosome."" [ISBN:0198506732]",31
+23,DT_score_c45,GO:BP,GO:0042273,"['GO:0022613', 'GO:0042254']",1.3686778861957133e-07,"""A cellular process that results in the biosynthesis of constituent macromolecules, assembly, and arrangement of constituent parts of a large ribosomal subunit; includes transport to the sites of protein synthesis."" [GOC:jl]",9
+24,DT_score_c45,GO:BP,GO:0006403,['GO:0033036'],2.4383775859185396e-07,"""A process in which RNA is transported to, or maintained in, a specific location."" [GOC:ai]",12
+25,DT_score_c45,GO:CC,GO:0030686,['GO:0030684'],3.967044317674019e-07,"""A large ribonucleoprotein complex considered to be the earliest preribosomal complex. In S. cerevisiae, it has a size of 90S and consists of the 35S pre-rRNA, early-associating ribosomal proteins most of which are part of the small ribosomal subunit, the U3 snoRNA and associated proteins."" [GOC:krc, GOC:vw, PMID:12150911, PMID:12957375, PMID:15120992]",6
+26,DT_score_c45,GO:CC,GO:0005694,['GO:0043232'],9.082369769428308e-07,"""A structure composed of a very long molecule of DNA and associated proteins (e.g. histones) that carries hereditary information."" [ISBN:0198547684]",29
+27,DT_score_c45,GO:CC,GO:0031428,['GO:0005732'],1.5394462369972649e-06,"""A ribonucleoprotein complex containing a box C/D type RNA that can carry out ribose-2'-O-methylation of target RNAs. Box C/D type RNAs are widespread in eukaryotes and in Archaea, suggesting that an RNA-based guide mechanism for directing specific RNA 2'-O-ribose methylations was present in the common ancestor of Archaea and Eukarya."" [ISBN:0879695897, PMID:11842104, PMID:17284456]",4
+28,DT_score_c45,GO:MF,GO:0097159,['GO:0005488'],1.993019166929859e-06,"""Binding to an organic cyclic compound, any molecular entity that contains carbon arranged in a cyclic molecular structure."" [GOC:sjw, PMID:7583672]",65
+29,DT_score_c45,GO:MF,GO:0030515,['GO:0003723'],6.113247041249304e-06,"""Binding to a small nucleolar RNA."" [GOC:mah]",6
+30,DT_score_c45,GO:CC,GO:0110016,"['GO:0005730', 'GO:0070603']",7.13527217334737e-06,"""A chromatin remodeling complex that positively regulates histone H3 acetylation, in particular H3K9, by recruiting histone acetyltransferases to rDNA gene regions. Located in the nucleolus where it assembles on RNA Polymerase I (Pol I) and possibly on RNA Polymerase III (Pol III) promoter and coding regions during early G1 phase and activates the post-initiation phases of Pol I transcription. May also activate RNA Polymerase II (Pol II) gene transcription. In mammals, B-WICH contains the WICH complex core of BAZ1B and SMARCA5, additional protein subunits and possibly rRNAs. Although it contains several catalytic subunits it is not clear which functions are carried out by the complex itself."" [GOC:bhm, PMID:16603771, PMID:21559432, PMID:23555303, PMID:26044184]",4
+31,DT_score_c45,HPA,HPA:0620222,['HPA:0620221'],9.753203320719037e-06,vagina; squamous epithelial cells[≥Medium],54
+32,DT_score_c45,HPA,HPA:0620221,['HPA:0620000'],1.7715396484083008e-05,vagina; squamous epithelial cells[≥Low],67
+33,DT_score_c45,HPA,HPA:0620000,['HPA:0000000'],1.7715396484083008e-05,vagina,67
+34,DT_score_c45,GO:MF,GO:0003676,['GO:0097159'],2.258832258348939e-05,"""Binding to a nucleic acid."" [GOC:jl]",52
+35,DT_score_c45,GO:BP,GO:0045943,"['GO:0006356', 'GO:0006360', 'GO:0045893']",2.6817896449470473e-05,"""Any process that activates or increases the frequency, rate or extent of transcription mediated by RNA polymerase I."" [GOC:go_curators, GOC:txnOH]",6
+36,DT_score_c45,GO:CC,GO:0005732,['GO:1990904'],2.68640402642931e-05,"""A ribonucleoprotein complex that contains an RNA molecule of the snoRNA family and associated proteins. Many are involved in a step of processing of rRNA molecules: cleavage, 2'-O-methylation, or pseudouridylation, but other RNA types can be targets as well. The majority fall into one of two classes, box C/D type or box H/ACA type, which are conserved across eukaryotes and archaea. Other members include the telomerase RNA and the ribonuclease MRP RNA."" [GOC:krc, GOC:mah, ISBN:0879695897, PMID:17284456]",5
+37,DT_score_c45,GO:CC,GO:0140513,"['GO:0005634', 'GO:0032991']",2.7260907776213828e-05,"""A stable assembly of two or more macromolecules, i.e. proteins, nucleic acids, carbohydrates or lipids, in which at least one component is a protein and the constituent parts function together in the nucleus."" [GOC:pg]",32
+38,DT_score_c45,REAC,REAC:R-HSA-72203,['REAC:R-HSA-8953854'],2.9426562123845534e-05,Processing of Capped Intron-Containing Pre-mRNA,12
+39,DT_score_c45,HPA,HPA:0190222,['HPA:0190221'],5.3069421857699255e-05,esophagus; squamous epithelial cells[≥Medium],60
+40,DT_score_c45,HPA,HPA:0630222,['HPA:0630221'],5.908534758710418e-05,cervix; squamous epithelial cells[≥Medium],50
+41,DT_score_c45,REAC,REAC:R-HSA-4615885,['REAC:R-HSA-3108232'],7.833814871419041e-05,SUMOylation of DNA replication proteins,6
+42,DT_score_c45,GO:CC,GO:0032991,['GO:0005575'],8.582806974959062e-05,"""A stable assembly of two or more macromolecules, i.e. proteins, nucleic acids, carbohydrates or lipids, in which at least one component is a protein and the constituent parts function together."" [GOC:dos, GOC:mah]",63
+43,DT_score_c45,HPA,HPA:0330223,['HPA:0330222'],9.202100634049907e-05,oral mucosa; squamous epithelial cells[High],25
+44,DT_score_c45,GO:CC,GO:0034399,"['GO:0031981', 'GO:0110165']",0.00011603690192607334,"""The portion of the nuclear lumen proximal to the inner nuclear membrane."" [GOC:krc, GOC:mah]",8
+45,DT_score_c45,KEGG,KEGG:03008,['KEGG:00000'],0.00011953176662582056,Ribosome biogenesis in eukaryotes,8
+46,DT_score_c45,HPA,HPA:0610000,['HPA:0000000'],0.00013778413619611955,urinary bladder,73
+47,DT_score_c45,HPA,HPA:0610831,['HPA:0610000'],0.00013778413619611955,urinary bladder; urothelial cells[≥Low],73
+48,DT_score_c45,GO:CC,GO:0005634,['GO:0043231'],0.00015882137733237627,"""A membrane-bounded organelle of eukaryotic cells in which chromosomes are housed and replicated. In most cells, the nucleus contains all of the cell's chromosomes except the organellar chromosomes, and is the site of RNA synthesis and processing. In some species, or in specialized cell types, RNA metabolism or DNA replication may be absent."" [GOC:go_curators]",69
+49,DT_score_c45,HPA,HPA:0250132,['HPA:0250131'],0.00016777423783999196,hippocampus; neuronal cells[≥Medium],53
+50,DT_score_c45,GO:BP,GO:0006356,"['GO:0006355', 'GO:0006360']",0.0001933012383016667,"""Any process that modulates the frequency, rate or extent of transcription mediated by RNA polymerase I."" [GOC:go_curators]",6
+51,DT_score_c45,HPA,HPA:0190223,['HPA:0190222'],0.00020097301299216143,esophagus; squamous epithelial cells[High],30
+52,DT_score_c45,HPA,HPA:0250000,['HPA:0000000'],0.0002457826534071356,hippocampus,70
+53,DT_score_c45,GO:BP,GO:0044085,['GO:0071840'],0.0003744809733907794,"""A process that results in the biosynthesis of constituent macromolecules, assembly, and arrangement of constituent parts of a cellular component. Includes biosynthesis of constituent macromolecules, and those macromolecular modifications that are involved in synthesis or assembly of the cellular component."" [GOC:jl, GOC:mah]",46
+54,DT_score_c45,CORUM,CORUM:6194,['CORUM:0000000'],0.0004593194519129694,B-WICH complex,4
+55,DT_score_c45,GO:BP,GO:0006405,"['GO:0050658', 'GO:0051168']",0.00046636672114173694,"""The directed movement of RNA from the nucleus to the cytoplasm."" [GOC:ma]",7
+56,DT_score_c45,GO:BP,GO:0022613,['GO:0044085'],0.0005224785400630425,"""A cellular process that results in the biosynthesis of constituent macromolecules, assembly, and arrangement of constituent parts of a complex containing RNA and proteins. Includes the biosynthesis of the constituent RNA and protein molecules, and those macromolecular modifications that are involved in synthesis or assembly of the ribonucleoprotein complex."" [GOC:isa_complete, GOC:mah]",26
+57,DT_score_c45,GO:CC,GO:1990904,['GO:0032991'],0.000639765354844428,"""A macromolecular complex that contains both RNA and protein molecules."" [GOC:krc, GOC:vesicles]",30
+58,DT_score_c45,HPA,HPA:0461392,['HPA:0461391'],0.0006897182694567341,skin 1; cells in basal layer[≥Medium],17
+59,DT_score_c45,HPA,HPA:0570813,['HPA:0570812'],0.0007108461137078771,testis; spermatogonia cells[High],27
+60,DT_score_c45,GO:CC,GO:0043226,['GO:0110165'],0.0007895603846889847,"""Organized structure of distinctive morphology and function. Includes the nucleus, mitochondria, plastids, vacuoles, vesicles, ribosomes and the cytoskeleton, and prokaryotic structures such as anammoxosomes and pirellulosomes. Excludes the plasma membrane."" [GOC:go_curators]",92
+61,DT_score_c45,CORUM,CORUM:6302,['CORUM:0000000'],0.0008193407099667276,B-WICH complex,4
+62,DT_score_c45,GO:CC,GO:0070603,"['GO:0000785', 'GO:0140513', 'GO:1904949']",0.0011706642555745503,"""A protein complex that contains an ortholog of the Saccharomyces ATPase Swi2/Snf2 as one of the catalytic subunit components (ATPase) and mediates assembly of nucleosomes, changes to the spacing or structure of nucleosomes, or some combination of those activities in a manner that requires ATP."" [GOC:bhm, GOC:krc, GOC:mah, PMID:16155938]",6
+63,DT_score_c45,HPA,HPA:0400000,['HPA:0000000'],0.0011745972051391777,rectum,75
+64,DT_score_c45,GO:BP,GO:0006999,"['GO:0006997', 'GO:0043933']",0.001274768393482874,"""A process that is carried out at the cellular level which results in the assembly, arrangement of constituent parts, or disassembly of the nuclear pore."" [GOC:dph, GOC:jid, GOC:jl, GOC:mah]",4
+65,DT_score_c45,HPA,HPA:0250131,['HPA:0250000'],0.0013783039503155229,hippocampus; neuronal cells[≥Low],65
+66,DT_score_c45,HPA,HPA:0211091,['HPA:0210000'],0.0013843525689804942,fallopian tube; non-ciliated cells[≥Low],18
+67,DT_score_c45,HPA,HPA:0330222,['HPA:0330221'],0.0014258123342305693,oral mucosa; squamous epithelial cells[≥Medium],52
+68,DT_score_c45,GO:BP,GO:0050657,['GO:0015931'],0.0015321632194308064,"""The directed movement of nucleic acids, single or double-stranded polynucleotides involved in the storage, transmission and transfer of genetic information, into, out of or within a cell, or between cells, by means of some agent such as a transporter or pore."" [GOC:ai, ISBN:0198506732]",8
+69,DT_score_c45,GO:BP,GO:0050658,"['GO:0050657', 'GO:0051236']",0.0015321632194308064,"""The directed movement of RNA, ribonucleic acids, into, out of or within a cell, or between cells, by means of some agent such as a transporter or pore."" [GOC:ai]",8
+70,DT_score_c45,GO:CC,GO:0043227,['GO:0043226'],0.0016580505659370124,"""Organized structure of distinctive morphology and function, bounded by a single or double lipid bilayer membrane. Includes the nucleus, mitochondria, plastids, vacuoles, and vesicles. Excludes the plasma membrane."" [GOC:go_curators]",88
+71,DT_score_c45,HPA,HPA:0330000,['HPA:0000000'],0.00170165385211794,oral mucosa,65
+72,DT_score_c45,HPA,HPA:0330221,['HPA:0330000'],0.00170165385211794,oral mucosa; squamous epithelial cells[≥Low],65
+73,DT_score_c45,GO:BP,GO:0051236,"['GO:0006403', 'GO:0051234']",0.0017671935823399755,"""The directed movement of RNA to a specific location."" [GOC:ai]",8
+74,DT_score_c45,HPA,HPA:0080132,['HPA:0080131'],0.0017701161131937417,caudate; neuronal cells[≥Medium],50
+75,DT_score_c45,GO:CC,GO:0000228,"['GO:0005694', 'GO:0031981']",0.0018824432739043388,"""A chromosome that encodes the nuclear genome and is found in the nucleus of a eukaryotic cell during the cell cycle phases when the nucleus is intact."" [GOC:dph, GOC:mah]",8
+76,DT_score_c45,GO:BP,GO:0006360,['GO:0006351'],0.0019051952786078422,"""The synthesis of RNA from a DNA template by RNA polymerase I (RNAP I), originating at an RNAP I promoter."" [GOC:jl, GOC:txnOH]",6
+77,DT_score_c45,GO:BP,GO:1901576,"['GO:0009058', 'GO:0071704']",0.00199649972064298,"""The chemical reactions and pathways resulting in the formation of an organic substance, any molecular entity containing carbon."" [GOC:pr, GOC:TermGenie]",72
+78,DT_score_c45,HPA,HPA:0600222,['HPA:0600221'],0.002057129035540915,tonsil; squamous epithelial cells[≥Medium],56
+79,DT_score_c45,REAC,REAC:R-HSA-4570464,['REAC:R-HSA-3108232'],0.0022284461352299694,SUMOylation of RNA binding proteins,5
+80,DT_score_c45,GO:CC,GO:1902494,['GO:0032991'],0.002329924568186846,"""A protein complex which is capable of catalytic activity."" [GOC:bhm, GOC:TermGenie, PMID:8077207]",22
+81,DT_score_c45,TF,TF:M09812_1,['TF:M09812'],0.002420766127552558,Factor: MYC; motif: NNCCACGTGCNN; match class: 1,49
+82,DT_score_c45,TF,TF:M00217,['TF:M00000'],0.002446522943239526,Factor: USF; motif: NCACGTGN,42
+83,DT_score_c45,GO:BP,GO:0051168,['GO:0006913'],0.0025498848480358946,"""The directed movement of substances out of the nucleus."" [GOC:ai]",8
+84,DT_score_c45,GO:BP,GO:0009058,['GO:0008152'],0.002597545255348124,"""The chemical reactions and pathways resulting in the formation of substances; typically the energy-requiring part of metabolism in which simpler substances are transformed into more complex ones."" [GOC:curators, ISBN:0198547684]",72
+85,DT_score_c45,GO:CC,GO:0043231,"['GO:0043227', 'GO:0043229']",0.002689032510449971,"""Organized structure of distinctive morphology and function, bounded by a single or double lipid bilayer membrane and occurring within the cell. Includes the nucleus, mitochondria, plastids, vacuoles, and vesicles. Excludes the plasma membrane."" [GOC:go_curators]",84
+86,DT_score_c45,KEGG,KEGG:03013,['KEGG:00000'],0.0033541620236672647,Nucleocytoplasmic transport,6
+87,DT_score_c45,GO:CC,GO:0098687,"['GO:0005694', 'GO:0110165']",0.0034024268931235023,"""Any subdivision of a chromosome along its length."" [GOC:dos]",10
+88,DT_score_c45,HPA,HPA:0190221,['HPA:0190000'],0.003455078619696224,esophagus; squamous epithelial cells[≥Low],67
+89,DT_score_c45,HPA,HPA:0190000,['HPA:0000000'],0.003455078619696224,esophagus,67
+90,DT_score_c45,GO:BP,GO:0045945,"['GO:0006359', 'GO:0006383', 'GO:0045893']",0.0035694340622202457,"""Any process that activates or increases the frequency, rate or extent of transcription mediated by RNA polymerase III."" [GOC:go_curators, GOC:txnOH]",4
+91,DT_score_c45,HPA,HPA:0461391,['HPA:0460000'],0.0036438006684528647,skin 1; cells in basal layer[≥Low],19
+92,DT_score_c45,HPA,HPA:0320000,['HPA:0000000'],0.0037079727027137846,nasopharynx,70
+93,DT_score_c45,HPA,HPA:0470671,['HPA:0470000'],0.003782576737259079,skin 2; melanocytes[≥Low],17
+94,DT_score_c45,HPA,HPA:0630221,['HPA:0630000'],0.003786206464255447,cervix; squamous epithelial cells[≥Low],59
+95,DT_score_c45,GO:BP,GO:1901360,['GO:0071704'],0.003854387506424275,"""The chemical reactions and pathways involving organic cyclic compound."" [GOC:TermGenie]",62
+96,DT_score_c45,HPA,HPA:0090000,['HPA:0000000'],0.003867843544963529,cerebellum,70
+97,DT_score_c45,REAC,REAC:R-HSA-2990846,['REAC:R-HSA-597592'],0.0039309085007937054,SUMOylation,8
+98,DT_score_c45,GO:CC,GO:0099080,['GO:0110165'],0.003962890711990405,"""A cellular component that consists of an indeterminate number of proteins or macromolecular complexes, organized into a regular, higher-order structure such as a polymer, sheet, network or a fiber."" [GOC:dos]",19
+99,DT_score_c45,GO:BP,GO:0044249,"['GO:0009058', 'GO:0044237']",0.004048842147994069,"""The chemical reactions and pathways resulting in the formation of substances, carried out by individual cells."" [GOC:jl]",71
+100,DT_score_c45,TF,TF:M00799,['TF:M00000'],0.004152980642045391,Factor: Myc; motif: CACGTGS,47
+101,DT_score_c45,GO:MF,GO:0017056,['GO:0005198'],0.004168186825937169,"""The action of a molecule that contributes to the structural integrity of the nuclear pore complex, a protein-lined channel in the nuclear envelope that allows the transfer of macromolecules."" [GOC:mah, PMID:25802992]",4
+102,DT_score_c45,TF,TF:M04743,['TF:M00000'],0.004288845319835112,Factor: c-Myc; motif: NSCACGTGGN,46
+103,DT_score_c45,HPA,HPA:0100131,['HPA:0100000'],0.004349151341091776,cerebral cortex; neuronal cells[≥Low],67
+104,DT_score_c45,GO:BP,GO:0009059,"['GO:0043170', 'GO:0044249', 'GO:1901576']",0.005122965738804048,"""The chemical reactions and pathways resulting in the formation of a macromolecule, any molecule of high relative molecular mass, the structure of which essentially comprises the multiple repetition of units derived, actually or conceptually, from molecules of low relative molecular mass."" [GOC:mah]",67
+105,DT_score_c45,KEGG,KEGG:03040,['KEGG:00000'],0.005863020695241411,Spliceosome,7
+106,DT_score_c45,HPA,HPA:0471392,['HPA:0471391'],0.0063916591828634016,skin 2; cells in basal layer[≥Medium],17
+107,DT_score_c45,HPA,HPA:0600431,['HPA:0600000'],0.0066766412403259255,tonsil; germinal center cells[≥Low],62
+108,DT_score_c45,GO:CC,GO:0043229,"['GO:0005622', 'GO:0043226']",0.006755750185771349,"""Organized structure of distinctive morphology and function, occurring within the cell. Includes the nucleus, mitochondria, plastids, vacuoles, vesicles, ribosomes and the cytoskeleton. Excludes the plasma membrane."" [GOC:go_curators]",88
+109,DT_score_c45,HPA,HPA:0570811,['HPA:0570000'],0.006873274192969157,testis; spermatogonia cells[≥Low],40
+110,DT_score_c45,GO:BP,GO:0046483,['GO:0044237'],0.007040056352970587,"""The chemical reactions and pathways involving heterocyclic compounds, those with a cyclic molecular structure and at least two different atoms in the ring (or rings)."" [ISBN:0198506732]",60
+111,DT_score_c45,HPA,HPA:0461411,['HPA:0460000'],0.007074538847605218,skin 1; cells in spinous layer[≥Low],17
+112,DT_score_c45,GO:BP,GO:0051169,['GO:0046907'],0.007154819530269356,"""The directed movement of substances into, out of, or within the nucleus."" [GOC:ai]",10
+113,DT_score_c45,GO:BP,GO:0006913,['GO:0051169'],0.007154819530269356,"""The directed movement of molecules between the nucleus and the cytoplasm."" [GOC:go_curators]",10
+114,DT_score_c45,HPA,HPA:0080131,['HPA:0080000'],0.007817632565247232,caudate; neuronal cells[≥Low],63
+115,DT_score_c45,HPA,HPA:0060842,['HPA:0060841'],0.008092078879506017,bronchus; basal cells[≥Medium],13
+116,DT_score_c45,GO:BP,GO:0006139,"['GO:0006725', 'GO:0034641', 'GO:0044238', 'GO:0046483', 'GO:1901360']",0.008381577640563584,"""Any cellular metabolic process involving nucleobases, nucleosides, nucleotides and nucleic acids."" [GOC:ai]",59
+117,DT_score_c45,HPA,HPA:0050051,['HPA:0050000'],0.008668618640071853,breast; glandular cells[≥Low],67
+118,DT_score_c45,GO:BP,GO:0006725,['GO:0044237'],0.008936732793212944,"""The chemical reactions and pathways involving aromatic compounds, any organic compound characterized by one or more planar rings, each of which contains conjugated double bonds and delocalized pi electrons, as carried out by individual cells."" [GOC:ai, ISBN:0198506732]",60
+119,DT_score_c45,REAC,REAC:R-HSA-170822,['REAC:R-HSA-70171'],0.0090087561566627,Regulation of Glucokinase by Glucokinase Regulatory Protein,4
+120,DT_score_c45,REAC,REAC:R-HSA-5619107,['REAC:R-HSA-5619102'],0.0090087561566627,Defective TPR may confer susceptibility towards thyroid papillary carcinoma (TPC),4
+121,DT_score_c45,TF,TF:M01154,['TF:M00000'],0.009167260742546248,Factor: c-Myc; motif: KACCACGTGSYY,48
+122,DT_score_c45,GO:BP,GO:0030490,"['GO:0006364', 'GO:0042274']",0.009315544446240387,"""Any process involved in the maturation of a precursor Small SubUnit (SSU) ribosomal RNA (rRNA) molecule into a mature SSU-rRNA molecule."" [GOC:curators]",5
+123,DT_score_c45,REAC,REAC:R-HSA-168333,['REAC:R-HSA-168274'],0.010403232762596781,NEP/NS2 Interacts with the Cellular Export Machinery,4
+124,DT_score_c45,REAC,REAC:R-HSA-168271,['REAC:R-HSA-168255'],0.010403232762596781,Transport of Ribonucleoproteins into the Host Nucleus,4
+125,DT_score_c45,TF,TF:M00055,['TF:M00000'],0.01041475414080091,Factor: N-Myc; motif: NNCCACGTGNNN,41
+126,DT_score_c45,GO:CC,GO:0000793,['GO:0005694'],0.010554781141434046,"""A highly compacted molecule of DNA and associated proteins resulting in a cytologically distinct structure."" [GOC:elh]",8
+127,DT_score_c45,GO:CC,GO:0005681,"['GO:0140513', 'GO:1990904']",0.010601404948670162,"""Any of a series of ribonucleoprotein complexes that contain snRNA(s) and small nuclear ribonucleoproteins (snRNPs), and are formed sequentially during the spliceosomal splicing of one or more substrate RNAs, and which also contain the RNA substrate(s) from the initial target RNAs of splicing, the splicing intermediate RNA(s), to the final RNA products. During cis-splicing, the initial target RNA is a single, contiguous RNA transcript, whether mRNA, snoRNA, etc., and the released products are a spliced RNA and an excised intron, generally as a lariat structure. During trans-splicing, there are two initial substrate RNAs, the spliced leader RNA and a pre-mRNA."" [GOC:editors, GOC:mah, ISBN:0198547684, PMID:19239890]",7
+128,DT_score_c45,HPA,HPA:0570781,['HPA:0570000'],0.010812968183342254,testis; preleptotene spermatocytes[≥Low],29
+129,DT_score_c45,GO:BP,GO:0071103,['GO:0051276'],0.01083476261109844,"""A cellular process that results in a change in the spatial configuration of a DNA molecule. A conformation change can bend DNA, or alter the, twist, writhe, or linking number of a DNA molecule."" [GOC:mah]",6
+130,DT_score_c45,TF,TF:M09812,['TF:M00000'],0.010895780525402755,Factor: MYC; motif: NNCCACGTGCNN,49
+131,DT_score_c45,HPA,HPA:0050000,['HPA:0000000'],0.011201169515197337,breast,69
+132,DT_score_c45,GO:BP,GO:0090304,"['GO:0006139', 'GO:0043170']",0.011365844637815497,"""Any cellular metabolic process involving nucleic acids."" [GOC:dph, GOC:tb]",56
+133,DT_score_c45,REAC,REAC:R-HSA-168274,['REAC:R-HSA-168255'],0.011949836073223977,Export of Viral Ribonucleoproteins from Nucleus,4
+134,DT_score_c45,HPA,HPA:0461471,['HPA:0460000'],0.011980452817748068,skin 1; lymphocytes[≥Low],16
+135,DT_score_c45,GO:BP,GO:0010467,['GO:0009059'],0.01210502100600674,"""The process in which a gene's sequence is converted into a mature gene product (protein or RNA). This includes the production of an RNA transcript and its processing, as well as translation and maturation for protein-coding genes."" [GOC:txnOH-2018, PMID:25934543, PMID:31580950]",64
+136,DT_score_c45,HPA,HPA:0620223,['HPA:0620222'],0.012386641242169502,vagina; squamous epithelial cells[High],21
+137,DT_score_c45,HPA,HPA:0461461,['HPA:0460000'],0.012814664131291585,skin 1; langerhans cells[≥Low],16
+138,DT_score_c45,HPA,HPA:0100000,['HPA:0000000'],0.012906395826004245,cerebral cortex,74
+139,DT_score_c45,GO:BP,GO:0000027,"['GO:0022618', 'GO:0042255', 'GO:0042273']",0.01343438711029106,"""The aggregation, arrangement and bonding together of constituent RNAs and proteins to form the large ribosomal subunit."" [GOC:jl, PMID:30467428]",4
+140,DT_score_c45,HPA,HPA:0570812,['HPA:0570811'],0.013558055796211492,testis; spermatogonia cells[≥Medium],35
+141,DT_score_c45,REAC,REAC:R-HSA-180746,['REAC:R-HSA-177243'],0.013658588919090013,Nuclear import of Rev protein,4
+142,DT_score_c45,REAC,REAC:R-HSA-159227,['REAC:R-HSA-159234'],0.013658588919090013,Transport of the SLBP independent Mature mRNA,4
+143,DT_score_c45,REAC,REAC:R-HSA-180910,['REAC:R-HSA-176033'],0.013658588919090013,Vpr-mediated nuclear import of PICs,4
+144,DT_score_c45,GO:MF,GO:0005515,['GO:0005488'],0.013745231752108223,"""Binding to a protein."" [GOC:go_curators]",88
+145,DT_score_c45,HPA,HPA:0610832,['HPA:0610831'],0.015037277750587075,urinary bladder; urothelial cells[≥Medium],61
+146,DT_score_c45,HPA,HPA:0471491,['HPA:0470000'],0.015136354941597492,skin 2; vascular mural cells[≥Low],9
+147,DT_score_c45,REAC,REAC:R-HSA-165054,"['REAC:R-HSA-162599', 'REAC:R-HSA-177243']",0.015539747943248052,Rev-mediated nuclear export of HIV RNA,4
+148,DT_score_c45,REAC,REAC:R-HSA-4085377,['REAC:R-HSA-3108232'],0.015539747943248052,SUMOylation of SUMOylation proteins,4
+149,DT_score_c45,REAC,REAC:R-HSA-159230,['REAC:R-HSA-159234'],0.015539747943248052,Transport of the SLBP Dependant Mature mRNA,4
+150,DT_score_c45,GO:MF,GO:0044877,['GO:0005488'],0.016028791485480167,"""Binding to a macromolecular complex."" [GOC:jl]",22
+151,DT_score_c45,GO:CC,GO:0070545,"['GO:0005730', 'GO:0030686', 'GO:0140513']",0.016545108855477254,"""A protein complex that is involved in coordinating ribosome biogenesis with cell cycle progression. In human, it is composed of Pes1, Bop1, and WDR12; in Saccharomyces the proteins are known as Nop7p, Erb1 and Ytm1 respectively."" [GOC:ab, GOC:mah, PMID:16043514, PMID:17353269]",2
+152,DT_score_c45,HPA,HPA:0460000,['HPA:0000000'],0.016774159482858448,skin 1,69
+153,DT_score_c45,HPA,HPA:0130000,['HPA:0000000'],0.017101597395884884,colon,75
+154,DT_score_c45,TF,TF:M02070_1,['TF:M02070'],0.0173267123183629,Factor: TEL1; motif: CNCGGAANNN; match class: 1,45
+155,DT_score_c45,REAC,REAC:R-HSA-3301854,['REAC:R-HSA-2980766'],0.017603796261285644,Nuclear Pore Complex (NPC) Disassembly,4
+156,DT_score_c45,GO:CC,GO:1904949,['GO:1902494'],0.017677159040227836,"""A protein complex which is capable of ATPase activity."" [GO_REF:0000088, GOC:bhm, GOC:TermGenie, PMID:9606181]",6
+157,DT_score_c45,GO:BP,GO:0000470,"['GO:0006364', 'GO:0042273']",0.018271002796404288,"""Any process involved in the maturation of a precursor Large SubUnit (LSU) ribosomal RNA (rRNA) molecule into a mature LSU-rRNA molecule."" [GOC:curators]",4
+158,DT_score_c45,TF,TF:M09814,['TF:M00000'],0.018292903362656345,Factor: MYCN; motif: NNCCACGTGGNN,26
+159,DT_score_c45,TF,TF:M09814_1,['TF:M09814'],0.018292903362656345,Factor: MYCN; motif: NNCCACGTGGNN; match class: 1,26
+160,DT_score_c45,GO:CC,GO:0043034,"['GO:0030016', 'GO:0110165']",0.018683582243550396,"""Regular periodic sub membranous arrays of vinculin in skeletal and cardiac muscle cells, these arrays link Z-discs to the sarcolemma and are associated with links to extracellular matrix."" [GOC:jl, GOC:mtg_muscle, ISBN:0198506732, PMID:6405378]",3
+161,DT_score_c45,HPA,HPA:0040083,['HPA:0040082'],0.018742054273768054,bone marrow; hematopoietic cells[High],24
+162,DT_score_c45,HPA,HPA:0630000,['HPA:0000000'],0.018752046433786085,cervix,67
+163,DT_score_c45,TF,TF:M00539,['TF:M00000'],0.018963892462673913,Factor: Arnt; motif: NNNNNRTCACGTGAYNNNNN,55
+164,DT_score_c45,TF,TF:M00539_1,['TF:M00539'],0.018963892462673913,Factor: Arnt; motif: NNNNNRTCACGTGAYNNNNN; match class: 1,55
+165,DT_score_c45,HPA,HPA:0471492,['HPA:0471491'],0.01905507309472727,skin 2; vascular mural cells[≥Medium],8
+166,DT_score_c45,TF,TF:M01181,['TF:M00000'],0.01959705299508209,Factor: Nkx3-2; motif: TRAGTG,69
+167,DT_score_c45,REAC,REAC:R-HSA-176033,['REAC:R-HSA-162909'],0.019861436233021747,Interactions of Vpr with host cellular proteins,4
+168,DT_score_c45,REAC,REAC:R-HSA-177243,['REAC:R-HSA-162909'],0.019861436233021747,Interactions of Rev with host cellular proteins,4
+169,DT_score_c45,REAC,REAC:R-HSA-3371453,['REAC:R-HSA-3371556'],0.02001542282572466,Regulation of HSF1-mediated heat shock response,5
+170,DT_score_c45,GO:BP,GO:0006396,"['GO:0010467', 'GO:0016070']",0.020451000389401536,"""Any process involved in the conversion of one or more primary RNA transcripts into one or more mature RNA molecules."" [GOC:mah]",33
+171,DT_score_c45,HPA,HPA:0301361,['HPA:0300000'],0.021528946229025413,lung; alveolar cells type I[≥Low],20
+172,DT_score_c45,GO:BP,GO:0034641,"['GO:0006807', 'GO:0044237']",0.02153649540196892,"""The chemical reactions and pathways involving various organic and inorganic nitrogenous compounds, as carried out by individual cells."" [GOC:mah]",61
+173,DT_score_c45,HPA,HPA:0461412,['HPA:0461411'],0.022124152378685622,skin 1; cells in spinous layer[≥Medium],14
+174,DT_score_c45,REAC,REAC:R-HSA-3232142,['REAC:R-HSA-3108232'],0.022323582344600974,SUMOylation of ubiquitinylation proteins,4
+175,DT_score_c45,HPA,HPA:0590051,['HPA:0590000'],0.023654122051143877,thyroid gland; glandular cells[≥Low],68
+176,DT_score_c45,HPA,HPA:0590000,['HPA:0000000'],0.023654122051143877,thyroid gland,68
+177,DT_score_c45,HPA,HPA:0460671,['HPA:0460000'],0.023845705082329156,skin 1; melanocytes[≥Low],56
+178,DT_score_c45,HPA,HPA:0170052,['HPA:0170051'],0.024187144256881964,endometrium 2; glandular cells[≥Medium],53
+179,DT_score_c45,GO:BP,GO:0015931,"['GO:0071702', 'GO:0071705']",0.024236195866805376,"""The directed movement of nucleobases, nucleosides, nucleotides and nucleic acids, into, out of or within a cell, or between cells, by means of some agent such as a transporter or pore."" [GOC:ai]",8
+180,DT_score_c45,HPA,HPA:0600221,['HPA:0600000'],0.024833828774792698,tonsil; squamous epithelial cells[≥Low],65
+181,DT_score_c45,HPA,HPA:0080133,['HPA:0080132'],0.025064039793333978,caudate; neuronal cells[High],20
+182,DT_score_c45,TF,TF:M11090,['TF:M00000'],0.025492475427488802,Factor: TFEA; motif: YRCACGTGACN,52
+183,DT_score_c45,GO:BP,GO:0051292,"['GO:0006999', 'GO:0046931']",0.02573011686544065,"""The aggregation, arrangement and bonding together of a set of components to form a nuclear pore complex."" [GOC:ai, GOC:mah]",3
+184,DT_score_c45,TF,TF:M04743_1,['TF:M04743'],0.026474207082335475,Factor: c-Myc; motif: NSCACGTGGN; match class: 1,33
+185,DT_score_c45,REAC,REAC:R-HSA-159236,['REAC:R-HSA-72202'],0.02649096502913686,Transport of Mature mRNA derived from an Intron-Containing Transcript,5
+186,DT_score_c45,TF,TF:M00118,['TF:M00000'],0.02707717375972775,Factor: c-Myc:Max; motif: NNACCACGTGGTNN,56
+187,DT_score_c45,TF,TF:M00118_1,['TF:M00118'],0.02707717375972775,Factor: c-Myc:Max; motif: NNACCACGTGGTNN; match class: 1,56
+188,DT_score_c45,HPA,HPA:0471412,['HPA:0471411'],0.02766303927576116,skin 2; cells in spinous layer[≥Medium],15
+189,DT_score_c45,GO:BP,GO:0006359,"['GO:0006355', 'GO:0006383']",0.027784985849847885,"""Any process that modulates the frequency, rate or extent of transcription mediated by RNA ploymerase III."" [GOC:go_curators]",4
+190,DT_score_c45,REAC,REAC:R-HSA-3108232,['REAC:R-HSA-2990846'],0.027794778130581257,SUMO E3 ligases SUMOylate target proteins,7
+191,DT_score_c45,GO:CC,GO:0005737,"['GO:0005622', 'GO:0110165']",0.029252588745651675,"""The contents of a cell excluding the plasma membrane and nucleus, but including other subcellular structures."" [ISBN:0198547684]",73
+192,DT_score_c45,TF,TF:M07601,['TF:M00000'],0.030505251533803842,Factor: C-Myc; motif: NGCCACGTGNN,50
+193,DT_score_c45,GO:MF,GO:0140640,['GO:0003824'],0.030876069645734344,"""Catalytic activity that acts to modify a nucleic acid."" [GOC:pg]",12
+194,DT_score_c45,REAC,REAC:R-HSA-168276,['REAC:R-HSA-168255'],0.031049237844530616,NS1 Mediated Effects on Host Pathways,4
+195,DT_score_c45,REAC,REAC:R-HSA-159231,['REAC:R-HSA-159234'],0.031049237844530616,Transport of Mature mRNA Derived from an Intronless Transcript,4
+196,DT_score_c45,HPA,HPA:0380000,['HPA:0000000'],0.032025927046133065,placenta,70
+197,DT_score_c45,HPA,HPA:0461413,['HPA:0461412'],0.03217965666784178,skin 1; cells in spinous layer[High],8
+198,DT_score_c45,GO:BP,GO:0071840,['GO:0009987'],0.032660630069129636,"""A process that results in the biosynthesis of constituent macromolecules, assembly, arrangement of constituent parts, or disassembly of a cellular component."" [GOC:mah]",59
+199,DT_score_c45,HPA,HPA:0500701,['HPA:0500000'],0.03360504528919901,soft tissue 1; peripheral nerve[≥Low],36
+200,DT_score_c45,TF,TF:M09876_1,['TF:M09876'],0.034028760321481714,Factor: DEC1; motif: NGCACGTGAS; match class: 1,52
+201,DT_score_c45,REAC,REAC:R-HSA-159234,['REAC:R-HSA-72202'],0.03444255285346302,Transport of Mature mRNAs Derived from Intronless Transcripts,4
+202,DT_score_c45,HPA,HPA:0470682,['HPA:0470681'],0.03479718104621815,skin 2; epidermal cells[≥Medium],46
+203,DT_score_c45,HPA,HPA:0500000,['HPA:0000000'],0.035184143580205975,soft tissue 1,56
+204,DT_score_c45,HPA,HPA:0470000,['HPA:0000000'],0.03678596183583692,skin 2,67
+205,DT_score_c45,REAC,REAC:R-HSA-168325,['REAC:R-HSA-168273'],0.03809788677102757,Viral Messenger RNA Synthesis,4
+206,DT_score_c45,CORUM,CORUM:3055,['CORUM:0000000'],0.03851250844056905,Nop56p-associated pre-rRNA complex,7
+207,DT_score_c45,HPA,HPA:0471411,['HPA:0470000'],0.03860489912176771,skin 2; cells in spinous layer[≥Low],17
+208,DT_score_c45,HPA,HPA:0170051,['HPA:0170000'],0.03875092454028184,endometrium 2; glandular cells[≥Low],65
+209,DT_score_c45,WP,WP:WP4932,['WP:000000'],0.040072651086384636,7q11 23 copy number variation syndrome,5
+210,DT_score_c45,HPA,HPA:0471461,['HPA:0470000'],0.040205414158207456,skin 2; langerhans cells[≥Low],16
+211,DT_score_c45,HPA,HPA:0471391,['HPA:0470000'],0.040685967363322084,skin 2; cells in basal layer[≥Low],18
+212,DT_score_c45,TF,TF:M08950,['TF:M00000'],0.042091224455764506,Factor: MAX; motif: CACGTG,50
+213,DT_score_c45,TF,TF:M08950_1,['TF:M08950'],0.042091224455764506,Factor: MAX; motif: CACGTG; match class: 1,50
+214,DT_score_c45,TF,TF:M00726,['TF:M00000'],0.042091224455764506,Factor: USF2; motif: CASGYG,50
+215,DT_score_c45,TF,TF:M00726_1,['TF:M00726'],0.042091224455764506,Factor: USF2; motif: CASGYG; match class: 1,50
+216,DT_score_c45,HPA,HPA:0090962,['HPA:0090961'],0.04230143560875373,cerebellum; Purkinje cells - nucleus[≥Medium],6
+217,DT_score_c45,HPA,HPA:0320852,['HPA:0320851'],0.04310746023246166,nasopharynx; ciliated cells (cell body)[≥Medium],17
+218,DT_score_c45,GO:BP,GO:0006406,"['GO:0006405', 'GO:0010467', 'GO:0051028']",0.04358243324291092,"""The directed movement of mRNA from the nucleus to the cytoplasm."" [GOC:ma]",5
+219,DT_score_c45,WP,WP:WP5352,['WP:000000'],0.04401043209537405,10q11 21q11 23 copy number variation syndrome,4
+220,DT_score_c45,HPA,HPA:0320841,['HPA:0320000'],0.045585803328924875,nasopharynx; basal cells[≥Low],14
+221,DT_score_c45,HPA,HPA:0461463,['HPA:0461462'],0.04594996340401072,skin 1; langerhans cells[High],8
+222,DT_score_c45,TF,TF:M00615_1,['TF:M00615'],0.04607705352109105,Factor: c-Myc:Max; motif: NNNNNNNCACGTGNNNNNNN; match class: 1,54
+223,DT_score_c45,TF,TF:M00615,['TF:M00000'],0.04607705352109105,Factor: c-Myc:Max; motif: NNNNNNNCACGTGNNNNNNN,54
+224,DT_score_c45,REAC,REAC:R-HSA-72202,['REAC:R-HSA-72203'],0.04692715191094302,Transport of Mature Transcript to Cytoplasm,5
+225,DT_score_c45,HPA,HPA:0350000,['HPA:0000000'],0.04752825251977943,pancreas,69
+226,DT_score_c45,HPA,HPA:0471471,['HPA:0470000'],0.04852104722679222,skin 2; lymphocytes[≥Low],16
+227,RandomForest_gini,GO:BP,GO:0006364,"['GO:0016072', 'GO:0034470', 'GO:0042254']",8.006798273130736e-33,"""Any process involved in the conversion of a primary ribosomal RNA (rRNA) transcript into one or more mature rRNA molecules."" [GOC:curators]",30
+228,RandomForest_gini,GO:BP,GO:0042254,['GO:0022613'],1.403592877158249e-32,"""A cellular process that results in the biosynthesis of constituent macromolecules, assembly, and arrangement of constituent parts of ribosome subunits; includes transport to the sites of protein synthesis."" [GOC:ma, PMID:26404467, Wikipedia:Ribosome_biogenesis]",33
+229,RandomForest_gini,GO:BP,GO:0016072,['GO:0034660'],1.199189212000548e-30,"""The chemical reactions and pathways involving rRNA, ribosomal RNA, a structural constituent of ribosomes."" [ISBN:0198506732]",30
+230,RandomForest_gini,GO:CC,GO:0030684,['GO:1990904'],1.3826784939389583e-30,"""Any complex of pre-rRNAs, ribosomal proteins, and associated proteins formed during ribosome biogenesis."" [PMID:10567516]",23
+231,RandomForest_gini,GO:BP,GO:0034470,"['GO:0006396', 'GO:0034660']",2.6347745523280232e-25,"""Any process that results in the conversion of one or more primary non-coding RNA (ncRNA) transcripts into one or more mature ncRNA molecules."" [GOC:mah, PMID:27573892]",31
+232,RandomForest_gini,GO:BP,GO:0034660,['GO:0016070'],8.995312165216479e-23,"""The chemical reactions and pathways involving non-coding RNA transcripts (ncRNAs)."" [GOC:mah]",33
+233,RandomForest_gini,REAC,REAC:R-HSA-8868773,['REAC:R-HSA-72312'],9.69677182126236e-21,rRNA processing in the nucleus and cytosol,23
+234,RandomForest_gini,REAC,REAC:R-HSA-72312,['REAC:R-HSA-8953854'],3.201200030487119e-20,rRNA processing,23
+235,RandomForest_gini,REAC,REAC:R-HSA-6791226,['REAC:R-HSA-8868773'],2.3847915657451055e-18,Major pathway of rRNA processing in the nucleolus and cytosol,21
+236,RandomForest_gini,REAC,REAC:R-HSA-8953854,['REAC:0000000'],3.345807225767944e-18,Metabolism of RNA,33
+237,RandomForest_gini,GO:BP,GO:0000470,"['GO:0006364', 'GO:0042273']",4.758716692818755e-16,"""Any process involved in the maturation of a precursor Large SubUnit (LSU) ribosomal RNA (rRNA) molecule into a mature LSU-rRNA molecule."" [GOC:curators]",11
+238,RandomForest_gini,GO:BP,GO:0042273,"['GO:0022613', 'GO:0042254']",6.759364471077293e-16,"""A cellular process that results in the biosynthesis of constituent macromolecules, assembly, and arrangement of constituent parts of a large ribosomal subunit; includes transport to the sites of protein synthesis."" [GOC:jl]",14
+239,RandomForest_gini,GO:MF,GO:0003723,['GO:0003676'],2.5655822696565693e-14,"""Binding to an RNA molecule or a portion thereof."" [GOC:jl, GOC:mah]",51
+240,RandomForest_gini,GO:CC,GO:0032040,['GO:0030684'],1.0562501293287516e-13,"""A large ribonucleoprotein complex that is an early preribosomal complex. In S. cerevisiae, it has a size of 80S and consists of the 35S pre-rRNA, early-associating ribosomal proteins most of which are part of the small ribosomal subunit, the U3 snoRNA and associated proteins."" [GOC:krc, GOC:vw, PMID:12068309, PMID:12957375, PMID:15120992, PMID:15590835]",12
+241,RandomForest_gini,GO:CC,GO:0005730,"['GO:0031981', 'GO:0043232']",2.980810361998818e-13,"""A small, dense body one or more of which are present in the nucleus of eukaryotic cells. It is rich in RNA and protein, is not bounded by a limiting membrane, and is not seen during mitosis. Its prime function is the transcription of the nucleolar DNA into 45S ribosomal-precursor RNA, the processing of this RNA into 5.8S, 18S, and 28S components of ribosomal RNA, and the association of these components with 5S RNA and proteins synthesized outside the nucleolus. This association results in the formation of ribonucleoprotein precursors; these pass into the cytoplasm and mature into the 40S and 60S subunits of the ribosome."" [ISBN:0198506732]",38
+242,RandomForest_gini,REAC,REAC:R-HSA-6790901,['REAC:R-HSA-8868773'],9.717442292090805e-13,rRNA modification in the nucleus and cytosol,12
+243,RandomForest_gini,GO:CC,GO:0030687,['GO:0030684'],2.1067266246287602e-12,"""A preribosomal complex consisting of 27SA, 27SB, and/or 7S pre-rRNA, 5S rRNA, ribosomal proteins including late-associating large subunit proteins, and associated proteins; a precursor of the eukaryotic cytoplasmic large ribosomal subunit."" [PMID:10567516]",8
+244,RandomForest_gini,GO:CC,GO:0030686,['GO:0030684'],4.2465919049488316e-11,"""A large ribonucleoprotein complex considered to be the earliest preribosomal complex. In S. cerevisiae, it has a size of 90S and consists of the 35S pre-rRNA, early-associating ribosomal proteins most of which are part of the small ribosomal subunit, the U3 snoRNA and associated proteins."" [GOC:krc, GOC:vw, PMID:12150911, PMID:12957375, PMID:15120992]",8
+245,RandomForest_gini,GO:BP,GO:0022613,['GO:0044085'],5.684180671718312e-11,"""A cellular process that results in the biosynthesis of constituent macromolecules, assembly, and arrangement of constituent parts of a complex containing RNA and proteins. Includes the biosynthesis of the constituent RNA and protein molecules, and those macromolecular modifications that are involved in synthesis or assembly of the ribonucleoprotein complex."" [GOC:isa_complete, GOC:mah]",36
+246,RandomForest_gini,KEGG,KEGG:03008,['KEGG:00000'],7.797709060327708e-11,Ribosome biogenesis in eukaryotes,13
+247,RandomForest_gini,GO:BP,GO:0042274,"['GO:0022613', 'GO:0042254']",8.18631737237966e-11,"""A cellular process that results in the biosynthesis of constituent macromolecules, assembly, and arrangement of constituent parts of a small ribosomal subunit; includes transport to the sites of protein synthesis."" [GOC:jl]",12
+248,RandomForest_gini,GO:CC,GO:0043233,"['GO:0031974', 'GO:0043226']",9.050028601286825e-11,"""The internal volume enclosed by the membranes of a particular organelle; includes the volume enclosed by a single organelle membrane, e.g. endoplasmic reticulum lumen, or the volume enclosed by the innermost of the two lipid bilayers of an organelle envelope, e.g. nuclear lumen."" [GOC:jl, GOC:mah]",64
+249,RandomForest_gini,GO:CC,GO:0070013,"['GO:0043229', 'GO:0043233']",9.050028601286825e-11,"""An organelle lumen that is part of an intracellular organelle."" [GOC:mah]",64
+250,RandomForest_gini,GO:CC,GO:0031974,['GO:0110165'],9.050028601286825e-11,"""The enclosed volume within a sealed membrane or between two sealed membranes. Encompasses the volume enclosed by the membranes of a particular organelle, e.g. endoplasmic reticulum lumen, or the space between the two lipid bilayers of a double membrane surrounding an organelle, e.g. nuclear envelope lumen."" [GOC:add, GOC:mah]",64
+251,RandomForest_gini,GO:BP,GO:0000463,['GO:0000470'],8.704912436543869e-10,"""Any process involved in the maturation of a precursor Large SubUnit (LSU) ribosomal RNA (rRNA) molecule into a mature LSU-rRNA molecule from the pre-rRNA molecule originally produced as a tricistronic rRNA transcript that contains the Small Subunit (SSU) rRNA, 5.8S rRNA, and Large Subunit (LSU) in that order from 5' to 3' along the primary transcript."" [GOC:curators]",7
+252,RandomForest_gini,GO:CC,GO:0031981,"['GO:0005634', 'GO:0070013']",1.8792154289742317e-09,"""The volume enclosed by the nuclear inner membrane."" [GOC:mah, GOC:pz]",56
+253,RandomForest_gini,GO:BP,GO:0044085,['GO:0071840'],3.028240924108536e-09,"""A process that results in the biosynthesis of constituent macromolecules, assembly, and arrangement of constituent parts of a cellular component. Includes biosynthesis of constituent macromolecules, and those macromolecular modifications that are involved in synthesis or assembly of the cellular component."" [GOC:jl, GOC:mah]",55
+254,RandomForest_gini,HPA,HPA:0400242,['HPA:0400241'],1.7463667572449377e-07,rectum; peripheral nerve/ganglion[≥Medium],13
+255,RandomForest_gini,GO:CC,GO:0005654,"['GO:0031981', 'GO:0110165']",2.490551259752805e-07,"""That part of the nuclear content other than the chromosomes or the nucleolus."" [GOC:ma, ISBN:0124325653]",45
+256,RandomForest_gini,GO:BP,GO:0071840,['GO:0009987'],4.012338501168293e-07,"""A process that results in the biosynthesis of constituent macromolecules, assembly, arrangement of constituent parts, or disassembly of a cellular component."" [GOC:mah]",69
+257,RandomForest_gini,HPA,HPA:0400243,['HPA:0400242'],1.4163500036970396e-06,rectum; peripheral nerve/ganglion[High],10
+258,RandomForest_gini,GO:CC,GO:1990904,['GO:0032991'],3.282145940611672e-06,"""A macromolecular complex that contains both RNA and protein molecules."" [GOC:krc, GOC:vesicles]",34
+259,RandomForest_gini,GO:MF,GO:0003676,['GO:0097159'],3.4005089069112035e-06,"""Binding to a nucleic acid."" [GOC:jl]",54
+260,RandomForest_gini,GO:MF,GO:0030515,['GO:0003723'],6.504741805049343e-06,"""Binding to a small nucleolar RNA."" [GOC:mah]",6
+261,RandomForest_gini,GO:CC,GO:0110016,"['GO:0005730', 'GO:0070603']",6.806358460966811e-06,"""A chromatin remodeling complex that positively regulates histone H3 acetylation, in particular H3K9, by recruiting histone acetyltransferases to rDNA gene regions. Located in the nucleolus where it assembles on RNA Polymerase I (Pol I) and possibly on RNA Polymerase III (Pol III) promoter and coding regions during early G1 phase and activates the post-initiation phases of Pol I transcription. May also activate RNA Polymerase II (Pol II) gene transcription. In mammals, B-WICH contains the WICH complex core of BAZ1B and SMARCA5, additional protein subunits and possibly rRNAs. Although it contains several catalytic subunits it is not clear which functions are carried out by the complex itself."" [GOC:bhm, PMID:16603771, PMID:21559432, PMID:23555303, PMID:26044184]",4
+262,RandomForest_gini,HPA,HPA:0400241,['HPA:0400000'],6.8794403514897935e-06,rectum; peripheral nerve/ganglion[≥Low],13
+263,RandomForest_gini,GO:BP,GO:0030490,"['GO:0006364', 'GO:0042274']",8.907413783558239e-06,"""Any process involved in the maturation of a precursor Small SubUnit (SSU) ribosomal RNA (rRNA) molecule into a mature SSU-rRNA molecule."" [GOC:curators]",7
+264,RandomForest_gini,GO:CC,GO:0043232,"['GO:0043228', 'GO:0043229']",9.059814548525818e-06,"""Organized structure of distinctive morphology and function, not bounded by a lipid bilayer membrane and occurring within the cell. Includes ribosomes, the cytoskeleton and chromosomes."" [GOC:go_curators]",55
+265,RandomForest_gini,GO:CC,GO:0043228,['GO:0043226'],9.112168948065004e-06,"""Organized structure of distinctive morphology and function, not bounded by a lipid bilayer membrane. Includes ribosomes, the cytoskeleton and chromosomes."" [GOC:go_curators]",55
+266,RandomForest_gini,HPA,HPA:0091011,['HPA:0090000'],1.7018369628065245e-05,cerebellum; molecular layer cells - nucleus[≥Low],11
+267,RandomForest_gini,GO:CC,GO:0070545,"['GO:0005730', 'GO:0030686', 'GO:0140513']",2.3164467850578967e-05,"""A protein complex that is involved in coordinating ribosome biogenesis with cell cycle progression. In human, it is composed of Pes1, Bop1, and WDR12; in Saccharomyces the proteins are known as Nop7p, Erb1 and Ytm1 respectively."" [GOC:ab, GOC:mah, PMID:16043514, PMID:17353269]",3
+268,RandomForest_gini,GO:BP,GO:0045943,"['GO:0006356', 'GO:0006360', 'GO:0045893']",2.6817896449470473e-05,"""Any process that activates or increases the frequency, rate or extent of transcription mediated by RNA polymerase I."" [GOC:go_curators, GOC:txnOH]",6
+269,RandomForest_gini,GO:BP,GO:0000460,['GO:0006364'],3.2063522107773026e-05,"""Any process involved in the maturation of a precursor 5.8S ribosomal RNA (rRNA) molecule into a mature 5.8S rRNA molecule."" [GOC:curators]",6
+270,RandomForest_gini,HPA,HPA:0090993,['HPA:0090992'],3.3494118657934107e-05,cerebellum; molecular layer - neuropil[High],6
+271,RandomForest_gini,HPA,HPA:0091013,['HPA:0091012'],3.629173568087295e-05,cerebellum; molecular layer cells - nucleus[High],9
+272,RandomForest_gini,HPA,HPA:0250133,['HPA:0250132'],5.45199720404148e-05,hippocampus; neuronal cells[High],26
+273,RandomForest_gini,GO:BP,GO:0006396,"['GO:0010467', 'GO:0016070']",6.483979494964113e-05,"""Any process involved in the conversion of one or more primary RNA transcripts into one or more mature RNA molecules."" [GOC:mah]",38
+274,RandomForest_gini,HPA,HPA:0091012,['HPA:0091011'],7.01005722232083e-05,cerebellum; molecular layer cells - nucleus[≥Medium],10
+275,RandomForest_gini,HPA,HPA:0130652,['HPA:0130651'],8.242387422670025e-05,colon; fibroblasts[≥Medium],8
+276,RandomForest_gini,HPA,HPA:0091022,['HPA:0091021'],9.675590828426264e-05,cerebellum; processes in granular layer[≥Medium],10
+277,RandomForest_gini,HPA,HPA:0091052,['HPA:0091051'],0.00014702600201460945,cerebellum; synaptic glomeruli - capsule[≥Medium],7
+278,RandomForest_gini,HPA,HPA:0130651,['HPA:0130000'],0.0001771257219198195,colon; fibroblasts[≥Low],8
+279,RandomForest_gini,GO:BP,GO:0006356,"['GO:0006355', 'GO:0006360']",0.0001933012383016667,"""Any process that modulates the frequency, rate or extent of transcription mediated by RNA polymerase I."" [GOC:go_curators]",6
+280,RandomForest_gini,GO:CC,GO:0005694,['GO:0043232'],0.0002026563925747927,"""A structure composed of a very long molecule of DNA and associated proteins (e.g. histones) that carries hereditary information."" [ISBN:0198547684]",25
+281,RandomForest_gini,HPA,HPA:0090962,['HPA:0090961'],0.0002888499800926791,cerebellum; Purkinje cells - nucleus[≥Medium],8
+282,RandomForest_gini,HPA,HPA:0080133,['HPA:0080132'],0.0002986120671003944,caudate; neuronal cells[High],23
+283,RandomForest_gini,HPA,HPA:0130243,['HPA:0130242'],0.0003091387869094457,colon; peripheral nerve/ganglion[High],20
+284,RandomForest_gini,CORUM,CORUM:6194,['CORUM:0000000'],0.00031106876508524755,B-WICH complex,4
+285,RandomForest_gini,GO:MF,GO:0097159,['GO:0005488'],0.00033959001002622293,"""Binding to an organic cyclic compound, any molecular entity that contains carbon arranged in a cyclic molecular structure."" [GOC:sjw, PMID:7583672]",61
+286,RandomForest_gini,HPA,HPA:0080132,['HPA:0080131'],0.00035199492959418505,caudate; neuronal cells[≥Medium],50
+287,RandomForest_gini,HPA,HPA:0091021,['HPA:0090000'],0.0003747637558910307,cerebellum; processes in granular layer[≥Low],10
+288,RandomForest_gini,GO:CC,GO:0031428,['GO:0005732'],0.00045886932868753285,"""A ribonucleoprotein complex containing a box C/D type RNA that can carry out ribose-2'-O-methylation of target RNAs. Box C/D type RNAs are widespread in eukaryotes and in Archaea, suggesting that an RNA-based guide mechanism for directing specific RNA 2'-O-ribose methylations was present in the common ancestor of Archaea and Eukarya."" [ISBN:0879695897, PMID:11842104, PMID:17284456]",3
+289,RandomForest_gini,CORUM,CORUM:6856,['CORUM:0000000'],0.000483415793212774,PeBoW complex,3
+290,RandomForest_gini,CORUM,CORUM:6306,['CORUM:0000000'],0.000483415793212774,DDX27-PeBoW complex,3
+291,RandomForest_gini,HPA,HPA:0090961,['HPA:0090000'],0.0004853563385969057,cerebellum; Purkinje cells - nucleus[≥Low],8
+292,RandomForest_gini,CORUM,CORUM:6302,['CORUM:0000000'],0.0005558152799027258,B-WICH complex,4
+293,RandomForest_gini,HPA,HPA:0130653,['HPA:0130652'],0.0006618648431322089,colon; fibroblasts[High],6
+294,RandomForest_gini,HPA,HPA:0091051,['HPA:0090000'],0.0007991893064801422,cerebellum; synaptic glomeruli - capsule[≥Low],7
+295,RandomForest_gini,GO:BP,GO:0062029,"['GO:0034063', 'GO:0062028', 'GO:1902117']",0.0008749286217819348,"""Any process that starts or increases the rate, frequency or extent of stress-granule assembly, the aggregation, arrangement and bonding together of proteins and RNA molecules to form a stress granule."" [PMID:20180778]",3
+296,RandomForest_gini,HPA,HPA:0460201,['HPA:0460000'],0.0010150759444309924,skin 1; endothelial cells[≥Low],19
+297,RandomForest_gini,GO:BP,GO:0006999,"['GO:0006997', 'GO:0043933']",0.001274768393482874,"""A process that is carried out at the cellular level which results in the assembly, arrangement of constituent parts, or disassembly of the nuclear pore."" [GOC:dph, GOC:jid, GOC:jl, GOC:mah]",4
+298,RandomForest_gini,HPA,HPA:0090931,['HPA:0090000'],0.0013130165732707078,cerebellum; GLUC cells - nucleus[≥Low],7
+299,RandomForest_gini,GO:CC,GO:0005732,['GO:1990904'],0.001368114564946873,"""A ribonucleoprotein complex that contains an RNA molecule of the snoRNA family and associated proteins. Many are involved in a step of processing of rRNA molecules: cleavage, 2'-O-methylation, or pseudouridylation, but other RNA types can be targets as well. The majority fall into one of two classes, box C/D type or box H/ACA type, which are conserved across eukaryotes and archaea. Other members include the telomerase RNA and the ribonuclease MRP RNA."" [GOC:krc, GOC:mah, ISBN:0879695897, PMID:17284456]",4
+300,RandomForest_gini,CORUM,CORUM:3055,['CORUM:0000000'],0.001468104204016748,Nop56p-associated pre-rRNA complex,8
+301,RandomForest_gini,GO:BP,GO:0006360,['GO:0006351'],0.0019051952786078422,"""The synthesis of RNA from a DNA template by RNA polymerase I (RNAP I), originating at an RNAP I promoter."" [GOC:jl, GOC:txnOH]",6
+302,RandomForest_gini,HPA,HPA:0090992,['HPA:0090991'],0.001972060868957103,cerebellum; molecular layer - neuropil[≥Medium],8
+303,RandomForest_gini,GO:CC,GO:0140513,"['GO:0005634', 'GO:0032991']",0.00253597331044561,"""A stable assembly of two or more macromolecules, i.e. proteins, nucleic acids, carbohydrates or lipids, in which at least one component is a protein and the constituent parts function together in the nucleus."" [GOC:pg]",28
+304,RandomForest_gini,HPA,HPA:0100133,['HPA:0100132'],0.0027093857451702466,cerebral cortex; neuronal cells[High],29
+305,RandomForest_gini,GO:CC,GO:0043025,"['GO:0036477', 'GO:0044297']",0.0033451841816982356,"""The portion of a neuron that includes the nucleus, but excludes cell projections such as axons and dendrites."" [GOC:go_curators]",11
+306,RandomForest_gini,KEGG,KEGG:03013,['KEGG:00000'],0.0033541620236672647,Nucleocytoplasmic transport,6
+307,RandomForest_gini,REAC,REAC:R-HSA-4570464,['REAC:R-HSA-3108232'],0.003494449020749625,SUMOylation of RNA binding proteins,5
+308,RandomForest_gini,GO:BP,GO:0045945,"['GO:0006359', 'GO:0006383', 'GO:0045893']",0.0035694340622202457,"""Any process that activates or increases the frequency, rate or extent of transcription mediated by RNA polymerase III."" [GOC:go_curators, GOC:txnOH]",4
+309,RandomForest_gini,GO:MF,GO:0017056,['GO:0005198'],0.004341941734809045,"""The action of a molecule that contributes to the structural integrity of the nuclear pore complex, a protein-lined channel in the nuclear envelope that allows the transfer of macromolecules."" [GOC:mah, PMID:25802992]",4
+310,RandomForest_gini,GO:CC,GO:0016234,['GO:0005622'],0.004600707290241113,"""A discrete intracellular part formed of aggregated molecules such as proteins or other biopolymers."" [GOC:mah, PMID:11121744]",5
+311,RandomForest_gini,HPA,HPA:0090963,['HPA:0090962'],0.004817993770380002,cerebellum; Purkinje cells - nucleus[High],6
+312,RandomForest_gini,GO:CC,GO:0044615,"['GO:0005643', 'GO:0140513']",0.004951785252914648,"""A filamentous, cage-like assembly on the nuclear face of the nuclear pore complex (NPC). In S. cerevisiae, Mlp1p and Mlp2p are two major components of the NPC nuclear basket. In vertebrates, Tpr is a major component."" [GOC:dgf, PMID:18046406, PMID:19524430, PMID:20947011, PMID:22419078]",3
+313,RandomForest_gini,GO:CC,GO:0042405,"['GO:0005634', 'GO:0016234']",0.004951785252914648,"""An intranuclear focus at which aggregated proteins have been sequestered."" [GOC:jl]",3
+314,RandomForest_gini,REAC,REAC:R-HSA-373760,['REAC:R-HSA-422475'],0.005167872885388568,L1CAM interactions,7
+315,RandomForest_gini,GO:CC,GO:0090535,['GO:0031010'],0.005387567549037281,"""An ISWI complex that contains an ATPase subunit of the ISWI family (specifically SNF2H in mammals, which contain two ISWI homologs) and WSTF (Williams Syndrome Transcription Factor). WICH plays roles in regulation of RNAP I and III transcription and in DNA replication and repair."" [GOC:krc, PMID:15284901, PMID:16568949, PMID:21810179]",2
+316,RandomForest_gini,GO:CC,GO:0036477,['GO:0110165'],0.005540424206134125,"""The region of a neuron that includes the cell body (cell soma) and dendrite(s), but excludes the axon."" [GOC:pad, GOC:PARL]",14
+317,RandomForest_gini,GO:BP,GO:0032989,['GO:0009653'],0.0062123281035191755,"""The process in which a cellular entity is generated and organized. A cellular entity has granularity above the level of a protein complex but below that of an anatomical system."" [GOC:dph, GOC:mah, GOC:tb]",15
+318,RandomForest_gini,HPA,HPA:0100000,['HPA:0000000'],0.006285524329813453,cerebral cortex,72
+319,RandomForest_gini,HPA,HPA:0461471,['HPA:0460000'],0.0072187552997364296,skin 1; lymphocytes[≥Low],16
+320,RandomForest_gini,HPA,HPA:0091053,['HPA:0091052'],0.007243574487830199,cerebellum; synaptic glomeruli - capsule[High],4
+321,RandomForest_gini,GO:BP,GO:0006403,['GO:0033036'],0.008024165378848806,"""A process in which RNA is transported to, or maintained in, a specific location."" [GOC:ai]",8
+322,RandomForest_gini,HPA,HPA:0470672,['HPA:0470671'],0.008215514520437001,skin 2; melanocytes[≥Medium],15
+323,RandomForest_gini,HPA,HPA:0470671,['HPA:0470000'],0.008848461559492062,skin 2; melanocytes[≥Low],16
+324,RandomForest_gini,HPA,HPA:0090932,['HPA:0090931'],0.009438889058957334,cerebellum; GLUC cells - nucleus[≥Medium],6
+325,RandomForest_gini,GO:CC,GO:0044297,['GO:0110165'],0.010677561062269691,"""The portion of a cell bearing surface projections such as axons, dendrites, cilia, or flagella that includes the nucleus, but excludes all cell projections."" [GOC:go_curators]",11
+326,RandomForest_gini,HPA,HPA:0461462,['HPA:0461461'],0.01090375502218288,skin 1; langerhans cells[≥Medium],14
+327,RandomForest_gini,GO:BP,GO:0000466,['GO:0000460'],0.011407396527569776,"""Any process involved in the maturation of an rRNA molecule originally produced as part of a tricistronic rRNA transcript that contained the Small SubUnit (SSU) rRNA, the 5.8S rRNA, and the Large SubUnit (LSU) rRNA, in that order, from 5' to 3' along the primary transcript."" [GOC:curators, PMID:10690410]",4
+328,RandomForest_gini,GO:BP,GO:0062028,"['GO:0034063', 'GO:1902115']",0.012087361553378652,"""Any process that modulates the rate, frequency or extent of stress granule assembly, the aggregation, arrangement and bonding together of proteins and RNA molecules to form a stress granule."" [PMID:20180778]",3
+329,RandomForest_gini,HPA,HPA:0471462,['HPA:0471461'],0.012128719040933409,skin 2; langerhans cells[≥Medium],15
+330,RandomForest_gini,REAC,REAC:R-HSA-170822,['REAC:R-HSA-70171'],0.012775087273836068,Regulation of Glucokinase by Glucokinase Regulatory Protein,4
+331,RandomForest_gini,REAC,REAC:R-HSA-5619107,['REAC:R-HSA-5619102'],0.012775087273836068,Defective TPR may confer susceptibility towards thyroid papillary carcinoma (TPC),4
+332,RandomForest_gini,HPA,HPA:0090933,['HPA:0090932'],0.01361108975041342,cerebellum; GLUC cells - nucleus[High],5
+333,RandomForest_gini,GO:MF,GO:0043021,['GO:0044877'],0.014742361749540788,"""Binding to a complex of RNA and protein."" [GOC:bf, GOC:go_curators, GOC:vk]",7
+334,RandomForest_gini,REAC,REAC:R-HSA-168271,['REAC:R-HSA-168255'],0.014744962896186492,Transport of Ribonucleoproteins into the Host Nucleus,4
+335,RandomForest_gini,REAC,REAC:R-HSA-168333,['REAC:R-HSA-168274'],0.014744962896186492,NEP/NS2 Interacts with the Cellular Export Machinery,4
+336,RandomForest_gini,GO:CC,GO:0001650,"['GO:0005730', 'GO:0110165']",0.014862325748829383,"""A structure found most metazoan nucleoli, but not usually found in lower eukaryotes; surrounded by the dense fibrillar component; the zone of transcription from multiple copies of the pre-rRNA genes is in the border region between these two structures."" [PMID:10754561]",6
+337,RandomForest_gini,GO:CC,GO:0043226,['GO:0110165'],0.015565953709455299,"""Organized structure of distinctive morphology and function. Includes the nucleus, mitochondria, plastids, vacuoles, vesicles, ribosomes and the cytoskeleton, and prokaryotic structures such as anammoxosomes and pirellulosomes. Excludes the plasma membrane."" [GOC:go_curators]",89
+338,RandomForest_gini,GO:CC,GO:0032991,['GO:0005575'],0.015725342724366948,"""A stable assembly of two or more macromolecules, i.e. proteins, nucleic acids, carbohydrates or lipids, in which at least one component is a protein and the constituent parts function together."" [GOC:dos, GOC:mah]",57
+339,RandomForest_gini,REAC,REAC:R-HSA-168274,['REAC:R-HSA-168255'],0.016928314464820106,Export of Viral Ribonucleoproteins from Nucleus,4
+340,RandomForest_gini,TF,TF:M11054,['TF:M00000'],0.01817818428875269,Factor: Hey2; motif: NGCACGYGYN,35
+341,RandomForest_gini,HPA,HPA:0400653,['HPA:0400652'],0.01869295299649865,rectum; fibroblasts[High],5
+342,RandomForest_gini,GO:MF,GO:0044877,['GO:0005488'],0.018997363397844386,"""Binding to a macromolecular complex."" [GOC:jl]",22
+343,RandomForest_gini,REAC,REAC:R-HSA-180910,['REAC:R-HSA-176033'],0.01933900312899977,Vpr-mediated nuclear import of PICs,4
+344,RandomForest_gini,REAC,REAC:R-HSA-159227,['REAC:R-HSA-159234'],0.01933900312899977,Transport of the SLBP independent Mature mRNA,4
+345,RandomForest_gini,REAC,REAC:R-HSA-180746,['REAC:R-HSA-177243'],0.01933900312899977,Nuclear import of Rev protein,4
+346,RandomForest_gini,GO:CC,GO:0005643,"['GO:0005635', 'GO:0140513']",0.019435808627255025,"""A protein complex providing a discrete opening in the nuclear envelope of a eukaryotic cell, where the inner and outer nuclear membranes are joined."" [ISBN:0198547684]",5
+347,RandomForest_gini,GO:CC,GO:0031965,"['GO:0005635', 'GO:0031090']",0.020291007756796077,"""Either of the lipid bilayers that surround the nucleus and form the nuclear envelope; excludes the intermembrane space."" [GOC:mah, GOC:pz]",8
+348,RandomForest_gini,HPA,HPA:0090991,['HPA:0090000'],0.021628026509202126,cerebellum; molecular layer - neuropil[≥Low],9
+349,RandomForest_gini,REAC,REAC:R-HSA-165054,"['REAC:R-HSA-162599', 'REAC:R-HSA-177243']",0.02199119229445874,Rev-mediated nuclear export of HIV RNA,4
+350,RandomForest_gini,REAC,REAC:R-HSA-159230,['REAC:R-HSA-159234'],0.02199119229445874,Transport of the SLBP Dependant Mature mRNA,4
+351,RandomForest_gini,REAC,REAC:R-HSA-4085377,['REAC:R-HSA-3108232'],0.02199119229445874,SUMOylation of SUMOylation proteins,4
+352,RandomForest_gini,TF,TF:M11215,['TF:M00000'],0.02259222830668354,Factor: N-Myc; motif: NNCACGTGNN,19
+353,RandomForest_gini,TF,TF:M07384,['TF:M00000'],0.02259222830668354,Factor: HIF-1alpha; motif: NCACGTNN,19
+354,RandomForest_gini,HPA,HPA:0091041,['HPA:0090000'],0.023349904840037287,cerebellum; processes in white matter[≥Low],8
+355,RandomForest_gini,HPA,HPA:0471391,['HPA:0470000'],0.02387103448326061,skin 2; cells in basal layer[≥Low],18
+356,RandomForest_gini,REAC,REAC:R-HSA-3301854,['REAC:R-HSA-2980766'],0.024899336453735002,Nuclear Pore Complex (NPC) Disassembly,4
+357,RandomForest_gini,GO:BP,GO:0051292,"['GO:0006999', 'GO:0046931']",0.02573011686544065,"""The aggregation, arrangement and bonding together of a set of components to form a nuclear pore complex."" [GOC:ai, GOC:mah]",3
+358,RandomForest_gini,GO:CC,GO:0005634,['GO:0043231'],0.026269153265169362,"""A membrane-bounded organelle of eukaryotic cells in which chromosomes are housed and replicated. In most cells, the nucleus contains all of the cell's chromosomes except the organellar chromosomes, and is the site of RNA synthesis and processing. In some species, or in specialized cell types, RNA metabolism or DNA replication may be absent."" [GOC:go_curators]",63
+359,RandomForest_gini,HPA,HPA:0190223,['HPA:0190222'],0.026361098170978047,esophagus; squamous epithelial cells[High],25
+360,RandomForest_gini,HPA,HPA:0461391,['HPA:0460000'],0.026654868703636595,skin 1; cells in basal layer[≥Low],17
+361,RandomForest_gini,HPA,HPA:0090000,['HPA:0000000'],0.027773761296581538,cerebellum,66
+362,RandomForest_gini,GO:BP,GO:0006359,"['GO:0006355', 'GO:0006383']",0.027784985849847885,"""Any process that modulates the frequency, rate or extent of transcription mediated by RNA ploymerase III."" [GOC:go_curators]",4
+363,RandomForest_gini,REAC,REAC:R-HSA-177243,['REAC:R-HSA-162909'],0.02807817020859344,Interactions of Rev with host cellular proteins,4
+364,RandomForest_gini,REAC,REAC:R-HSA-176033,['REAC:R-HSA-162909'],0.02807817020859344,Interactions of Vpr with host cellular proteins,4
+365,RandomForest_gini,GO:BP,GO:0048858,"['GO:0000902', 'GO:0030030', 'GO:0032989']",0.028848230270132953,"""The process in which the anatomical structures of a cell projection are generated and organized."" [GO_REF:0000021]",13
+366,RandomForest_gini,HPA,HPA:0470201,['HPA:0470000'],0.02936643342170404,skin 2; endothelial cells[≥Low],17
+367,RandomForest_gini,HPA,HPA:0461461,['HPA:0460000'],0.029416867206324027,skin 1; langerhans cells[≥Low],15
+368,RandomForest_gini,REAC,REAC:R-HSA-3232142,['REAC:R-HSA-3108232'],0.03154269748207111,SUMOylation of ubiquitinylation proteins,4
+369,RandomForest_gini,GO:CC,GO:0044614,"['GO:0005643', 'GO:0140513']",0.03214038521449207,"""Filamentous extensions on cytoplasmic face of the nuclear pore complex (NPC). In S. cerevisiae, Nup159p, Nup82p, and Nup42p contribute to the cytoplasmic filaments. In vertebrates, Nup358 is a major component."" [GOC:dgf, PMID:18046406, PMID:19524430, PMID:20947011, PMID:22419078]",2
+370,RandomForest_gini,GO:BP,GO:0034504,['GO:0033365'],0.03335350293662471,"""A process in which a protein transports or maintains the localization of another protein to the nucleus."" [GOC:ecd]",9
+371,RandomForest_gini,GO:MF,GO:0005515,['GO:0005488'],0.03741095090751534,"""Binding to a protein."" [GOC:go_curators]",88
+372,RandomForest_gini,MIRNA,MIRNA:hsa-miR-16-5p,['MIRNA:000000'],0.04016868873208501,hsa-miR-16-5p,23
+373,RandomForest_gini,WP,WP:WP3998,['WP:000000'],0.04184495866916477,Prader Willi and Angelman syndrome,5
+374,RandomForest_gini,REAC,REAC:R-HSA-159231,['REAC:R-HSA-159234'],0.04380429813855977,Transport of Mature mRNA Derived from an Intronless Transcript,4
+375,RandomForest_gini,REAC,REAC:R-HSA-168276,['REAC:R-HSA-168255'],0.04380429813855977,NS1 Mediated Effects on Host Pathways,4
+376,RandomForest_gini,WP,WP:WP5352,['WP:000000'],0.04401043209537405,10q11 21q11 23 copy number variation syndrome,4
+377,RandomForest_gini,HPA,HPA:0211092,['HPA:0211091'],0.04425437358735487,fallopian tube; non-ciliated cells[≥Medium],13
+378,RandomForest_gini,GO:BP,GO:0000462,['GO:0030490'],0.04559421395688675,"""Any process involved in the maturation of a precursor Small SubUnit (SSU) ribosomal RNA (rRNA) molecule into a mature SSU-rRNA molecule from the pre-rRNA molecule originally produced as a tricistronic rRNA transcript that contains the Small Subunit (SSU) rRNA, 5.8S rRNA, and the Large Subunit (LSU) in that order from 5' to 3' along the primary transcript."" [GOC:curators]",4
+379,RandomForest_gini,HPA,HPA:0211091,['HPA:0210000'],0.04628851353075256,fallopian tube; non-ciliated cells[≥Low],15
+380,RandomForest_gini,REAC,REAC:R-HSA-159234,['REAC:R-HSA-72202'],0.04856665797901357,Transport of Mature mRNAs Derived from Intronless Transcripts,4
+381,RandomForest_gini,GO:BP,GO:1903379,"['GO:0007076', 'GO:0010564', 'GO:0060623']",0.04909602731064714,"""Any process that modulates the frequency, rate or extent of mitotic chromosome condensation."" [GO_REF:0000058, GOC:TermGenie, PMID:9490640]",2
+382,RandomForest_gini,GO:BP,GO:0031104,"['GO:0016358', 'GO:0031102']",0.04909602731064714,"""The regrowth of dendrites in response to their loss or damage."" [GOC:dgh, GOC:dph, GOC:tb]",2
+383,RandomForest_gini,GO:BP,GO:1905213,"['GO:0007076', 'GO:0010948', 'GO:1902340', 'GO:1903379']",0.04909602731064714,"""Any process that stops, prevents or reduces the frequency, rate or extent of mitotic chromosome condensation."" [GO_REF:0000058, GOC:TermGenie, PMID:23219725]",2
+384,RandomForest_gini,GO:BP,GO:1902340,"['GO:0030261', 'GO:0060623', 'GO:2001251']",0.04909602731064714,"""Any process that stops, prevents or reduces the frequency, rate or extent of chromosome condensation."" [GOC:TermGenie, PMID:23219725]",2
+385,RandomForest_gini,CORUM,CORUM:236,['CORUM:0000000'],0.049528145359163306,WICH complex,2
+386,AdaBoost64,KEGG,KEGG:03265,['KEGG:00000'],0.011518136457667544,Virion - Ebolavirus and Lyssavirus,1
+387,LassoLinear,GO:CC,GO:0031982,['GO:0043227'],3.204555077770471e-10,"""Any small, fluid-filled, spherical organelle enclosed by membrane."" [GOC:mah, GOC:pz, GOC:vesicles]",48
+388,LassoLinear,GO:CC,GO:0005576,['GO:0110165'],2.1758515884556744e-09,"""The space external to the outermost structure of a cell. For cells without external protective or external encapsulating structures this refers to space outside of the plasma membrane. This term covers the host cell environment outside an intracellular parasite."" [GOC:go_curators]",48
+389,LassoLinear,GO:CC,GO:0070062,"['GO:0005615', 'GO:1903561']",1.5316824475043945e-07,"""A vesicle that is released into the extracellular region by fusion of the limiting endosomal membrane of a multivesicular body with the plasma membrane. Extracellular exosomes, also simply called exosomes, have a diameter of about 40-100 nm."" [GOC:BHF, GOC:mah, GOC:vesicles, PMID:15908444, PMID:17641064, PMID:19442504, PMID:19498381, PMID:22418571, PMID:24009894]",31
+390,LassoLinear,GO:CC,GO:1903561,"['GO:0031982', 'GO:0065010']",2.0233854149127622e-07,"""Any vesicle that is part of the extracellular region."" [GO_REF:0000064, GOC:pm, GOC:TermGenie, PMID:24769233]",31
+391,LassoLinear,GO:CC,GO:0065010,"['GO:0043227', 'GO:0043230']",2.046812287213862e-07,"""Organized structure of distinctive morphology and function, bounded by a lipid bilayer membrane and occurring outside the cell."" [GOC:isa_complete]",31
+392,LassoLinear,GO:CC,GO:0043230,"['GO:0005576', 'GO:0043226']",2.046812287213862e-07,"""Organized structure of distinctive morphology and function, occurring outside the cell. Includes, for example, extracellular membrane vesicles (EMVs) and the cellulosomes of anaerobic bacteria and fungi."" [GOC:jl, PMID:9914479]",31
+393,LassoLinear,GO:CC,GO:0005615,"['GO:0005576', 'GO:0110165']",2.432659078241806e-07,"""That part of a multicellular organism outside the cells proper, usually taken to be outside the plasma membranes, and occupied by fluid."" [ISBN:0198547684]",39
+394,LassoLinear,GO:CC,GO:0005737,"['GO:0005622', 'GO:0110165']",0.00038969474293440833,"""The contents of a cell excluding the plasma membrane and nucleus, but including other subcellular structures."" [ISBN:0198547684]",76
+395,LassoLinear,GO:CC,GO:0012505,['GO:0110165'],0.0053414904995941065,"""A collection of membranous structures involved in transport within the cell. The main components of the endomembrane system are endoplasmic reticulum, Golgi bodies, vesicles, cell membrane and nuclear envelope. Members of the endomembrane system pass materials through each other or though the use of vesicles."" [GOC:lh]",39
+396,LassoLinear,GO:MF,GO:0140037,['GO:0140035'],0.01628237826980318,"""Binding to a protein upon sumoylation of the target protein."" [PMID:26060076]",2
+397,LassoLinear,GO:MF,GO:0003779,['GO:0008092'],0.03791366246050757,"""Binding to monomeric or multimeric forms of actin, including actin filaments."" [GOC:clt]",10
+398,LassoLinear,GO:CC,GO:0031410,"['GO:0005737', 'GO:0097708']",0.03880527416860975,"""A vesicle found in the cytoplasm of a cell."" [GOC:ai, GOC:mah, GOC:vesicles]",24
+399,LassoLinear,GO:CC,GO:0097708,"['GO:0031982', 'GO:0043231']",0.0400158094493883,"""Any vesicle that is part of the intracellular region."" [GOC:vesicles]",24
+400,LassoLinear,TF,TF:M00243,['TF:M00000'],0.040970148638658735,Factor: Egr-1; motif: WTGCGTGGGCGK,46
+401,LassoLinear,KEGG,KEGG:05014,['KEGG:00000'],0.04533501413059399,Amyotrophic lateral sclerosis,9
+402,LassoLinear,GO:BP,GO:0048545,"['GO:0009725', 'GO:0014070', 'GO:0033993']",0.0461737575177725,"""Any process that results in a change in state or activity of a cell or an organism (in terms of movement, secretion, enzyme production, gene expression, etc.) as a result of a steroid hormone stimulus."" [GOC:go_curators]",9
+403,LassoLinear,GO:CC,GO:0000275,"['GO:0005753', 'GO:0045261', 'GO:0098800']",0.04978580991993143,"""The catalytic sector of the mitochondrial hydrogen-transporting ATP synthase; it comprises the catalytic core and central stalk, and is peripherally associated with the mitochondrial inner membrane when the entire ATP synthase is assembled."" [GOC:mtg_sensu, PMID:10838056]",2
+404,multi_Lasso,GO:BP,GO:0006364,"['GO:0016072', 'GO:0034470', 'GO:0042254']",5.463096646840293e-20,"""Any process involved in the conversion of a primary ribosomal RNA (rRNA) transcript into one or more mature rRNA molecules."" [GOC:curators]",22
+405,multi_Lasso,REAC,REAC:R-HSA-8953854,['REAC:0000000'],1.2884216478924375e-18,Metabolism of RNA,34
+406,multi_Lasso,GO:BP,GO:0016072,['GO:0034660'],1.919562312402224e-18,"""The chemical reactions and pathways involving rRNA, ribosomal RNA, a structural constituent of ribosomes."" [ISBN:0198506732]",22
+407,multi_Lasso,GO:CC,GO:0030684,['GO:1990904'],5.398691337066909e-18,"""Any complex of pre-rRNAs, ribosomal proteins, and associated proteins formed during ribosome biogenesis."" [PMID:10567516]",16
+408,multi_Lasso,GO:BP,GO:0042254,['GO:0022613'],7.526688179854889e-18,"""A cellular process that results in the biosynthesis of constituent macromolecules, assembly, and arrangement of constituent parts of ribosome subunits; includes transport to the sites of protein synthesis."" [GOC:ma, PMID:26404467, Wikipedia:Ribosome_biogenesis]",23
+409,multi_Lasso,GO:BP,GO:0034470,"['GO:0006396', 'GO:0034660']",7.434333329648348e-15,"""Any process that results in the conversion of one or more primary non-coding RNA (ncRNA) transcripts into one or more mature ncRNA molecules."" [GOC:mah, PMID:27573892]",23
+410,multi_Lasso,GO:BP,GO:0034660,['GO:0016070'],2.249608439641089e-13,"""The chemical reactions and pathways involving non-coding RNA transcripts (ncRNAs)."" [GOC:mah]",25
+411,multi_Lasso,REAC,REAC:R-HSA-8868773,['REAC:R-HSA-72312'],3.749439935860609e-12,rRNA processing in the nucleus and cytosol,17
+412,multi_Lasso,REAC,REAC:R-HSA-72312,['REAC:R-HSA-8953854'],8.762728249620085e-12,rRNA processing,17
+413,multi_Lasso,GO:BP,GO:0000470,"['GO:0006364', 'GO:0042273']",9.430310386713032e-12,"""Any process involved in the maturation of a precursor Large SubUnit (LSU) ribosomal RNA (rRNA) molecule into a mature LSU-rRNA molecule."" [GOC:curators]",9
+414,multi_Lasso,GO:MF,GO:0003723,['GO:0003676'],2.5059252525613234e-11,"""Binding to an RNA molecule or a portion thereof."" [GOC:jl, GOC:mah]",47
+415,multi_Lasso,GO:CC,GO:0030686,['GO:0030684'],4.2465919049488316e-11,"""A large ribonucleoprotein complex considered to be the earliest preribosomal complex. In S. cerevisiae, it has a size of 90S and consists of the 35S pre-rRNA, early-associating ribosomal proteins most of which are part of the small ribosomal subunit, the U3 snoRNA and associated proteins."" [GOC:krc, GOC:vw, PMID:12150911, PMID:12957375, PMID:15120992]",8
+416,multi_Lasso,GO:BP,GO:0042273,"['GO:0022613', 'GO:0042254']",9.786102025133474e-11,"""A cellular process that results in the biosynthesis of constituent macromolecules, assembly, and arrangement of constituent parts of a large ribosomal subunit; includes transport to the sites of protein synthesis."" [GOC:jl]",11
+417,multi_Lasso,REAC,REAC:R-HSA-6791226,['REAC:R-HSA-8868773'],4.796502587770201e-10,Major pathway of rRNA processing in the nucleolus and cytosol,15
+418,multi_Lasso,GO:BP,GO:0000463,['GO:0000470'],8.95214304721698e-10,"""Any process involved in the maturation of a precursor Large SubUnit (LSU) ribosomal RNA (rRNA) molecule into a mature LSU-rRNA molecule from the pre-rRNA molecule originally produced as a tricistronic rRNA transcript that contains the Small Subunit (SSU) rRNA, 5.8S rRNA, and Large Subunit (LSU) in that order from 5' to 3' along the primary transcript."" [GOC:curators]",7
+419,multi_Lasso,REAC,REAC:R-HSA-72203,['REAC:R-HSA-8953854'],1.4581067633069443e-09,Processing of Capped Intron-Containing Pre-mRNA,17
+420,multi_Lasso,GO:CC,GO:0031981,"['GO:0005634', 'GO:0070013']",7.679365187901605e-09,"""The volume enclosed by the nuclear inner membrane."" [GOC:mah, GOC:pz]",55
+421,multi_Lasso,GO:CC,GO:0070013,"['GO:0043229', 'GO:0043233']",2.7358046561594346e-08,"""An organelle lumen that is part of an intracellular organelle."" [GOC:mah]",60
+422,multi_Lasso,GO:CC,GO:0031974,['GO:0110165'],2.7358046561594346e-08,"""The enclosed volume within a sealed membrane or between two sealed membranes. Encompasses the volume enclosed by the membranes of a particular organelle, e.g. endoplasmic reticulum lumen, or the space between the two lipid bilayers of a double membrane surrounding an organelle, e.g. nuclear envelope lumen."" [GOC:add, GOC:mah]",60
+423,multi_Lasso,GO:CC,GO:0043233,"['GO:0031974', 'GO:0043226']",2.7358046561594346e-08,"""The internal volume enclosed by the membranes of a particular organelle; includes the volume enclosed by a single organelle membrane, e.g. endoplasmic reticulum lumen, or the volume enclosed by the innermost of the two lipid bilayers of an organelle envelope, e.g. nuclear lumen."" [GOC:jl, GOC:mah]",60
+424,multi_Lasso,GO:CC,GO:0005730,"['GO:0031981', 'GO:0043232']",5.8591107829454184e-08,"""A small, dense body one or more of which are present in the nucleus of eukaryotic cells. It is rich in RNA and protein, is not bounded by a limiting membrane, and is not seen during mitosis. Its prime function is the transcription of the nucleolar DNA into 45S ribosomal-precursor RNA, the processing of this RNA into 5.8S, 18S, and 28S components of ribosomal RNA, and the association of these components with 5S RNA and proteins synthesized outside the nucleolus. This association results in the formation of ribonucleoprotein precursors; these pass into the cytoplasm and mature into the 40S and 60S subunits of the ribosome."" [ISBN:0198506732]",31
+425,multi_Lasso,GO:CC,GO:0005684,['GO:0005681'],7.53245430458679e-08,"""Any spliceosomal complex that forms during the splicing of a messenger RNA primary transcript to excise an intron that has canonical consensus sequences near the 5' and 3' ends."" [GOC:krc, GOC:mah, PMID:11343900]",9
+426,multi_Lasso,HPA,HPA:0400243,['HPA:0400242'],1.1209337857782669e-07,rectum; peripheral nerve/ganglion[High],11
+427,multi_Lasso,HPA,HPA:0400242,['HPA:0400241'],2.4793166269512957e-07,rectum; peripheral nerve/ganglion[≥Medium],13
+428,multi_Lasso,GO:CC,GO:0032040,['GO:0030684'],3.086954317726297e-07,"""A large ribonucleoprotein complex that is an early preribosomal complex. In S. cerevisiae, it has a size of 80S and consists of the 35S pre-rRNA, early-associating ribosomal proteins most of which are part of the small ribosomal subunit, the U3 snoRNA and associated proteins."" [GOC:krc, GOC:vw, PMID:12068309, PMID:12957375, PMID:15120992, PMID:15590835]",8
+429,multi_Lasso,GO:CC,GO:0005681,"['GO:0140513', 'GO:1990904']",4.935996926352524e-07,"""Any of a series of ribonucleoprotein complexes that contain snRNA(s) and small nuclear ribonucleoproteins (snRNPs), and are formed sequentially during the spliceosomal splicing of one or more substrate RNAs, and which also contain the RNA substrate(s) from the initial target RNAs of splicing, the splicing intermediate RNA(s), to the final RNA products. During cis-splicing, the initial target RNA is a single, contiguous RNA transcript, whether mRNA, snoRNA, etc., and the released products are a spliced RNA and an excised intron, generally as a lariat structure. During trans-splicing, there are two initial substrate RNAs, the spliced leader RNA and a pre-mRNA."" [GOC:editors, GOC:mah, ISBN:0198547684, PMID:19239890]",11
+430,multi_Lasso,GO:CC,GO:0071005,"['GO:0005684', 'GO:0071011']",6.096930629416367e-07,"""A spliceosomal complex that is formed by the recruitment of the preassembled U4/U6.U5 tri-snRNP to the prespliceosome. Although all 5 snRNPs are present, the precatalytic spliceosome is catalytically inactive. The precatalytic spliceosome includes many proteins in addition to those found in the U1, U2 and U4/U6.U5 snRNPs."" [GOC:ab, GOC:krc, GOC:mah, PMID:18322460, PMID:19239890]",7
+431,multi_Lasso,WP,WP:WP411,['WP:000000'],7.394194331513739e-07,mRNA processing,10
+432,multi_Lasso,GO:CC,GO:0071011,['GO:0005681'],8.108115595501009e-07,"""A spliceosomal complex that is formed by the recruitment of a preassembled U5-containing tri-snRNP to the prespliceosome. Although all 5 snRNPs are present, the precatalytic spliceosome is catalytically inactive. The precatalytic spliceosome includes many proteins in addition to those found in the associated snRNPs."" [GOC:ab, GOC:krc, GOC:mah, PMID:18322460, PMID:19239890]",7
+433,multi_Lasso,GO:CC,GO:0005654,"['GO:0031981', 'GO:0110165']",9.159980266890948e-07,"""That part of the nuclear content other than the chromosomes or the nucleolus."" [GOC:ma, ISBN:0124325653]",44
+434,multi_Lasso,GO:MF,GO:0017056,['GO:0005198'],1.306488770445727e-06,"""The action of a molecule that contributes to the structural integrity of the nuclear pore complex, a protein-lined channel in the nuclear envelope that allows the transfer of macromolecules."" [GOC:mah, PMID:25802992]",6
+435,multi_Lasso,KEGG,KEGG:03008,['KEGG:00000'],1.8558430052359784e-06,Ribosome biogenesis in eukaryotes,10
+436,multi_Lasso,REAC,REAC:R-HSA-6790901,['REAC:R-HSA-8868773'],2.2821082572251667e-06,rRNA modification in the nucleus and cytosol,8
+437,multi_Lasso,GO:CC,GO:1990904,['GO:0032991'],3.282145940611672e-06,"""A macromolecular complex that contains both RNA and protein molecules."" [GOC:krc, GOC:vesicles]",34
+438,multi_Lasso,GO:BP,GO:0006403,['GO:0033036'],4.1265427146464775e-06,"""A process in which RNA is transported to, or maintained in, a specific location."" [GOC:ai]",11
+439,multi_Lasso,GO:CC,GO:0030687,['GO:0030684'],4.594949565038975e-06,"""A preribosomal complex consisting of 27SA, 27SB, and/or 7S pre-rRNA, 5S rRNA, ribosomal proteins including late-associating large subunit proteins, and associated proteins; a precursor of the eukaryotic cytoplasmic large ribosomal subunit."" [PMID:10567516]",5
+440,multi_Lasso,GO:BP,GO:0050658,"['GO:0050657', 'GO:0051236']",7.0189200831480435e-06,"""The directed movement of RNA, ribonucleic acids, into, out of or within a cell, or between cells, by means of some agent such as a transporter or pore."" [GOC:ai]",10
+441,multi_Lasso,GO:BP,GO:0050657,['GO:0015931'],7.0189200831480435e-06,"""The directed movement of nucleic acids, single or double-stranded polynucleotides involved in the storage, transmission and transfer of genetic information, into, out of or within a cell, or between cells, by means of some agent such as a transporter or pore."" [GOC:ai, ISBN:0198506732]",10
+442,multi_Lasso,GO:BP,GO:0051236,"['GO:0006403', 'GO:0051234']",8.422475637566213e-06,"""The directed movement of RNA to a specific location."" [GOC:ai]",10
+443,multi_Lasso,GO:BP,GO:0022613,['GO:0044085'],8.719661008971492e-06,"""A cellular process that results in the biosynthesis of constituent macromolecules, assembly, and arrangement of constituent parts of a complex containing RNA and proteins. Includes the biosynthesis of the constituent RNA and protein molecules, and those macromolecular modifications that are involved in synthesis or assembly of the ribonucleoprotein complex."" [GOC:isa_complete, GOC:mah]",29
+444,multi_Lasso,HPA,HPA:0091052,['HPA:0091051'],9.54956363182959e-06,cerebellum; synaptic glomeruli - capsule[≥Medium],8
+445,multi_Lasso,HPA,HPA:0400241,['HPA:0400000'],9.654242902923054e-06,rectum; peripheral nerve/ganglion[≥Low],13
+446,multi_Lasso,REAC,REAC:R-HSA-5619107,['REAC:R-HSA-5619102'],1.1395086957556573e-05,Defective TPR may confer susceptibility towards thyroid papillary carcinoma (TPC),6
+447,multi_Lasso,REAC,REAC:R-HSA-170822,['REAC:R-HSA-70171'],1.1395086957556573e-05,Regulation of Glucokinase by Glucokinase Regulatory Protein,6
+448,multi_Lasso,GO:BP,GO:0006999,"['GO:0006997', 'GO:0043933']",1.237448070902274e-05,"""A process that is carried out at the cellular level which results in the assembly, arrangement of constituent parts, or disassembly of the nuclear pore."" [GOC:dph, GOC:jid, GOC:jl, GOC:mah]",5
+449,multi_Lasso,REAC,REAC:R-HSA-168333,['REAC:R-HSA-168274'],1.4289360209175987e-05,NEP/NS2 Interacts with the Cellular Export Machinery,6
+450,multi_Lasso,REAC,REAC:R-HSA-168271,['REAC:R-HSA-168255'],1.4289360209175987e-05,Transport of Ribonucleoproteins into the Host Nucleus,6
+451,multi_Lasso,KEGG,KEGG:03040,['KEGG:00000'],1.5697608291590278e-05,Spliceosome,10
+452,multi_Lasso,GO:BP,GO:0044085,['GO:0071840'],1.616467894799099e-05,"""A process that results in the biosynthesis of constituent macromolecules, assembly, and arrangement of constituent parts of a cellular component. Includes biosynthesis of constituent macromolecules, and those macromolecular modifications that are involved in synthesis or assembly of the cellular component."" [GOC:jl, GOC:mah]",49
+453,multi_Lasso,GO:CC,GO:0016604,"['GO:0005654', 'GO:0110165']",1.687701084530991e-05,"""Extra-nucleolar nuclear domains usually visualized by confocal microscopy and fluorescent antibodies to specific proteins."" [GOC:ma, PMID:10330182]",18
+454,multi_Lasso,REAC,REAC:R-HSA-168274,['REAC:R-HSA-168255'],1.7764290396013468e-05,Export of Viral Ribonucleoproteins from Nucleus,6
+455,multi_Lasso,GO:BP,GO:0051028,['GO:0050658'],1.784244489066512e-05,"""The directed movement of mRNA, messenger ribonucleic acid, into, out of or within a cell, or between cells, by means of some agent such as a transporter or pore."" [GOC:ai]",9
+456,multi_Lasso,REAC,REAC:R-HSA-194441,['REAC:R-HSA-8953854'],1.9739414247703883e-05,Metabolism of non-coding RNA,7
+457,multi_Lasso,REAC,REAC:R-HSA-191859,['REAC:R-HSA-194441'],1.9739414247703883e-05,snRNP Assembly,7
+458,multi_Lasso,REAC,REAC:R-HSA-180746,['REAC:R-HSA-177243'],2.1907595057189343e-05,Nuclear import of Rev protein,6
+459,multi_Lasso,REAC,REAC:R-HSA-159227,['REAC:R-HSA-159234'],2.1907595057189343e-05,Transport of the SLBP independent Mature mRNA,6
+460,multi_Lasso,REAC,REAC:R-HSA-180910,['REAC:R-HSA-176033'],2.1907595057189343e-05,Vpr-mediated nuclear import of PICs,6
+461,multi_Lasso,GO:CC,GO:0070545,"['GO:0005730', 'GO:0030686', 'GO:0140513']",2.3164467850578967e-05,"""A protein complex that is involved in coordinating ribosome biogenesis with cell cycle progression. In human, it is composed of Pes1, Bop1, and WDR12; in Saccharomyces the proteins are known as Nop7p, Erb1 and Ytm1 respectively."" [GOC:ab, GOC:mah, PMID:16043514, PMID:17353269]",3
+462,multi_Lasso,REAC,REAC:R-HSA-165054,"['REAC:R-HSA-162599', 'REAC:R-HSA-177243']",2.6816159477974763e-05,Rev-mediated nuclear export of HIV RNA,6
+463,multi_Lasso,REAC,REAC:R-HSA-4085377,['REAC:R-HSA-3108232'],2.6816159477974763e-05,SUMOylation of SUMOylation proteins,6
+464,multi_Lasso,REAC,REAC:R-HSA-159230,['REAC:R-HSA-159234'],2.6816159477974763e-05,Transport of the SLBP Dependant Mature mRNA,6
+465,multi_Lasso,REAC,REAC:R-HSA-3301854,['REAC:R-HSA-2980766'],3.259658396215277e-05,Nuclear Pore Complex (NPC) Disassembly,6
+466,multi_Lasso,GO:CC,GO:0071013,"['GO:0005681', 'GO:1902494']",3.6595519606371464e-05,"""A spliceosomal complex that contains three snRNPs, including U5, bound to a splicing intermediate in which the first catalytic cleavage of the 5' splice site has occurred. The precise subunit composition differs significantly from that of the catalytic step 1, or activated, spliceosome, and includes many proteins in addition to those found in the associated snRNPs."" [GOC:ab, GOC:krc, GOC:mah, ISBN:0879695897, ISBN:0879697393, PMID:18322460, PMID:19239890]",7
+467,multi_Lasso,REAC,REAC:R-HSA-176033,['REAC:R-HSA-162909'],3.936573812496111e-05,Interactions of Vpr with host cellular proteins,6
+468,multi_Lasso,REAC,REAC:R-HSA-177243,['REAC:R-HSA-162909'],3.936573812496111e-05,Interactions of Rev with host cellular proteins,6
+469,multi_Lasso,HPA,HPA:0090993,['HPA:0090992'],3.9946632696342895e-05,cerebellum; molecular layer - neuropil[High],6
+470,multi_Lasso,KEGG,KEGG:03013,['KEGG:00000'],4.302551983474702e-05,Nucleocytoplasmic transport,8
+471,multi_Lasso,REAC,REAC:R-HSA-72163,['REAC:R-HSA-72172'],4.7183837992025155e-05,mRNA Splicing - Major Pathway,11
+472,multi_Lasso,REAC,REAC:R-HSA-3232142,['REAC:R-HSA-3108232'],4.72513215460848e-05,SUMOylation of ubiquitinylation proteins,6
+473,multi_Lasso,GO:CC,GO:0005643,"['GO:0005635', 'GO:0140513']",6.631005386402719e-05,"""A protein complex providing a discrete opening in the nuclear envelope of a eukaryotic cell, where the inner and outer nuclear membranes are joined."" [ISBN:0198547684]",7
+474,multi_Lasso,CORUM,CORUM:351,['CORUM:0000000'],6.655265093440509e-05,Spliceosome,11
+475,multi_Lasso,REAC,REAC:R-HSA-72172,['REAC:R-HSA-72203'],6.667852609175038e-05,mRNA Splicing,11
+476,multi_Lasso,HPA,HPA:0091051,['HPA:0090000'],6.78854932803466e-05,cerebellum; synaptic glomeruli - capsule[≥Low],8
+477,multi_Lasso,REAC,REAC:R-HSA-159231,['REAC:R-HSA-159234'],7.90580214274453e-05,Transport of Mature mRNA Derived from an Intronless Transcript,6
+478,multi_Lasso,REAC,REAC:R-HSA-168276,['REAC:R-HSA-168255'],7.90580214274453e-05,NS1 Mediated Effects on Host Pathways,6
+479,multi_Lasso,GO:CC,GO:0016607,['GO:0016604'],8.695108568505653e-05,"""A discrete extra-nucleolar subnuclear domain, 20-50 in number, in which splicing factors are seen to be localized by immunofluorescence microscopy."" [http://www.cellnucleus.com/]",12
+480,multi_Lasso,REAC,REAC:R-HSA-159234,['REAC:R-HSA-72202'],9.29228426000174e-05,Transport of Mature mRNAs Derived from Intronless Transcripts,6
+481,multi_Lasso,HPA,HPA:0250133,['HPA:0250132'],9.826672185808636e-05,hippocampus; neuronal cells[High],26
+482,multi_Lasso,HPA,HPA:0130652,['HPA:0130651'],0.00010287467536512485,colon; fibroblasts[≥Medium],8
+483,multi_Lasso,REAC,REAC:R-HSA-168325,['REAC:R-HSA-168273'],0.00010872502888865537,Viral Messenger RNA Synthesis,6
+484,multi_Lasso,GO:MF,GO:0044877,['GO:0005488'],0.00011761434339129449,"""Binding to a macromolecular complex."" [GOC:jl]",26
+485,multi_Lasso,HPA,HPA:0091022,['HPA:0091021'],0.00012612747967914842,cerebellum; processes in granular layer[≥Medium],10
+486,multi_Lasso,HPA,HPA:0080133,['HPA:0080132'],0.00012701495056886464,caudate; neuronal cells[High],24
+487,multi_Lasso,REAC,REAC:R-HSA-4570464,['REAC:R-HSA-3108232'],0.00016987807589864714,SUMOylation of RNA binding proteins,6
+488,multi_Lasso,REAC,REAC:R-HSA-4615885,['REAC:R-HSA-3108232'],0.00016987807589864714,SUMOylation of DNA replication proteins,6
+489,multi_Lasso,GO:CC,GO:0005694,['GO:0043232'],0.0002026563925747927,"""A structure composed of a very long molecule of DNA and associated proteins (e.g. histones) that carries hereditary information."" [ISBN:0198547684]",25
+490,multi_Lasso,REAC,REAC:R-HSA-159236,['REAC:R-HSA-72202'],0.00020310820736615148,Transport of Mature mRNA derived from an Intron-Containing Transcript,7
+491,multi_Lasso,HPA,HPA:0130651,['HPA:0130000'],0.00022071748955471325,colon; fibroblasts[≥Low],8
+492,multi_Lasso,GO:BP,GO:0015931,"['GO:0071702', 'GO:0071705']",0.00024060497651746439,"""The directed movement of nucleobases, nucleosides, nucleotides and nucleic acids, into, out of or within a cell, or between cells, by means of some agent such as a transporter or pore."" [GOC:ai]",10
+493,multi_Lasso,HPA,HPA:0091053,['HPA:0091052'],0.00024942745336865613,cerebellum; synaptic glomeruli - capsule[High],5
+494,multi_Lasso,GO:BP,GO:0006396,"['GO:0010467', 'GO:0016070']",0.00029158679371602534,"""Any process involved in the conversion of one or more primary RNA transcripts into one or more mature RNA molecules."" [GOC:mah]",37
+495,multi_Lasso,REAC,REAC:R-HSA-2980766,['REAC:R-HSA-68875'],0.00029273327930110936,Nuclear Envelope Breakdown,6
+496,multi_Lasso,GO:BP,GO:0030490,"['GO:0006364', 'GO:0042274']",0.000320936388425834,"""Any process involved in the maturation of a precursor Small SubUnit (SSU) ribosomal RNA (rRNA) molecule into a mature SSU-rRNA molecule."" [GOC:curators]",6
+497,multi_Lasso,REAC,REAC:R-HSA-72165,['REAC:R-HSA-72172'],0.0003327290850797927,mRNA Splicing - Minor Pathway,6
+498,multi_Lasso,GO:CC,GO:0031965,"['GO:0005635', 'GO:0031090']",0.0003370765739440135,"""Either of the lipid bilayers that surround the nucleus and form the nuclear envelope; excludes the intermembrane space."" [GOC:mah, GOC:pz]",10
+499,multi_Lasso,GO:BP,GO:0071840,['GO:0009987'],0.00034759246192801534,"""A process that results in the biosynthesis of constituent macromolecules, assembly, arrangement of constituent parts, or disassembly of a cellular component."" [GOC:mah]",64
+500,multi_Lasso,HPA,HPA:0460201,['HPA:0460000'],0.0003768266591825749,skin 1; endothelial cells[≥Low],20
+501,multi_Lasso,REAC,REAC:R-HSA-72202,['REAC:R-HSA-72203'],0.00046172185724793784,Transport of Mature Transcript to Cytoplasm,7
+502,multi_Lasso,GO:BP,GO:0006405,"['GO:0050658', 'GO:0051168']",0.00047811736465937297,"""The directed movement of RNA from the nucleus to the cytoplasm."" [GOC:ma]",7
+503,multi_Lasso,HPA,HPA:0091021,['HPA:0090000'],0.00048627250377845016,cerebellum; processes in granular layer[≥Low],10
+504,multi_Lasso,CORUM,CORUM:6856,['CORUM:0000000'],0.0005319023909668655,PeBoW complex,3
+505,multi_Lasso,CORUM,CORUM:6306,['CORUM:0000000'],0.0005319023909668655,DDX27-PeBoW complex,3
+506,multi_Lasso,WP,WP:WP3998,['WP:000000'],0.0007066862083053508,Prader Willi and Angelman syndrome,7
+507,multi_Lasso,REAC,REAC:R-HSA-70326,['REAC:R-HSA-71387'],0.0007556085488218942,Glucose metabolism,7
+508,multi_Lasso,REAC,REAC:R-HSA-6784531,['REAC:R-HSA-72306'],0.000756529345174109,tRNA processing in the nucleus,6
+509,multi_Lasso,HPA,HPA:0470671,['HPA:0470000'],0.0007568745909148851,skin 2; melanocytes[≥Low],18
+510,multi_Lasso,GO:CC,GO:0140513,"['GO:0005634', 'GO:0032991']",0.0008172568725348808,"""A stable assembly of two or more macromolecules, i.e. proteins, nucleic acids, carbohydrates or lipids, in which at least one component is a protein and the constituent parts function together in the nucleus."" [GOC:pg]",29
+511,multi_Lasso,GO:MF,GO:0005198,['GO:0003674'],0.0008394572819121436,"""The action of a molecule that contributes to the structural integrity of a complex."" [GOC:mah, GOC:vw]",19
+512,multi_Lasso,GO:MF,GO:0003676,['GO:0097159'],0.0008860462516310407,"""Binding to a nucleic acid."" [GOC:jl]",49
+513,multi_Lasso,GO:BP,GO:0042274,"['GO:0022613', 'GO:0042254']",0.0009786352489621812,"""A cellular process that results in the biosynthesis of constituent macromolecules, assembly, and arrangement of constituent parts of a small ribosomal subunit; includes transport to the sites of protein synthesis."" [GOC:jl]",7
+514,multi_Lasso,GO:BP,GO:0045943,"['GO:0006356', 'GO:0006360', 'GO:0045893']",0.0012435810036191873,"""Any process that activates or increases the frequency, rate or extent of transcription mediated by RNA polymerase I."" [GOC:go_curators, GOC:txnOH]",5
+515,multi_Lasso,GO:MF,GO:0003729,['GO:0003723'],0.0012529543898169306,"""Binding to messenger RNA (mRNA), an intermediate molecule between DNA and protein. mRNA includes UTR and coding sequences, but does not contain introns."" [GOC:kmv, GOC:pr, SO:0000234]",11
+516,multi_Lasso,GO:CC,GO:0110016,"['GO:0005730', 'GO:0070603']",0.0012766526954060753,"""A chromatin remodeling complex that positively regulates histone H3 acetylation, in particular H3K9, by recruiting histone acetyltransferases to rDNA gene regions. Located in the nucleolus where it assembles on RNA Polymerase I (Pol I) and possibly on RNA Polymerase III (Pol III) promoter and coding regions during early G1 phase and activates the post-initiation phases of Pol I transcription. May also activate RNA Polymerase II (Pol II) gene transcription. In mammals, B-WICH contains the WICH complex core of BAZ1B and SMARCA5, additional protein subunits and possibly rRNAs. Although it contains several catalytic subunits it is not clear which functions are carried out by the complex itself."" [GOC:bhm, PMID:16603771, PMID:21559432, PMID:23555303, PMID:26044184]",3
+517,multi_Lasso,GO:MF,GO:0043021,['GO:0044877'],0.0013695551167936413,"""Binding to a complex of RNA and protein."" [GOC:bf, GOC:go_curators, GOC:vk]",8
+518,multi_Lasso,HPA,HPA:0400653,['HPA:0400652'],0.0014229048556655263,rectum; fibroblasts[High],6
+519,multi_Lasso,HPA,HPA:0090000,['HPA:0000000'],0.0014656086648931965,cerebellum,70
+520,multi_Lasso,GO:CC,GO:0043232,"['GO:0043228', 'GO:0043229']",0.001689206939237465,"""Organized structure of distinctive morphology and function, not bounded by a lipid bilayer membrane and occurring within the cell. Includes ribosomes, the cytoskeleton and chromosomes."" [GOC:go_curators]",50
+521,multi_Lasso,GO:CC,GO:0043228,['GO:0043226'],0.0016971772673800571,"""Organized structure of distinctive morphology and function, not bounded by a lipid bilayer membrane. Includes ribosomes, the cytoskeleton and chromosomes."" [GOC:go_curators]",50
+522,multi_Lasso,HPA,HPA:0130243,['HPA:0130242'],0.001969393752585741,colon; peripheral nerve/ganglion[High],19
+523,multi_Lasso,REAC,REAC:R-HSA-4551638,['REAC:R-HSA-3108232'],0.002232838019045202,SUMOylation of chromatin organization proteins,6
+524,multi_Lasso,REAC,REAC:R-HSA-3371453,['REAC:R-HSA-3371556'],0.002439106638141922,Regulation of HSF1-mediated heat shock response,6
+525,multi_Lasso,HPA,HPA:0090992,['HPA:0090991'],0.002441634169519961,cerebellum; molecular layer - neuropil[≥Medium],8
+526,multi_Lasso,GO:CC,GO:0071007,"['GO:0005684', 'GO:0071013']",0.0024743751011856037,"""A spliceosomal complex that contains the U2, U5 and U6 snRNPs bound to a splicing intermediate in which the first catalytic cleavage of the 5' splice site has occurred. The precise subunit composition differs significantly from that of the catalytic step 1, or activated, spliceosome, and includes many proteins in addition to those found in the U2, U5 and U6 snRNPs."" [GOC:ab, GOC:krc, GOC:mah, ISBN:0879695897, ISBN:0879697393, PMID:18322460, PMID:19239890]",4
+527,multi_Lasso,GO:BP,GO:0051168,['GO:0006913'],0.002634783549440636,"""The directed movement of substances out of the nucleus."" [GOC:ai]",8
+528,multi_Lasso,REAC,REAC:R-HSA-70171,['REAC:R-HSA-70326'],0.002660582415427034,Glycolysis,6
+529,multi_Lasso,HPA,HPA:0470672,['HPA:0470671'],0.002760541602666092,skin 2; melanocytes[≥Medium],16
+530,multi_Lasso,HPA,HPA:0080132,['HPA:0080131'],0.002978379164398285,caudate; neuronal cells[≥Medium],49
+531,multi_Lasso,REAC,REAC:R-HSA-1169408,['REAC:R-HSA-1169410'],0.00315254318218558,ISG15 antiviral mechanism,6
+532,multi_Lasso,GO:CC,GO:0005635,"['GO:0005634', 'GO:0012505', 'GO:0031967']",0.0032830860201920747,"""The double lipid bilayer enclosing the nucleus and separating its contents from the rest of the cytoplasm; includes the intermembrane space, a gap of width 20-40 nm (also called the perinuclear space)."" [ISBN:0198547684]",11
+533,multi_Lasso,HPA,HPA:0470201,['HPA:0470000'],0.0033860033218238543,skin 2; endothelial cells[≥Low],19
+534,multi_Lasso,REAC,REAC:R-HSA-3108214,['REAC:R-HSA-3108232'],0.0037158034519784292,SUMOylation of DNA damage response and repair proteins,6
+535,multi_Lasso,HPA,HPA:0100000,['HPA:0000000'],0.004031950603305666,cerebral cortex,74
+536,multi_Lasso,HPA,HPA:0090991,['HPA:0090000'],0.004450816264098293,cerebellum; molecular layer - neuropil[≥Low],10
+537,multi_Lasso,GO:CC,GO:0042405,"['GO:0005634', 'GO:0016234']",0.004951785252914648,"""An intranuclear focus at which aggregated proteins have been sequestered."" [GOC:jl]",3
+538,multi_Lasso,GO:CC,GO:0044615,"['GO:0005643', 'GO:0140513']",0.004951785252914648,"""A filamentous, cage-like assembly on the nuclear face of the nuclear pore complex (NPC). In S. cerevisiae, Mlp1p and Mlp2p are two major components of the NPC nuclear basket. In vertebrates, Tpr is a major component."" [GOC:dgf, PMID:18046406, PMID:19524430, PMID:20947011, PMID:22419078]",3
+539,multi_Lasso,REAC,REAC:R-HSA-1169410,['REAC:R-HSA-913531'],0.00591184102430962,Antiviral mechanism by IFN-stimulated genes,6
+540,multi_Lasso,GO:BP,GO:0006356,"['GO:0006355', 'GO:0006360']",0.006255880945262637,"""Any process that modulates the frequency, rate or extent of transcription mediated by RNA polymerase I."" [GOC:go_curators]",5
+541,multi_Lasso,CORUM,CORUM:1335,['CORUM:0000000'],0.006878967111438075,SNW1 complex,4
+542,multi_Lasso,REAC,REAC:R-HSA-9705671,['REAC:R-HSA-9705683'],0.006938504809604758,SARS-CoV-2 activates/modulates innate and adaptive immune responses,7
+543,multi_Lasso,CORUM,CORUM:1181,['CORUM:0000000'],0.006996577834996307,C complex spliceosome,7
+544,multi_Lasso,GO:BP,GO:0006913,['GO:0051169'],0.007508711501877248,"""The directed movement of molecules between the nucleus and the cytoplasm."" [GOC:go_curators]",10
+545,multi_Lasso,GO:BP,GO:0051169,['GO:0046907'],0.007508711501877248,"""The directed movement of substances into, out of, or within the nucleus."" [GOC:ai]",10
+546,multi_Lasso,REAC,REAC:R-HSA-9615933,['REAC:R-HSA-2995410'],0.007713324863367716,Postmitotic nuclear pore complex (NPC) reformation,4
+547,multi_Lasso,REAC,REAC:R-HSA-71387,['REAC:R-HSA-1430728'],0.009697835248586782,Metabolism of carbohydrates,10
+548,multi_Lasso,HPA,HPA:0461471,['HPA:0460000'],0.010263788828715604,skin 1; lymphocytes[≥Low],16
+549,multi_Lasso,CORUM,CORUM:924,['CORUM:0000000'],0.010392183634837923,Toposome,3
+550,multi_Lasso,GO:CC,GO:0005682,['GO:0097525'],0.010666092937916044,"""A ribonucleoprotein complex that contains small nuclear RNA U5, a heptameric ring of Sm proteins, as well as several proteins that are unique to the U5 snRNP, most of which remain associated with the U5 snRNA both while the U5 snRNP is free or assembled into a series of spliceosomal complexes."" [GOC:krc, GOC:mah, ISBN:0879695897]",4
+551,multi_Lasso,GO:MF,GO:0005515,['GO:0005488'],0.011055945484448576,"""Binding to a protein."" [GOC:go_curators]",89
+552,multi_Lasso,REAC,REAC:R-HSA-3371556,['REAC:R-HSA-2262752'],0.011065945466925403,Cellular response to heat stress,6
+553,multi_Lasso,GO:BP,GO:0006997,['GO:0006996'],0.011138994997621316,"""A process that is carried out at the cellular level which results in the assembly, arrangement of constituent parts, or disassembly of the nucleus."" [GOC:dph, GOC:ems, GOC:jl, GOC:mah]",7
+554,multi_Lasso,GO:CC,GO:0005634,['GO:0043231'],0.011287651970225574,"""A membrane-bounded organelle of eukaryotic cells in which chromosomes are housed and replicated. In most cells, the nucleus contains all of the cell's chromosomes except the organellar chromosomes, and is the site of RNA synthesis and processing. In some species, or in specialized cell types, RNA metabolism or DNA replication may be absent."" [GOC:go_curators]",64
+555,multi_Lasso,HPA,HPA:0610833,['HPA:0610832'],0.01151877121847641,urinary bladder; urothelial cells[High],30
+556,multi_Lasso,HPA,HPA:0130653,['HPA:0130652'],0.013316727385519188,colon; fibroblasts[High],5
+557,multi_Lasso,REAC,REAC:R-HSA-211000,['REAC:R-HSA-74160'],0.014175001877693228,Gene Silencing by RNA,7
+558,multi_Lasso,GO:CC,GO:0034399,"['GO:0031981', 'GO:0110165']",0.016595031951198085,"""The portion of the nuclear lumen proximal to the inner nuclear membrane."" [GOC:krc, GOC:mah]",6
+559,multi_Lasso,HPA,HPA:0211091,['HPA:0210000'],0.017952659977591063,fallopian tube; non-ciliated cells[≥Low],16
+560,multi_Lasso,GO:CC,GO:0043005,['GO:0120025'],0.018211798445694042,"""A prolongation or process extending from a nerve cell, e.g. an axon or dendrite."" [GOC:jl, http://www.cogsci.princeton.edu/~wn/]",17
+561,multi_Lasso,REAC,REAC:R-HSA-5619102,['REAC:R-HSA-5619115'],0.018232101102757307,SLC transporter disorders,6
+562,multi_Lasso,HPA,HPA:0471441,['HPA:0470000'],0.023255537199117552,skin 2; fibrohistiocytic cells[≥Low],19
+563,multi_Lasso,REAC,REAC:R-HSA-9705683,['REAC:R-HSA-9694516'],0.02341346138549258,SARS-CoV-2-host interactions,8
+564,multi_Lasso,GO:CC,GO:0036477,['GO:0110165'],0.023943029219494916,"""The region of a neuron that includes the cell body (cell soma) and dendrite(s), but excludes the axon."" [GOC:pad, GOC:PARL]",13
+565,multi_Lasso,CORUM,CORUM:3055,['CORUM:0000000'],0.024194665862660683,Nop56p-associated pre-rRNA complex,7
+566,multi_Lasso,GO:MF,GO:0003724,"['GO:0004386', 'GO:0008186', 'GO:0140098']",0.024296523378060438,"""Unwinding of an RNA helix, driven by ATP hydrolysis."" [GOC:jl, PMID:19158098]",5
+567,multi_Lasso,GO:BP,GO:0051292,"['GO:0006999', 'GO:0046931']",0.025338073725932633,"""The aggregation, arrangement and bonding together of a set of components to form a nuclear pore complex."" [GOC:ai, GOC:mah]",3
+568,multi_Lasso,REAC,REAC:R-HSA-5578749,['REAC:R-HSA-211000'],0.027190037198728666,Transcriptional regulation by small RNAs,6
+569,multi_Lasso,GO:MF,GO:0008186,['GO:0140657'],0.0275520217058154,"""Catalysis of the reaction: ATP + H2O = ADP + phosphate; this reaction requires the presence of RNA, and it drives another reaction."" [GOC:jl]",5
+570,multi_Lasso,GO:CC,GO:0016020,['GO:0110165'],0.028164474118948162,"""A lipid bilayer along with all the proteins and protein complexes embedded in it and attached to it."" [GOC:dos, GOC:mah, ISBN:0815316194]",62
+571,multi_Lasso,HPA,HPA:0091041,['HPA:0090000'],0.028633547312976085,cerebellum; processes in white matter[≥Low],8
+572,multi_Lasso,CORUM,CORUM:6194,['CORUM:0000000'],0.02864835270545929,B-WICH complex,3
+573,multi_Lasso,REAC,REAC:R-HSA-72306,['REAC:R-HSA-8953854'],0.028714935999920317,tRNA processing,6
+574,multi_Lasso,HP,HP:0030786,['HP:0000504'],0.029512598253537276,Perceived flashes of light.,6
+575,multi_Lasso,HPA,HPA:0080131,['HPA:0080000'],0.029680866939425454,caudate; neuronal cells[≥Low],61
+576,multi_Lasso,HPA,HPA:0400652,['HPA:0400651'],0.030931748709152006,rectum; fibroblasts[≥Medium],6
+577,multi_Lasso,GO:CC,GO:0044614,"['GO:0005643', 'GO:0140513']",0.03214038521449207,"""Filamentous extensions on cytoplasmic face of the nuclear pore complex (NPC). In S. cerevisiae, Nup159p, Nup82p, and Nup42p contribute to the cytoplasmic filaments. In vertebrates, Nup358 is a major component."" [GOC:dgf, PMID:18046406, PMID:19524430, PMID:20947011, PMID:22419078]",2
+578,multi_Lasso,GO:CC,GO:0032991,['GO:0005575'],0.03559651474412246,"""A stable assembly of two or more macromolecules, i.e. proteins, nucleic acids, carbohydrates or lipids, in which at least one component is a protein and the constituent parts function together."" [GOC:dos, GOC:mah]",56
+579,multi_Lasso,TF,TF:M10578,['TF:M00000'],0.036328335884594436,Factor: Barhl-1; motif: NTAAACGN,51
+580,multi_Lasso,GO:CC,GO:0098636,['GO:0032991'],0.037278855478940755,"""Any protein complex that is capable of carrying out some part of the process of cell adhesion to the cell matrix or to another cell."" [GOC:dos]",4
+581,multi_Lasso,HPA,HPA:0460181,['HPA:0460000'],0.03752313646529396,skin 1; cells in granular layer[≥Low],15
+582,multi_Lasso,HPA,HPA:0100213,['HPA:0100212'],0.03869459645519511,cerebral cortex; neuropil[High],11
+583,multi_Lasso,HPA,HPA:0461441,['HPA:0460000'],0.040081711112176115,skin 1; fibrohistiocytic cells[≥Low],17
+584,multi_Lasso,GO:BP,GO:0006360,['GO:0006351'],0.0408153373582886,"""The synthesis of RNA from a DNA template by RNA polymerase I (RNAP I), originating at an RNAP I promoter."" [GOC:jl, GOC:txnOH]",5
+585,multi_Lasso,HPA,HPA:0381212,['HPA:0381211'],0.04117136920813722,placenta; syncytiotrophoblasts - cell body[≥Medium],12
+586,multi_Lasso,CORUM,CORUM:6302,['CORUM:0000000'],0.04263927409062017,B-WICH complex,3
+587,multi_Lasso,REAC,REAC:R-HSA-9610379,['REAC:R-HSA-9609646'],0.048048776399287646,HCMV Late Events,6
+588,multi_Lasso,GO:MF,GO:0030623,['GO:0017069'],0.04970687419145633,"""Binding to a U5 small nuclear RNA (U5 snRNA)."" [GOC:jl]",2
+589,multi_Lasso,CORUM,CORUM:3080,['CORUM:0000000'],0.04995449955163809,ILF3-XPO5 complex,2
+590,SVM,GO:CC,GO:0031982,['GO:0043227'],1.6577043809155294e-07,"""Any small, fluid-filled, spherical organelle enclosed by membrane."" [GOC:mah, GOC:pz, GOC:vesicles]",44
+591,SVM,GO:CC,GO:0005615,"['GO:0005576', 'GO:0110165']",3.6616727571559786e-07,"""That part of a multicellular organism outside the cells proper, usually taken to be outside the plasma membranes, and occupied by fluid."" [ISBN:0198547684]",39
+592,SVM,GO:CC,GO:0005576,['GO:0110165'],8.683671704937052e-07,"""The space external to the outermost structure of a cell. For cells without external protective or external encapsulating structures this refers to space outside of the plasma membrane. This term covers the host cell environment outside an intracellular parasite."" [GOC:go_curators]",44
+593,SVM,GO:CC,GO:0070062,"['GO:0005615', 'GO:1903561']",4.13887950338018e-06,"""A vesicle that is released into the extracellular region by fusion of the limiting endosomal membrane of a multivesicular body with the plasma membrane. Extracellular exosomes, also simply called exosomes, have a diameter of about 40-100 nm."" [GOC:BHF, GOC:mah, GOC:vesicles, PMID:15908444, PMID:17641064, PMID:19442504, PMID:19498381, PMID:22418571, PMID:24009894]",29
+594,SVM,GO:CC,GO:1903561,"['GO:0031982', 'GO:0065010']",5.326795800064675e-06,"""Any vesicle that is part of the extracellular region."" [GO_REF:0000064, GOC:pm, GOC:TermGenie, PMID:24769233]",29
+595,SVM,GO:CC,GO:0043230,"['GO:0005576', 'GO:0043226']",5.382647946252749e-06,"""Organized structure of distinctive morphology and function, occurring outside the cell. Includes, for example, extracellular membrane vesicles (EMVs) and the cellulosomes of anaerobic bacteria and fungi."" [GOC:jl, PMID:9914479]",29
+596,SVM,GO:CC,GO:0065010,"['GO:0043227', 'GO:0043230']",5.382647946252749e-06,"""Organized structure of distinctive morphology and function, bounded by a lipid bilayer membrane and occurring outside the cell."" [GOC:isa_complete]",29
+597,SVM,HPA,HPA:0131293,['HPA:0131292'],2.711992977068145e-05,colon; endocrine cells[High],13
+598,SVM,GO:CC,GO:0045261,"['GO:0005622', 'GO:0033178', 'GO:0045259']",0.00045886932868753285,"""The sector of a hydrogen-transporting ATP synthase complex in which the catalytic activity resides; it comprises the catalytic core and central stalk, and is peripherally associated with a membrane, such as the plasma membrane or the mitochondrial inner membrane, when the entire ATP synthase is assembled."" [GOC:mah, PMID:10838056]",3
+599,SVM,GO:BP,GO:0044281,['GO:0008152'],0.0006079228622859549,"""The chemical reactions and pathways involving small molecules, any low molecular weight, monomeric, non-encoded molecule."" [GOC:curators, GOC:pde, GOC:vw]",25
+600,SVM,HPA,HPA:0131292,['HPA:0131291'],0.001016630802872103,colon; endocrine cells[≥Medium],14
+601,SVM,GO:CC,GO:0005737,"['GO:0005622', 'GO:0110165']",0.0024189911059380653,"""The contents of a cell excluding the plasma membrane and nucleus, but including other subcellular structures."" [ISBN:0198547684]",75
+602,SVM,HPA,HPA:0401293,['HPA:0401292'],0.002822610808836442,rectum; endocrine cells[High],11
+603,SVM,HPA,HPA:0131291,['HPA:0130000'],0.003307396152708611,colon; endocrine cells[≥Low],14
+604,SVM,HPA,HPA:0401292,['HPA:0401291'],0.005548110230009406,rectum; endocrine cells[≥Medium],13
+605,SVM,HPA,HPA:0031301,['HPA:0030000'],0.0066568975018791955,appendix; enterocytes[≥Low],14
+606,SVM,GO:CC,GO:0030054,['GO:0110165'],0.007246700089614135,"""A cellular component that forms a specialized region of connection between two or more cells, or between a cell and the extracellular matrix, or between two membrane-bound components of a cell, such as flagella."" [GOC:aruk, GOC:bc, GOC:mah, http://www.vivo.colostate.edu/hbooks/cmb/cells/pmemb/junctions_a.html, ISBN:0198506732, PMID:26820516, PMID:28096264]",24
+607,SVM,GO:BP,GO:0031579,['GO:0061024'],0.011012979859158336,"""A process that is carried out at the cellular level which results in the assembly, arrangement of constituent parts, or disassembly of membrane rafts, small (10-200 nm), heterogeneous, highly dynamic, sterol- and sphingolipid-enriched membrane domains that compartmentalize cellular processes."" [GOC:dph, GOC:jl, GOC:mah]",4
+608,SVM,HPA,HPA:0131303,['HPA:0131302'],0.015392265802922002,colon; enterocytes[High],9
+609,SVM,HPA,HPA:0401291,['HPA:0400000'],0.016786480289026285,rectum; endocrine cells[≥Low],13
+610,SVM,GO:CC,GO:0033178,"['GO:0016469', 'GO:0098796']",0.018018486658696025,"""A protein complex that forms part of a proton-transporting two-sector ATPase complex and catalyzes ATP hydrolysis or synthesis. The catalytic domain (F1, V1, or A1) comprises a hexameric catalytic core and a central stalk, and is peripherally associated with the membrane when the two-sector ATPase is assembled."" [GOC:mah, PMID:10838056]",3
+611,SVM,GO:BP,GO:0042221,['GO:0050896'],0.019611947633787746,"""Any process that results in a change in state or activity of a cell or an organism (in terms of movement, secretion, enzyme production, gene expression, etc.) as a result of a chemical stimulus."" [GOC:jl]",36
+612,SVM,GO:BP,GO:0001765,"['GO:0031579', 'GO:0071709']",0.02535854341555172,"""The aggregation, arrangement and bonding together of a set of components to form a membrane raft, a small (10-200 nm), heterogeneous, highly dynamic, sterol- and sphingolipid-enriched membrane domains that compartmentalizes cellular processes."" [PMID:12648772, PMID:12803918, PMID:16645198]",3
+613,SVM,GO:BP,GO:0019752,['GO:0043436'],0.025586639236123598,"""The chemical reactions and pathways involving carboxylic acids, any organic acid containing one or more carboxyl (COOH) groups or anions (COO-)."" [ISBN:0198506732]",15
+614,SVM,GO:BP,GO:0050896,['GO:0008150'],0.0282428261205348,"""Any process that results in a change in state or activity of a cell or an organism (in terms of movement, secretion, enzyme production, gene expression, etc.) as a result of a stimulus. The process begins with detection of the stimulus and ends with a change in state or activity or the cell or organism."" [GOC:ai, GOC:bf]",61
+615,SVM,HPA,HPA:0481293,['HPA:0481292'],0.028614598352214797,small intestine; endocrine cells[High],10
+616,SVM,GO:CC,GO:0005753,"['GO:0045259', 'GO:0098800']",0.03357478398965993,"""A proton-transporting ATP synthase complex found in the mitochondrial membrane."" [GOC:mah, GOC:mtg_sensu]",3
+617,SVM,GO:BP,GO:0043436,['GO:0006082'],0.03405335058496674,"""The chemical reactions and pathways involving any oxoacid; an oxoacid is a compound which contains oxygen, at least one other element, and at least one hydrogen bound to oxygen, and which produces a conjugate base by loss of positive hydrogen ion(s) (hydrons)."" [Wikipedia:Oxyacid]",15
+618,SVM,GO:BP,GO:0006082,"['GO:0044237', 'GO:0044281', 'GO:0071704']",0.03675801380073845,"""The chemical reactions and pathways involving organic acids, any acidic compound containing carbon in covalent linkage."" [ISBN:0198506732]",15
+619,SVM,REAC,REAC:R-HSA-211859,['REAC:R-HSA-1430728'],0.03701300997307167,Biological oxidations,8
+620,SVM,HPA,HPA:0481291,['HPA:0480000'],0.04251270302476445,small intestine; endocrine cells[≥Low],13
+621,SVM,GO:CC,GO:0045259,['GO:0016469'],0.04384667813781379,"""A proton-transporting two-sector ATPase complex that catalyzes the phosphorylation of ADP to ATP during oxidative phosphorylation. The complex comprises a membrane sector (F0) that carries out proton transport and a cytoplasmic compartment sector (F1) that catalyzes ATP synthesis by a rotational mechanism; the extramembrane sector (containing 3 a and 3 b subunits) is connected via the d-subunit to the membrane sector by several smaller subunits. Within this complex, the g and e subunits and the 9-12 c subunits rotate by consecutive 120 degree angles and perform parts of ATP synthesis. This movement is driven by the hydrogen ion electrochemical potential gradient."" [ISBN:0198547684, ISBN:0716743663]",3
+622,SVM,HPA,HPA:0031292,['HPA:0031291'],0.04728636362537492,appendix; endocrine cells[≥Medium],11
+623,SVM,GO:MF,GO:0001730,['GO:0070566'],0.04970687419145633,"""Catalysis of the reaction: ATP = pppA(2'p5'A)n oligomers. This reaction requires the binding of double-stranded RNA."" [ISBN:0198506732]",2
+624,XGboost,GO:CC,GO:0034455,"['GO:0005730', 'GO:0140513']",0.029904192946673402,"""A protein complex that forms a subcomplex of the 90S preribosome and is required for the subsequent assembly of the rest of the preribosome. In S. cerevisiae, it is composed of Utp5p, Utp4p, Nan1p, Utp8p, Utp9p, Utp10 and Utp15p."" [GOC:krc, GOC:mah, GOC:vw, PMID:17515605]",1
+625,Lightgbm,GO:CC,GO:0012505,['GO:0110165'],4.3704556565975165e-05,"""A collection of membranous structures involved in transport within the cell. The main components of the endomembrane system are endoplasmic reticulum, Golgi bodies, vesicles, cell membrane and nuclear envelope. Members of the endomembrane system pass materials through each other or though the use of vesicles."" [GOC:lh]",44
+626,Lightgbm,GO:CC,GO:0099503,['GO:0031410'],0.00023105290966931276,"""A cytoplasmic, membrane bound vesicle that is capable of fusing to the plasma membrane to release its contents into the extracellular space."" [GOC:dos]",18
+627,Lightgbm,GO:CC,GO:0005737,"['GO:0005622', 'GO:0110165']",0.0008563859858144872,"""The contents of a cell excluding the plasma membrane and nucleus, but including other subcellular structures."" [ISBN:0198547684]",76
+628,Lightgbm,GO:CC,GO:0031982,['GO:0043227'],0.0021139877667527224,"""Any small, fluid-filled, spherical organelle enclosed by membrane."" [GOC:mah, GOC:pz, GOC:vesicles]",36
+629,Lightgbm,MIRNA,MIRNA:hsa-miR-1301-3p,['MIRNA:000000'],0.0021567852132950206,hsa-miR-1301-3p,9
+630,Lightgbm,GO:CC,GO:0030141,"['GO:0012505', 'GO:0099503']",0.0022951134309729506,"""A small subcellular vesicle, surrounded by a membrane, that is formed from the Golgi apparatus and contains a highly concentrated protein destined for secretion. Secretory granules move towards the periphery of the cell and upon stimulation, their membranes fuse with the cell membrane, and their protein load is exteriorized. Processing of the contained protein may take place in secretory granules."" [GOC:mah, ISBN:0198506732]",15
+631,Lightgbm,GO:BP,GO:0016477,['GO:0048870'],0.003649765682190448,"""The controlled self-propelled movement of a cell from one site to a destination guided by molecular cues."" [GOC:cjm, GOC:dph, GOC:ems, GOC:pf, Wikipedia:Cell_migration]",21
+632,Lightgbm,GO:CC,GO:0062023,['GO:0031012'],0.00498817309512539,"""An extracellular matrix consisting mainly of proteins (especially collagen) and glycosaminoglycans (mostly as proteoglycans) that provides not only essential physical scaffolding for the cellular constituents but can also initiate crucial biochemical and biomechanical cues required for tissue morphogenesis, differentiation and homeostasis. The components are secreted by cells in the vicinity and form a sheet underlying or overlying cells such as endothelial and epithelial cells."" [GOC:BHF, GOC:rph, PMID:21123617]",10
+633,Lightgbm,HPA,HPA:0131331,['HPA:0130000'],0.005936732903174496,colon; mucosal lymphoid cells[≥Low],13
+634,Lightgbm,GO:CC,GO:0031410,"['GO:0005737', 'GO:0097708']",0.0060387902546369075,"""A vesicle found in the cytoplasm of a cell."" [GOC:ai, GOC:mah, GOC:vesicles]",26
+635,Lightgbm,GO:CC,GO:0097708,"['GO:0031982', 'GO:0043231']",0.006252929586562085,"""Any vesicle that is part of the intracellular region."" [GOC:vesicles]",26
+636,Lightgbm,GO:MF,GO:0097367,['GO:0005488'],0.006400775667291832,"""Binding to a carbohydrate derivative."" [GOC:pr]",27
+637,Lightgbm,GO:CC,GO:0031012,['GO:0030312'],0.009078706843510023,"""A structure lying external to one or more cells, which provides structural support, biochemical or biomechanical cues for cells or tissues."" [GOC:BHF, GOC:mah, GOC:rph, NIF_Subcellular:nlx_subcell_20090513, PMID:21123617, PMID:28089324]",11
+638,Lightgbm,GO:CC,GO:0030312,"['GO:0071944', 'GO:0110165']",0.009228667235365043,"""A structure that lies outside the plasma membrane and surrounds the entire cell or cells. This does not include the periplasmic space."" [GOC:go_curators]",11
+639,Lightgbm,GO:CC,GO:0045335,['GO:0030139'],0.011378093322752745,"""A membrane-bounded intracellular vesicle that arises from the ingestion of particulate material by phagocytosis."" [GOC:go_curators, ISBN:0198506732]",6
+640,Lightgbm,GO:CC,GO:0016020,['GO:0110165'],0.01218028372235937,"""A lipid bilayer along with all the proteins and protein complexes embedded in it and attached to it."" [GOC:dos, GOC:mah, ISBN:0815316194]",63
+641,Lightgbm,GO:CC,GO:0005766,['GO:0005764'],0.017207181801682493,"""A lysosome before it has fused with a vesicle or vacuole."" [GOC:jl, ISBN:0815316194]",6
+642,Lightgbm,GO:CC,GO:0042582,"['GO:0005766', 'GO:0030141']",0.017207181801682493,"""Primary lysosomal granule found in neutrophil granulocytes. Contains a wide range of hydrolytic enzymes and is released into the extracellular fluid."" [GOC:jl, PMID:17152095]",6
+643,Lightgbm,GO:BP,GO:0051873,"['GO:0031640', 'GO:0051702', 'GO:0140546']",0.018724056701462256,"""Any process mediated by an organism that results in the death of cells in the symbiont organism. The symbiont is defined as the smaller of the organisms involved in a symbiotic interaction."" [GOC:add]",4
+644,Lightgbm,GO:CC,GO:0030687,['GO:0030684'],0.02132885998325007,"""A preribosomal complex consisting of 27SA, 27SB, and/or 7S pre-rRNA, 5S rRNA, ribosomal proteins including late-associating large subunit proteins, and associated proteins; a precursor of the eukaryotic cytoplasmic large ribosomal subunit."" [PMID:10567516]",3
+645,Lightgbm,HPA,HPA:0030431,['HPA:0030000'],0.025726155254048214,appendix; germinal center cells[≥Low],9
+646,Lightgbm,GO:CC,GO:0005773,"['GO:0005737', 'GO:0043231']",0.02600097511722107,"""A closed structure, found only in eukaryotic cells, that is completely surrounded by unit membrane and contains liquid material. Cells contain one or several vacuoles, that may have different functions from each other. Vacuoles have a diverse array of functions. They can act as a storage organelle for nutrients or waste products, as a degradative compartment, as a cost-effective way of increasing cell size, and as a homeostatic regulator controlling both turgor pressure and pH of the cytosol."" [GOC:mtg_sensu, ISBN:0198506732]",13
+647,Lightgbm,GO:CC,GO:0031090,"['GO:0016020', 'GO:0043227']",0.027701502327613283,"""A membrane that is one of the two lipid bilayers of an organelle envelope or the outermost membrane of single membrane bound organelle."" [GOC:dos, GOC:mah]",32
+648,Lightgbm,GO:BP,GO:0048870,['GO:0009987'],0.029297210875722412,"""Any process involved in the controlled self-propelled movement of a cell that results in translocation of the cell from one place to another."" [GOC:dgh, GOC:dph, GOC:isa_complete, GOC:mlg]",21
+649,Lightgbm,GO:MF,GO:0005515,['GO:0005488'],0.03741095090751534,"""Binding to a protein."" [GOC:go_curators]",88
+650,Lightgbm,GO:CC,GO:0005775,"['GO:0005773', 'GO:0070013']",0.0382210738517002,"""The volume enclosed within the vacuolar membrane."" [ISBN:0198506732]",6
+651,Lightgbm,GO:CC,GO:0030139,['GO:0031410'],0.04055677311835032,"""A membrane-bounded intracellular vesicle formed by invagination of the plasma membrane around an extracellular substance. Endocytic vesicles fuse with early endosomes to deliver the cargo for further sorting."" [GOC:go_curators, PMID:19696797]",8
+652,Lightgbm,GO:CC,GO:0005576,['GO:0110165'],0.04200365015048759,"""The space external to the outermost structure of a cell. For cells without external protective or external encapsulating structures this refers to space outside of the plasma membrane. This term covers the host cell environment outside an intracellular parasite."" [GOC:go_curators]",34
+653,Lightgbm,GO:BP,GO:0042273,"['GO:0022613', 'GO:0042254']",0.04864396810595962,"""A cellular process that results in the biosynthesis of constituent macromolecules, assembly, and arrangement of constituent parts of a large ribosomal subunit; includes transport to the sites of protein synthesis."" [GOC:jl]",5

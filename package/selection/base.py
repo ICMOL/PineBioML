@@ -16,11 +16,13 @@ class selection:
         return selected_score
 
     def scoring(self, x, y = None):
-        self.scores = x.max().sort_values()
+        self.scores = x.max().sort_values(ascending = False) # top is better
         return self.scores.copy()
 
     def choose(self, scores, k):
-        self.selected_score = scores.tail(k)
+        self.selected_score = scores.head(k)
+        self.selected_score = self.selected_score[self.selected_score != 0]
+        
         return self.selected_score.copy()
     
     def plotting(self):

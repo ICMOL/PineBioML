@@ -5,7 +5,7 @@ from .base import selection as base_selection
 
 
 class DT_selection(base_selection):
-    def __init__(self, bins = 10, q = 0.05, strategy = "c45", center = True, scale = False):
+    def __init__(self, bins = 10, q = 0.05, strategy = "c45", center = True, scale = True):
         super().__init__(center = center, scale = scale)
         self.bins = bins -1
         self.q = q
@@ -37,7 +37,7 @@ class DT_selection(base_selection):
                 split_info = -p*np.log(p)
                 gain /= split_info.sum()
             scores.append(gain)
-        scores = pd.Series(scores, index = columns, name = self.name).sort_values()
+        scores = pd.Series(scores, index = columns, name = self.name).sort_values(ascending = False)
         scores = scores - scores.min()
         return scores
 

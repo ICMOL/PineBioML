@@ -3,13 +3,13 @@ import pandas as pd
 import numpy as np
 
 class imputer():
-    def __init__(self, threshold, center = True, scale = True, log_domain = True):
+    def __init__(self, threshold, center = True, scale = True):
         # threshold sould between 0 ~ 1
         if 0 < threshold <1 or threshold == 1:
             self.threshold = threshold
         else:
             raise ValueError("missing value threshold must be a float from (0, 1]: ", threshold)
-        self.normalizer = normalizer(center = center, scale = scale, log_domain = log_domain)
+        self.normalizer = normalizer(center = center, scale = scale, log_domain = False)
         self.fitted = False
     
     def fit(self, x, y = None):

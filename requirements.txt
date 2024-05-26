@@ -7,3 +7,5 @@ tqdm
 jupyter
 lightgbm
 xgboost
+gprofiler-official
+optuna

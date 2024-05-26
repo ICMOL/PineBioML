@@ -63,7 +63,7 @@ class Lasso_selection(base_selection):
 
         coef = np.array([clr.coef_ for clr in lassoes])
 
-        self.scores = pd.Series(np.logical_not(coef == 0).sum(axis = 0)*self.da, index = x.columns, name = self.name).sort_values()
+        self.scores = pd.Series(np.logical_not(coef == 0).sum(axis = 0)*self.da, index = x.columns, name = self.name).sort_values(ascending = False)
         return self.scores.copy()
 
 
@@ -121,7 +121,7 @@ class Lasso_bisection_selection(base_selection):
             if not self.blind:
                 score.append(((lassoes[-1].predict(X_test)>0.5)== y_test).mean())
             alive = (lassoes[-1].coef_ != 0).sum()
-            #print(alpha, alive)
+
             if alive>= k:
                 lower = alpha
                 lower_alive = alive
@@ -131,8 +131,8 @@ class Lasso_bisection_selection(base_selection):
 
         coef = np.array([clr.coef_ for clr in lassoes])
         
-        self.scores = pd.Series(np.abs(coef[-1]), index = x.columns, name = self.name).sort_values()
-        self.selected_score = self.scores.tail(k)
+        self.scores = pd.Series(np.abs(coef[-1]), index = x.columns, name = self.name).sort_values(ascending = False)
+        self.selected_score = self.scores.head(k)
         return self.selected_score
 
 
@@ -155,7 +155,7 @@ class multi_Lasso_selection(base_selection):
         result = result-result.min()
         result.name = self.name
 
-        self.selected_score = result.sort_values()
+        self.selected_score = result.sort_values(ascending = False)
         return self.selected_score.copy()
             
         

@@ -4,7 +4,7 @@ from sklearn.svm import LinearSVC
 from .base import selection as base_selection
 
 class SVM_selection(base_selection):
-    def __init__(self, center = True, scale = False):
+    def __init__(self, center = True, scale = True):
         super().__init__(center = center, scale = scale, global_scale = True)
         self.kernel = LinearSVC(dual="auto", class_weight="balanced")
         self.name = "SVM"
@@ -14,7 +14,7 @@ class SVM_selection(base_selection):
         svm_weights = np.abs(self.kernel.coef_).sum(axis=0)
         svm_weights /= svm_weights.sum()
         
-        self.scores = pd.Series(svm_weights, index = x.columns, name = self.name).sort_values()
+        self.scores = pd.Series(svm_weights, index = x.columns, name = self.name).sort_values(ascending = False)
         return self.scores.copy()
     
 
@@ -36,6 +36,6 @@ class multi_SVM_selection(base_selection):
         result = result- result.min()
         result.name = self.name
 
-        self.selected_score = result.sort_values()
+        self.selected_score = result.sort_values(ascending = False)
         return self.selected_score.copy()
             

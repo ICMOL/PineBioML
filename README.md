@@ -1,18 +1,19 @@
 # _______ auto Bio-Feature Selection
 ### Overview
 ![image](./images/workflow/auto_selection_workflow.png) 
-This package aims to help analysis bio-data using ML method in python.   
+This package aims to help analysis bio-medical data using ML method in python.   
 
-In the First stage, we will provide feature selection and autoML.
+In the First stage, we will provide feature selection and automatically modeling .
 
+<!--
 # Index
 - Installation
 - Usage example
 - [Documents](./documents/main.md)
-
+-->
 
 # Installation
-0. ### Requirement
+0. ### System Requirement
     1. Windows10 or 11
     2. Python >= 3.9
     3. dependency in requirements.txt    
