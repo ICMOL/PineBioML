@@ -1,72 +1,97 @@
-# _______ auto Bio-Feature Selection
-### Overview
-![image](./images/workflow/auto_selection_workflow.png) 
-This package aims to help analysis bio-medical data using ML method in python.   
+# Overview
+(麻煩用中文寫三百字引言,介紹軟體目的)
+This package aims to help analysis biomedical data using ML method in python.
 
-In the First stage, we will provide feature selection and automatically modeling .
 
-<!--
-# Index
-- Installation
-- Usage example
-- [Documents](./documents/main.md)
--->
+![image](./documents//images/workflow/auto_selection_workflow.png) 
+
+# System requirements
+   1. Python 3.9+
+   2. The following dependencies are required: numpy, pandas, scikit-learn, matplotlib, seaborn, tqdm, jupyter, lightgbm, xgboost
+
 
 # Installation
-0. ### System Requirement
-    1. Windows10 or 11
-    2. Python >= 3.9
-    3. dependency in requirements.txt    
 
-1. ### Python Installation
-    If you already have python >= 3.9 installed in your PC, then skip to next step *Powershell and Python*.   
+### 1. Install Python
+Please follow the tutorial to install python (the "Visual Studio Code" and "Git" are optional):
 
-    Please follow microsoft's tutorial to install python:    
-    https://learn.microsoft.com/en-us/windows/python/beginners    
-    You only need to finish the first part *Install Python* in the turorial, wheather to use visual studio code is optional. In this project, we use ipython notebook mainly. 
+    https://learn.microsoft.com/en-us/windows/python/beginners 
+    
+Please skip this step, if you have python 3.9+ installed in your PC.
 
-2. ### Powershell and Python
-    1. Open the Start menu, searching for Windows PowerShell.    
-        ![image](./images/tutorial/open_powershell.png)
-    2. It will open a terminal like this:
-        ![image](./images/tutorial/powershell_window.png)    
-    3. Type in python.    
-        ![image](./images/tutorial/powershell_python.png)    
-    4. You should see the version information of python that you just installed. 
-        ![image](./images/tutorial/powershell_python_result.png)
-    5. In final to exit python terminal, type in exit()
-        ![image](./images/tutorial/powershell_exit.png)
+### 2. Install dependencies and execute the scripts
+Step 1. Download our scripts from Release
 
+    https://github.com/ICMOL/undetermined/releases
 
+Step 2. Install dependencies: Please open Windows PowerShell, move to the directory of our scripts, and execute the following command.
 
-3. ### Update modules and dependency
-    1. Download release.
+    > pip install -r ./requirements.txt          
 
-    2. Open Powershell (as step 2.ii), and move to the direction to the repository by entering:
-        > cd direction\\to\\repository\
+Step 3. Open the interface of python (ipython)
 
-    3. Update pip and install dependency:
-        > pip install --upgrade pip    
-        > pip install -r ./requirements.txt    
+Please execute the following command to open ipython. You will see the figure, if the scripts execute correctly.
 
-    4. Open ipython interface by entering:    
-        > jupyter notebook    
+    > jupyter notebook    
 
-        This should open the browser and showing the repostory folder.    
-
-    ![image](./images/tutorial/browser_jupyter.png)
-    If the browser shows jupyter's main page, the dependency is satisfied.
+![image](./documents/images/tutorial/browser_jupyter.png)
 
 
-# Usage example    
-The fowlling operation sould be done in jupyter notebook interface within your browser (as 3.iv).    
+# Input Table Format
+
+The input data should be tabular and placed in the ./input folder. We accept .csv, .tsv, .xlsx and R table in .txt formats as input.
+
+*Note: A Sample ID is required. You can designate a column name as the indexing ID. An error will occur if the IDs of x and y do not match. (甚麼是x,甚麼是y?)
+
+
+# Process
+
+### 1. Missing value imputation
+|        ID         |        Option         |  Definition |
+|---------------------|----------------|------------------------------|
+|  1 | Deletion              | Delete the features which are too empty     |
+|  2 | Imputation with a constant value  | Impute missing value with a constant. For example 0 or feature mean |
+|  3 | Imputation using K-NN algorithm        | Impute missing value with the mean/median of k nearest neighbors |
+|  4 | Self regression        |  Training a self regression model to predict the missing value  |
+
+
+### 2. Data transformation
+|        ID         |        Option         |  Definition |
+|---------------------|----------------|------------------------------|
+|  1 | PCA              | Principal component transform    |  |
+|  2 | Power transofmation  | Box-Cox transform or yeo-johnson transform to make data more gaussian-like |   |
+|  3 | Feature bagging        | Put similar features into a bag  |  |
+
+
+### 3. Feature Selection
+|        ID         |        Option         |  Definition |
+|---------------------|----------------|------------------------------|
+|  1 | Volcano plot  | Single feature test p-value and fold change   |  |
+|  2 | Lasso regression | L1 penalty + linear regression |   |
+|  3 | Decision stump        | 1- layer decision tree  |  |
+|  4 | Random Forest        | Gini importance or permutation importance  |  |
+|  5 | AdaBoost        | Gini importance  |  |
+|  6 | Gradient boosting        | Gini importance  |  |
+|  7 | SVM        | Support vector  |  |
+
+
+### 4. Model building
+
+
+### 5. Validation
+
+
+### 6. Report and visualization
+
+
+
+# An Example for Program Demonstration    
+
+<請描述你提供的資料內容是甚麼>
 
 Chosse one of the following examples, double click it in jupyter interface:    
 - example_feature_selection.ipynb
 
-![image](./images/tutorial/jupyter_runall.png)
+![image](./documents/images/tutorial/jupyter_runall.png)
 click the buttom and the script should start.
 
-
-# [Documents](./documents/main.md)
-For further details.
