@@ -1,7 +1,9 @@
-2024/6/1 0.55-pre
+2024/6/1 0.55
     description:
         1. revise code in google style and using pdoc3 to generate api.
         2. selection.Lasso: Default regression -> logistic regression + L1.
+        3. renaming 
+
     On going:
         1. auto ml (auto sklearn, mljar, H2O)
         2. document
