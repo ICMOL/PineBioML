@@ -1,3 +1,49 @@
+2024/6/1 0.55-pre
+    description:
+        1. revise code in google style and using pdoc3 to generate api.
+        2. selection.Lasso: Default regression -> logistic regression + L1.
+    On going:
+        1. auto ml (auto sklearn, mljar, H2O)
+        2. document
+            a. API (Done)
+            b. tutorial (on going)
+
+    bug:
+        1. bagging:
+             - contradicts to log domain in selection method (the negative output of pca)
+             - the variance of feature will change during bagging (variance matters)
+        2. logistic regression + L1 grid search need to to modified. In temporary using binary search.
+    to do:
+        1. add parameter dict(json or yaml-like)
+        2. report
+        n. interactive interface or GUI (maybe nicegui/ plotly)
+
+2024/5/26 0.54-pre
+    description:
+        1. gprofiler query
+        2. selection result with volcano plot
+        3. default parameter change:
+            i. normalizer will all do scaling and centering
+            ii. random_forest pruning (ccp_alpha = 1e-2)
+            iii. essemble will activate 8 method: dt, svm, lasso, multi-lasso, adaboost, xgboost, lightgbm, random_forest-gini
+        4. implement random_forest with oob + permutation importance.
+            i. single processing implement
+            ii. permutation method is super slow: O(n_trees* n_feature* n_repeat) ~ O(n_feature^2* n_repeat)
+        5. an optuna example of svm.
+    On going:
+        1. auto ml (auto sklearn, mljar, H2O)
+        2. document
+
+    bug:
+        1. bagging:
+             - contradicts to log domain in selection method (the negative output of pca)
+             - the variance of feature will change during bagging (variance matters)
+    to do:
+        1. add parameter dict(json or yaml-like)
+        2. report
+        n. interactive interface or GUI (maybe nicegui/ plotly)
+
+
 2024/5/16 0.52-pre
     description:
         readme format changes
