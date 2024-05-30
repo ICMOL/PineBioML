@@ -2,8 +2,7 @@
 (麻煩用中文寫三百字引言,介紹軟體目的)
 This package aims to help analysis biomedical data using ML method in python.
 
-
-![image](./documents//images/workflow/auto_selection_workflow.png) 
+![image](./documents/images/workflow/auto_selection_workflow.png) 
 
 # System requirements
    1. Python 3.9+
@@ -20,6 +19,7 @@ Please follow the tutorial to install python (the "Visual Studio Code" and "Git"
 Please skip this step, if you have python 3.9+ installed in your PC.
 
 ### 2. Install dependencies and execute the scripts
+
 Step 1. Download our scripts from Release and unzip it.
 
     https://github.com/ICMOL/undetermined/releases
@@ -49,8 +49,8 @@ The input data should be tabular and placed in the ./input folder. We accept .cs
 |        ID         |        Option         |  Definition |
 |---------------------|----------------|------------------------------|
 |  1 | Deletion              | Delete the features which are too empty     |
-|  2 | Imputation with a constant value  | Impute missing value with a constant. For example 0 or feature mean |
-|  3 | Imputation using K-NN algorithm        | Impute missing value with the mean/median of k nearest neighbors |
+|  2 | Imputation with a constant value  | Impute missing value with a constant value. For example, 0 or feature mean |
+|  3 | Imputation using K-NN algorithm        | Impute missing value with the mean/median of k nearest samples |
 |  4 | Self regression        |  Training a self regression model to predict the missing value  |
 
 
@@ -65,23 +65,20 @@ The input data should be tabular and placed in the ./input folder. We accept .cs
 ### 3. Feature Selection
 |        ID         |        Option         |  Definition |
 |---------------------|----------------|------------------------------|
-|  1 | Volcano plot  | Single feature test p-value and fold change   |  |
-|  2 | Lasso regression | L1 penalty + linear regression |   |
-|  3 | Decision stump        | 1- layer decision tree  |  |
-|  4 | Random Forest        | Gini importance or permutation importance  |  |
-|  5 | AdaBoost        | Gini importance  |  |
-|  6 | Gradient boosting        | Gini importance  |  |
-|  7 | SVM        | Support vector  |  |
+|  1 | Volcano plot  | Seleting by group p-value or fold change   |  |
+|  2 | Lasso regression | Seleting by L1 penalty |   |
+|  3 | Decision stump        | Seleting by 1-layer decision tree  |  |
+|  4 | Random Forest        | Seleting by Gini impuracy or permutation importance over a Random Forest |  |
+|  5 | AdaBoost        | Seleting by Gini impuracy over a AdaBoost model  |  |
+|  6 | Gradient boosting        | Seleting by Gini impuracy over a Gradient boosting such as XGboost or LightGBM  |  |
+|  7 | SVM        | Selectiing by support vector of a trained support vector machine |  |
 
 
 ### 4. Model building
+ - hyper parameter tuner (by optuna)
+ - 
 
-
-### 5. Validation
-
-
-### 6. Report and visualization
-
+### 5. Report and visualization
 
 
 # An Example for Program Demonstration    
