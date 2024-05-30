@@ -1,0 +1,849 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>package.preprocessing.bagging API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>package.preprocessing.bagging</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from sklearn.decomposition import PCA
+
+MAX_ITEM = 32
+BAGGING_THRESHOLD = 0.9
+
+
+class sparser_node:
+    &#34;&#34;&#34; 
+    The kernel of string tree dictionary. It will sparse the feature name and then bagging similar feature with high corelation.
+    
+    For all feature names of a node in k-th layer, their first k digits will be the same.
+
+    For all feature names of a node, they will be bagged together.
+
+    &#34;&#34;&#34;
+
+    def __init__(self, words, k):
+        &#34;&#34;&#34;
+        Args:
+            words (_type_): strings to sparse
+            k (_type_): deepth of node.
+        &#34;&#34;&#34;
+        self.k = k  # the depth of tree, also the digit of current sparser
+        self.name = words[0][:self.k] + &#34;*&#34;  # name of this node
+        self.bagged = False  # if the node is a bag, determined after call bagging function
+
+        items = []
+        collector = {}
+        # separate the words which is not long enough
+        # for example, got words = [&#34;a&#34;, &#34;b&#34;, &#34;a1&#34;, &#34;a2&#34;]
+        # then the items of this bag should be [&#34;a&#34;, &#34;b&#34;]
+        # the collector of child will be [&#34;a1&#34;, &#34;a2&#34;]
+        for word in words:
+            if len(word) &gt; self.k + 1:
+                if word[self.k] not in collector:
+                    collector[word[self.k]] = []
+                collector[word[self.k]].append(word)
+            else:
+                items.append(word)
+
+        self.items = items
+        self.children = {}
+        # [&#34;a1&#34;, &#34;a2&#34;] =&gt; {&#34;a&#34;: [a1, a2]}
+        for symbol in collector:
+            self.children[symbol] = sparser_node(collector[symbol], self.k + 1)
+
+    def __call__(self, idx):
+        &#34;&#34;&#34;
+        query the child.
+
+        Args:
+            idx (char): char to query
+
+        Returns:
+            sparse_node: Child coresponding to idx
+        &#34;&#34;&#34;
+        return self.children[idx]
+
+    def bagging(self, df):
+        &#34;&#34;&#34;
+        Compute the explained variance ratio of 1st PC in PCA of all coresponding features in this node and its child.
+        If the ratio &gt; 0.9, the this node will be bagged. 
+        The node name will be bagged feature name and 1st pc will be corespoding feature value.
+
+        Args:
+            df (_type_): The dataframe of all data.
+
+        Returns:
+            list: the list of all items in this node
+        &#34;&#34;&#34;
+        items = []
+        items += self.items
+
+        for child in self.children:
+            items += self.children[child].bagging(
+                df)  # recurrently call bagging (deep first, digit tree)
+
+        n = len(items)  # only 1 item =&gt; no bagging
+        if n == 1:
+            return items
+        elif n &lt; MAX_ITEM:  # max number of items for each bag
+            data = df[items]
+            ### bagging rules
+            # rule 1
+            #score = np.mean(data.corr().abs())
+            # rule 2
+            pca = PCA(n)
+            tmp_data = pca.fit_transform((data - data.mean() / data.std()))
+            score = pca.explained_variance_ratio_[0]
+
+            if score &gt; BAGGING_THRESHOLD:
+                #print(np.mean(data.corr().abs()), pca.explained_variance_ratio_, &#34;#################&#34;)
+                #df[self.name] = df[items].mean(axis = 1) # act 1
+                df[self.name] = tmp_data[:, 0]  # act 1
+
+                self.bagged = True  # record this node is bagged
+                return [self.name]  # bag name
+        return items
+
+    def collect(self, return_bag=True):
+        &#34;&#34;&#34;
+        collect all items in its children and itself.
+
+        Args:
+            return_bag (bool, optional): True will return in bagged result, otherwise not. Defaults to True.
+
+        Returns:
+            list: the list of all items in this node and its children.
+        &#34;&#34;&#34;
+        if self.bagged and return_bag:
+            return [self.name]
+
+        items = []
+        items += self.items
+
+        for child in self.children:
+            items += self.children[child].collect(return_bag)
+        return items
+
+    def see(self, idx):
+        &#34;&#34;&#34;
+        Query a specific node.
+        
+        if idx is empty, then the target is found and its item will be return
+        else query its child by the first digit and pop the digit.
+
+        Args:
+            idx (string): node name
+
+        Returns:
+            list or node: if idx is empty, then the target is found and its item will be return. else query its child by the first digit and pop the digit.
+            
+        &#34;&#34;&#34;
+        if len(idx) &gt; 1:
+            return self(idx[0]).see(idx[1:])
+        if idx == &#34;*&#34;:
+            return self.collect(return_bag=False)
+        else:
+            for i in self.items:
+                if i[-1] == idx:
+                    return [i]
+
+
+class bagger():
+    &#34;&#34;&#34;
+    A wrapper of sparser_node
+    &#34;&#34;&#34;
+
+    def __init__(self):
+        self.root = None
+        self.fitted = False
+
+    def fit(self, x, y=None):
+        &#34;&#34;&#34;
+        Fit the string tree dictionary.
+        Args:
+            x (pandas.DataFrame): dataframe. should have .columns attribute
+            y (pandas.Serise or 1D array, optional): label or target. This have no effects. Defaults to None.
+
+        Returns:
+            bagger: Fitted self.
+        
+        To do:
+            transform
+        &#34;&#34;&#34;
+        # sparse the column names
+        self.root = sparser_node(x.columns, 0)
+
+        # bagging
+        self.template_x = x.copy()
+        self.bags = self.root.bagging(self.template_x)
+
+        self.fitted = True
+        return self
+
+    &#34;&#34;&#34;
+    def transform(self, x, y=None):
+        
+        if not self.fitted:
+            raise &#34;please call fit before calling transform.&#34;
+
+        return self.template_x[self.bags], y
+    &#34;&#34;&#34;
+
+    def fit_transform(self, x, y=None):
+        &#34;&#34;&#34;
+        A functional stack of fit and calling the result
+
+        Args:
+            x (_type_): _description_
+            y (_type_, optional): _description_. Defaults to None.
+
+        Returns:
+            _type_: _description_
+        &#34;&#34;&#34;
+        self.fit(x, y)
+        return self.template_x[self.bags], y  #self.transform(x, y)
+
+    def see(self, idx):
+        &#34;&#34;&#34;
+        A functional interface of sparser_node.see
+
+        Args:
+            idx (string): see sparser_node.see
+
+        Returns:
+            node or list: see sparser_node.see
+        &#34;&#34;&#34;
+        return self.root.see(idx)
+
+    def unbagging(self, name):
+        &#34;&#34;&#34;
+        inverse transform of bagging
+
+        Args:
+            name (string): bagging name to query
+
+        Returns:
+            list: items in this bag.
+        &#34;&#34;&#34;
+        return &#34; &#34;.join(self.see(name))</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="package.preprocessing.bagging.bagger"><code class="flex name class">
+<span>class <span class="ident">bagger</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>A wrapper of sparser_node</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class bagger():
+    &#34;&#34;&#34;
+    A wrapper of sparser_node
+    &#34;&#34;&#34;
+
+    def __init__(self):
+        self.root = None
+        self.fitted = False
+
+    def fit(self, x, y=None):
+        &#34;&#34;&#34;
+        Fit the string tree dictionary.
+        Args:
+            x (pandas.DataFrame): dataframe. should have .columns attribute
+            y (pandas.Serise or 1D array, optional): label or target. This have no effects. Defaults to None.
+
+        Returns:
+            bagger: Fitted self.
+        
+        To do:
+            transform
+        &#34;&#34;&#34;
+        # sparse the column names
+        self.root = sparser_node(x.columns, 0)
+
+        # bagging
+        self.template_x = x.copy()
+        self.bags = self.root.bagging(self.template_x)
+
+        self.fitted = True
+        return self
+
+    &#34;&#34;&#34;
+    def transform(self, x, y=None):
+        
+        if not self.fitted:
+            raise &#34;please call fit before calling transform.&#34;
+
+        return self.template_x[self.bags], y
+    &#34;&#34;&#34;
+
+    def fit_transform(self, x, y=None):
+        &#34;&#34;&#34;
+        A functional stack of fit and calling the result
+
+        Args:
+            x (_type_): _description_
+            y (_type_, optional): _description_. Defaults to None.
+
+        Returns:
+            _type_: _description_
+        &#34;&#34;&#34;
+        self.fit(x, y)
+        return self.template_x[self.bags], y  #self.transform(x, y)
+
+    def see(self, idx):
+        &#34;&#34;&#34;
+        A functional interface of sparser_node.see
+
+        Args:
+            idx (string): see sparser_node.see
+
+        Returns:
+            node or list: see sparser_node.see
+        &#34;&#34;&#34;
+        return self.root.see(idx)
+
+    def unbagging(self, name):
+        &#34;&#34;&#34;
+        inverse transform of bagging
+
+        Args:
+            name (string): bagging name to query
+
+        Returns:
+            list: items in this bag.
+        &#34;&#34;&#34;
+        return &#34; &#34;.join(self.see(name))</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="package.preprocessing.bagging.bagger.fit"><code class="name flex">
+<span>def <span class="ident">fit</span></span>(<span>self, x, y=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Fit the string tree dictionary.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code></dt>
+<dd>dataframe. should have .columns attribute</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Serise</code> or <code>1D array</code>, optional</dt>
+<dd>label or target. This have no effects. Defaults to None.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="package.preprocessing.bagging.bagger" href="#package.preprocessing.bagging.bagger">bagger</a></code></dt>
+<dd>Fitted self.</dd>
+</dl>
+<p>To do:
+transform</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit(self, x, y=None):
+    &#34;&#34;&#34;
+    Fit the string tree dictionary.
+    Args:
+        x (pandas.DataFrame): dataframe. should have .columns attribute
+        y (pandas.Serise or 1D array, optional): label or target. This have no effects. Defaults to None.
+
+    Returns:
+        bagger: Fitted self.
+    
+    To do:
+        transform
+    &#34;&#34;&#34;
+    # sparse the column names
+    self.root = sparser_node(x.columns, 0)
+
+    # bagging
+    self.template_x = x.copy()
+    self.bags = self.root.bagging(self.template_x)
+
+    self.fitted = True
+    return self</code></pre>
+</details>
+</dd>
+<dt id="package.preprocessing.bagging.bagger.fit_transform"><code class="name flex">
+<span>def <span class="ident">fit_transform</span></span>(<span>self, x, y=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A functional stack of fit and calling the result</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>_type_</code></dt>
+<dd><em>description</em></dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>_type_</code>, optional</dt>
+<dd><em>description</em>. Defaults to None.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>_type_</code></dt>
+<dd><em>description</em></dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit_transform(self, x, y=None):
+    &#34;&#34;&#34;
+    A functional stack of fit and calling the result
+
+    Args:
+        x (_type_): _description_
+        y (_type_, optional): _description_. Defaults to None.
+
+    Returns:
+        _type_: _description_
+    &#34;&#34;&#34;
+    self.fit(x, y)
+    return self.template_x[self.bags], y  #self.transform(x, y)</code></pre>
+</details>
+</dd>
+<dt id="package.preprocessing.bagging.bagger.see"><code class="name flex">
+<span>def <span class="ident">see</span></span>(<span>self, idx)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A functional interface of sparser_node.see</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>idx</code></strong> :&ensp;<code>string</code></dt>
+<dd>see sparser_node.see</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>node</code> or <code>list</code></dt>
+<dd>see sparser_node.see</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def see(self, idx):
+    &#34;&#34;&#34;
+    A functional interface of sparser_node.see
+
+    Args:
+        idx (string): see sparser_node.see
+
+    Returns:
+        node or list: see sparser_node.see
+    &#34;&#34;&#34;
+    return self.root.see(idx)</code></pre>
+</details>
+</dd>
+<dt id="package.preprocessing.bagging.bagger.unbagging"><code class="name flex">
+<span>def <span class="ident">unbagging</span></span>(<span>self, name)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>inverse transform of bagging</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>name</code></strong> :&ensp;<code>string</code></dt>
+<dd>bagging name to query</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>list</code></dt>
+<dd>items in this bag.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def unbagging(self, name):
+    &#34;&#34;&#34;
+    inverse transform of bagging
+
+    Args:
+        name (string): bagging name to query
+
+    Returns:
+        list: items in this bag.
+    &#34;&#34;&#34;
+    return &#34; &#34;.join(self.see(name))</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="package.preprocessing.bagging.sparser_node"><code class="flex name class">
+<span>class <span class="ident">sparser_node</span></span>
+<span>(</span><span>words, k)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>The kernel of string tree dictionary. It will sparse the feature name and then bagging similar feature with high corelation.</p>
+<p>For all feature names of a node in k-th layer, their first k digits will be the same.</p>
+<p>For all feature names of a node, they will be bagged together.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>words</code></strong> :&ensp;<code>_type_</code></dt>
+<dd>strings to sparse</dd>
+<dt><strong><code>k</code></strong> :&ensp;<code>_type_</code></dt>
+<dd>deepth of node.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class sparser_node:
+    &#34;&#34;&#34; 
+    The kernel of string tree dictionary. It will sparse the feature name and then bagging similar feature with high corelation.
+    
+    For all feature names of a node in k-th layer, their first k digits will be the same.
+
+    For all feature names of a node, they will be bagged together.
+
+    &#34;&#34;&#34;
+
+    def __init__(self, words, k):
+        &#34;&#34;&#34;
+        Args:
+            words (_type_): strings to sparse
+            k (_type_): deepth of node.
+        &#34;&#34;&#34;
+        self.k = k  # the depth of tree, also the digit of current sparser
+        self.name = words[0][:self.k] + &#34;*&#34;  # name of this node
+        self.bagged = False  # if the node is a bag, determined after call bagging function
+
+        items = []
+        collector = {}
+        # separate the words which is not long enough
+        # for example, got words = [&#34;a&#34;, &#34;b&#34;, &#34;a1&#34;, &#34;a2&#34;]
+        # then the items of this bag should be [&#34;a&#34;, &#34;b&#34;]
+        # the collector of child will be [&#34;a1&#34;, &#34;a2&#34;]
+        for word in words:
+            if len(word) &gt; self.k + 1:
+                if word[self.k] not in collector:
+                    collector[word[self.k]] = []
+                collector[word[self.k]].append(word)
+            else:
+                items.append(word)
+
+        self.items = items
+        self.children = {}
+        # [&#34;a1&#34;, &#34;a2&#34;] =&gt; {&#34;a&#34;: [a1, a2]}
+        for symbol in collector:
+            self.children[symbol] = sparser_node(collector[symbol], self.k + 1)
+
+    def __call__(self, idx):
+        &#34;&#34;&#34;
+        query the child.
+
+        Args:
+            idx (char): char to query
+
+        Returns:
+            sparse_node: Child coresponding to idx
+        &#34;&#34;&#34;
+        return self.children[idx]
+
+    def bagging(self, df):
+        &#34;&#34;&#34;
+        Compute the explained variance ratio of 1st PC in PCA of all coresponding features in this node and its child.
+        If the ratio &gt; 0.9, the this node will be bagged. 
+        The node name will be bagged feature name and 1st pc will be corespoding feature value.
+
+        Args:
+            df (_type_): The dataframe of all data.
+
+        Returns:
+            list: the list of all items in this node
+        &#34;&#34;&#34;
+        items = []
+        items += self.items
+
+        for child in self.children:
+            items += self.children[child].bagging(
+                df)  # recurrently call bagging (deep first, digit tree)
+
+        n = len(items)  # only 1 item =&gt; no bagging
+        if n == 1:
+            return items
+        elif n &lt; MAX_ITEM:  # max number of items for each bag
+            data = df[items]
+            ### bagging rules
+            # rule 1
+            #score = np.mean(data.corr().abs())
+            # rule 2
+            pca = PCA(n)
+            tmp_data = pca.fit_transform((data - data.mean() / data.std()))
+            score = pca.explained_variance_ratio_[0]
+
+            if score &gt; BAGGING_THRESHOLD:
+                #print(np.mean(data.corr().abs()), pca.explained_variance_ratio_, &#34;#################&#34;)
+                #df[self.name] = df[items].mean(axis = 1) # act 1
+                df[self.name] = tmp_data[:, 0]  # act 1
+
+                self.bagged = True  # record this node is bagged
+                return [self.name]  # bag name
+        return items
+
+    def collect(self, return_bag=True):
+        &#34;&#34;&#34;
+        collect all items in its children and itself.
+
+        Args:
+            return_bag (bool, optional): True will return in bagged result, otherwise not. Defaults to True.
+
+        Returns:
+            list: the list of all items in this node and its children.
+        &#34;&#34;&#34;
+        if self.bagged and return_bag:
+            return [self.name]
+
+        items = []
+        items += self.items
+
+        for child in self.children:
+            items += self.children[child].collect(return_bag)
+        return items
+
+    def see(self, idx):
+        &#34;&#34;&#34;
+        Query a specific node.
+        
+        if idx is empty, then the target is found and its item will be return
+        else query its child by the first digit and pop the digit.
+
+        Args:
+            idx (string): node name
+
+        Returns:
+            list or node: if idx is empty, then the target is found and its item will be return. else query its child by the first digit and pop the digit.
+            
+        &#34;&#34;&#34;
+        if len(idx) &gt; 1:
+            return self(idx[0]).see(idx[1:])
+        if idx == &#34;*&#34;:
+            return self.collect(return_bag=False)
+        else:
+            for i in self.items:
+                if i[-1] == idx:
+                    return [i]</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="package.preprocessing.bagging.sparser_node.bagging"><code class="name flex">
+<span>def <span class="ident">bagging</span></span>(<span>self, df)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Compute the explained variance ratio of 1st PC in PCA of all coresponding features in this node and its child.
+If the ratio &gt; 0.9, the this node will be bagged.
+The node name will be bagged feature name and 1st pc will be corespoding feature value.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>_type_</code></dt>
+<dd>The dataframe of all data.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>list</code></dt>
+<dd>the list of all items in this node</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def bagging(self, df):
+    &#34;&#34;&#34;
+    Compute the explained variance ratio of 1st PC in PCA of all coresponding features in this node and its child.
+    If the ratio &gt; 0.9, the this node will be bagged. 
+    The node name will be bagged feature name and 1st pc will be corespoding feature value.
+
+    Args:
+        df (_type_): The dataframe of all data.
+
+    Returns:
+        list: the list of all items in this node
+    &#34;&#34;&#34;
+    items = []
+    items += self.items
+
+    for child in self.children:
+        items += self.children[child].bagging(
+            df)  # recurrently call bagging (deep first, digit tree)
+
+    n = len(items)  # only 1 item =&gt; no bagging
+    if n == 1:
+        return items
+    elif n &lt; MAX_ITEM:  # max number of items for each bag
+        data = df[items]
+        ### bagging rules
+        # rule 1
+        #score = np.mean(data.corr().abs())
+        # rule 2
+        pca = PCA(n)
+        tmp_data = pca.fit_transform((data - data.mean() / data.std()))
+        score = pca.explained_variance_ratio_[0]
+
+        if score &gt; BAGGING_THRESHOLD:
+            #print(np.mean(data.corr().abs()), pca.explained_variance_ratio_, &#34;#################&#34;)
+            #df[self.name] = df[items].mean(axis = 1) # act 1
+            df[self.name] = tmp_data[:, 0]  # act 1
+
+            self.bagged = True  # record this node is bagged
+            return [self.name]  # bag name
+    return items</code></pre>
+</details>
+</dd>
+<dt id="package.preprocessing.bagging.sparser_node.collect"><code class="name flex">
+<span>def <span class="ident">collect</span></span>(<span>self, return_bag=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>collect all items in its children and itself.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>return_bag</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>True will return in bagged result, otherwise not. Defaults to True.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>list</code></dt>
+<dd>the list of all items in this node and its children.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def collect(self, return_bag=True):
+    &#34;&#34;&#34;
+    collect all items in its children and itself.
+
+    Args:
+        return_bag (bool, optional): True will return in bagged result, otherwise not. Defaults to True.
+
+    Returns:
+        list: the list of all items in this node and its children.
+    &#34;&#34;&#34;
+    if self.bagged and return_bag:
+        return [self.name]
+
+    items = []
+    items += self.items
+
+    for child in self.children:
+        items += self.children[child].collect(return_bag)
+    return items</code></pre>
+</details>
+</dd>
+<dt id="package.preprocessing.bagging.sparser_node.see"><code class="name flex">
+<span>def <span class="ident">see</span></span>(<span>self, idx)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Query a specific node.</p>
+<p>if idx is empty, then the target is found and its item will be return
+else query its child by the first digit and pop the digit.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>idx</code></strong> :&ensp;<code>string</code></dt>
+<dd>node name</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>list</code> or <code>node</code></dt>
+<dd>if idx is empty, then the target is found and its item will be return. else query its child by the first digit and pop the digit.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def see(self, idx):
+    &#34;&#34;&#34;
+    Query a specific node.
+    
+    if idx is empty, then the target is found and its item will be return
+    else query its child by the first digit and pop the digit.
+
+    Args:
+        idx (string): node name
+
+    Returns:
+        list or node: if idx is empty, then the target is found and its item will be return. else query its child by the first digit and pop the digit.
+        
+    &#34;&#34;&#34;
+    if len(idx) &gt; 1:
+        return self(idx[0]).see(idx[1:])
+    if idx == &#34;*&#34;:
+        return self.collect(return_bag=False)
+    else:
+        for i in self.items:
+            if i[-1] == idx:
+                return [i]</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="package.preprocessing" href="index.html">package.preprocessing</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="package.preprocessing.bagging.bagger" href="#package.preprocessing.bagging.bagger">bagger</a></code></h4>
+<ul class="">
+<li><code><a title="package.preprocessing.bagging.bagger.fit" href="#package.preprocessing.bagging.bagger.fit">fit</a></code></li>
+<li><code><a title="package.preprocessing.bagging.bagger.fit_transform" href="#package.preprocessing.bagging.bagger.fit_transform">fit_transform</a></code></li>
+<li><code><a title="package.preprocessing.bagging.bagger.see" href="#package.preprocessing.bagging.bagger.see">see</a></code></li>
+<li><code><a title="package.preprocessing.bagging.bagger.unbagging" href="#package.preprocessing.bagging.bagger.unbagging">unbagging</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="package.preprocessing.bagging.sparser_node" href="#package.preprocessing.bagging.sparser_node">sparser_node</a></code></h4>
+<ul class="">
+<li><code><a title="package.preprocessing.bagging.sparser_node.bagging" href="#package.preprocessing.bagging.sparser_node.bagging">bagging</a></code></li>
+<li><code><a title="package.preprocessing.bagging.sparser_node.collect" href="#package.preprocessing.bagging.sparser_node.collect">collect</a></code></li>
+<li><code><a title="package.preprocessing.bagging.sparser_node.see" href="#package.preprocessing.bagging.sparser_node.see">see</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

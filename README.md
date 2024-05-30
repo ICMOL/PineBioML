@@ -20,7 +20,7 @@ Please follow the tutorial to install python (the "Visual Studio Code" and "Git"
 Please skip this step, if you have python 3.9+ installed in your PC.
 
 ### 2. Install dependencies and execute the scripts
-Step 1. Download our scripts from Release
+Step 1. Download our scripts from Release and unzip it.
 
     https://github.com/ICMOL/undetermined/releases
 
@@ -28,9 +28,9 @@ Step 2. Install dependencies: Please open Windows PowerShell, move to the direct
 
     > pip install -r ./requirements.txt          
 
-Step 3. Open the interface of python (ipython)
+Step 3. Open the jupyter interface
 
-Please execute the following command to open ipython. You will see the figure, if the scripts execute correctly.
+Please execute the following command to open jupyter. You will see the figure, if the scripts execute correctly.
 
     > jupyter notebook    
 
@@ -39,12 +39,11 @@ Please execute the following command to open ipython. You will see the figure, i
 
 # Input Table Format
 
-The input data should be tabular and placed in the ./input folder. We accept .csv, .tsv, .xlsx and R table in .txt formats as input.
-
-*Note: A Sample ID is required. You can designate a column name as the indexing ID. An error will occur if the IDs of x and y do not match. (甚麼是x,甚麼是y?)
-
+The input data should be tabular and placed in the ./input folder. We accept .csv, .tsv, .xlsx and R-table in .txt formats.
 
 # Process
+
+[API](./documents/API/index.html)
 
 ### 1. Missing value imputation
 |        ID         |        Option         |  Definition |
