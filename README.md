@@ -48,7 +48,7 @@ The input data should be tabular and placed in the ./input folder. We accept .cs
 ### 1. Missing value imputation
 |        ID         |        Option         |  Definition |
 |---------------------|----------------|------------------------------|
-|  1 | Deletion              | Delete the features which are too empty     |
+|  1 | Deletion              | Remove the features that contain too many missing values |
 |  2 | Imputation with a constant value  | Impute missing value with a constant value. For example, 0 or feature mean |
 |  3 | Imputation using K-NN algorithm        | Impute missing value with the mean/median of k nearest samples |
 |  4 | Self regression        |  Training a self regression model to predict the missing value  |
