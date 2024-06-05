@@ -9,7 +9,6 @@
         2. document
             a. API (Done)
             b. tutorial (on going)
-
     bug:
         1. bagging:
              - contradicts to log domain in selection method (the negative output of pca)

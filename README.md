@@ -1,6 +1,5 @@
 # Overview
-(麻煩用中文寫三百字引言,介紹軟體目的)
-This package aims to help analysis biomedical data using ML method in python.
+This package aims to help analysis biomedical data using ML method in python. 
 
 ![image](./documents/images/workflow/auto_selection_workflow.png) 
 
@@ -45,45 +44,46 @@ The input data should be tabular and placed in the ./input folder. We accept .cs
 
 [API](./documents/API/index.html)
 
-### 1. Missing value imputation
+### 1. Missing value preprocess
 |        ID         |        Option         |  Definition |
 |---------------------|----------------|------------------------------|
-|  1 | Deletion              | Delete the features which are too empty     |
-|  2 | Imputation with a constant value  | Impute missing value with a constant value. For example, 0 or feature mean |
-|  3 | Imputation using K-NN algorithm        | Impute missing value with the mean/median of k nearest samples |
-|  4 | Self regression        |  Training a self regression model to predict the missing value  |
+|  1 | Deletion              | Remove the features that are too empty.     |
+|  2 | Imputation with a constant value  | Impute missing values with a constant value, such as 0 or the feature mean. |
+|  3 | Imputation using K-NN algorithm        | Impute missing values with the mean or median of the k nearest samples. |
 
 
 ### 2. Data transformation
 |        ID         |        Option         |  Definition |
 |---------------------|----------------|------------------------------|
-|  1 | PCA              | Principal component transform    |  |
-|  2 | Power transofmation  | Box-Cox transform or yeo-johnson transform to make data more gaussian-like |   |
-|  3 | Feature bagging        | Put similar features into a bag  |  |
+|  1 | PCA              | Principal component transform.    |  |
+|  2 | Power transform  | To make data more Gaussian-like, you can use either Box-Cox transform or Yeo-Johnson transform. |   |
+|  3 | Feature clustering        | Group similar features into a cluster.  |  |
 
 
 ### 3. Feature Selection
 |        ID         |        Option         |  Definition |
 |---------------------|----------------|------------------------------|
-|  1 | Volcano plot  | Seleting by group p-value or fold change   |  |
-|  2 | Lasso regression | Seleting by L1 penalty |   |
+|  1 | Volcano plot  | Seleting by group p-value and fold change   |  |
+|  2 | Lasso regression | Seleting by Linear models with L1 penalty |   |
 |  3 | Decision stump        | Seleting by 1-layer decision tree  |  |
-|  4 | Random Forest        | Seleting by Gini impuracy or permutation importance over a Random Forest |  |
-|  5 | AdaBoost        | Seleting by Gini impuracy over a AdaBoost model  |  |
-|  6 | Gradient boosting        | Seleting by Gini impuracy over a Gradient boosting such as XGboost or LightGBM  |  |
-|  7 | SVM        | Selectiing by support vector of a trained support vector machine |  |
+|  4 | Random Forest        | Seleting by Gini impurity or permutation importance over a Random Forest |  |
+|  5 | AdaBoost        | Seleting by Gini impurity over a AdaBoost model  |  |
+|  6 | Gradient boosting        | Seleting by Gini impurity over a gradient boosting, such as XGboost or LightGBM  |  |
+|  7 | SVM        | Selectiing by support vector from support vector machine |  |
 
 
 ### 4. Model building
- - hyper parameter tuner (by optuna)
- - 
+ - Single model hyper parameter tuner (by optuna)
+ <!--
+ - H2O
+ - auto sklearn
+ - mljar 
+
 
 ### 5. Report and visualization
-
+-->
 
 # An Example for Program Demonstration    
-
-<請描述你提供的資料內容是甚麼>
 
 Chosse one of the following examples, double click it in jupyter interface:    
 - example_feature_selection.ipynb
