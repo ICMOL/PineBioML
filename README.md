@@ -42,7 +42,7 @@ The input data should be tabular and placed in the ./input folder. We accept .cs
 
 # Process
 
-[API](./documents/API/index.html)
+[API](https://htmlpreview.github.io/?https://github.com/ICMOL/PineBioML/blob/main/documents/API/index.html)
 
 ### 1. Missing value preprocess
 |        ID         |        Option         |  Definition |
