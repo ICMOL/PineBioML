@@ -1,6 +1,8 @@
 2024/6/8 for_present
     description:
         1. remove h2o futrue tabulate from requirment
+        2. set random states (need to check)
+        3. boosting mehtod sub sampling.
 
 
 
