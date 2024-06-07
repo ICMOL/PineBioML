@@ -42,12 +42,16 @@ class selector(SelectionPipeline):
             "SVM":
             SVM_selection(center=center, scale=scale),
             #"multi_SVM": multi_SVM_selection(center = center, scale = scale),
-            #"Volcano_p": Volcano_selection(strategy = "p", center = center, scale = scale, log_domain=log_domain),
+            #"Volcano_p":
+            #Volcano_selection(strategy="p",
+            #                 center=center,
+            #                scale=scale,
+            #               log_domain=log_domain),
             #"Volcano_fold":Volcano_selection(strategy = "fold", center = center, scale = scale, log_domain=log_domain),
             "XGboost":
             XGboost_selection(center=center, scale=scale),
-            "Lightgbm":
-            Lightgbm_selection(center=center, scale=scale)
+            #"Lightgbm":
+            #Lightgbm_selection(center=center, scale=scale)
         }
 
     def Select(self, x, y, k):

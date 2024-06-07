@@ -11,3 +11,7 @@ scikit-learn
 lightgbm
 xgboost
 mljar-supervised
+requests
+tabulate
+future
+h2o

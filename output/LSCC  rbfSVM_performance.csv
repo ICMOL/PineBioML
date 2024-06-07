@@ -1,9 +1,0 @@
-,top5,top10,top20
-DT_score_c45,1.0,1.0,1.0
-RandomForest_gini,1.0,1.0,1.0
-AdaBoost64,1.0,1.0,1.0
-LassoLinear,1.0,1.0,1.0
-multi_Lasso,1.0,1.0,1.0
-SVM,0.9940142162364384,0.9998129442573888,1.0
-XGboost,1.0,1.0,1.0
-Lightgbm,1.0,1.0,1.0

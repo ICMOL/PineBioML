@@ -42,7 +42,8 @@ class RF_selection(SelectionPipeline):
                                              class_weight=class_weight,
                                              criterion=strategy,
                                              verbose=1,
-                                             ccp_alpha=1e-2)
+                                             ccp_alpha=1e-2,
+                                             random_state=142)
         self.name = "RandomForest_" + self.strategy
 
     def Scoring(self, x, y=None):

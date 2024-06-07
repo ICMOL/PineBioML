@@ -24,7 +24,7 @@ class XGboost_selection(SelectionPipeline):
         super().__init__(center=center, scale=scale)
         self.unbalanced = unbalanced
 
-        self.kernel = xgb.XGBClassifier()
+        self.kernel = xgb.XGBClassifier(random_state=142, subsample=0.7)
         self.name = "XGboost"
 
     def Scoring(self, x, y=None):
@@ -67,7 +67,10 @@ class Lightgbm_selection(SelectionPipeline):
         super().__init__(center=center, scale=scale)
         self.unbalanced = unbalanced
 
-        self.kernel = lgbm.LGBMClassifier(learning_rate=0.01)
+        self.kernel = lgbm.LGBMClassifier(learning_rate=0.01,
+                                          random_state=142,
+                                          subsample=0.7,
+                                          subsample_freq=1)
         self.name = "Lightgbm"
 
     def Scoring(self, x, y=None):
@@ -116,8 +119,11 @@ class AdaBoost_selection(SelectionPipeline):
         """
         super().__init__(center=center, scale=scale)
         self.unbalanced = unbalanced
-        self.kernel = AdaBoostClassifier(n_estimators=n_iter,
-                                         learning_rate=learning_rate)
+        self.kernel = AdaBoostClassifier(
+            n_estimators=n_iter,
+            learning_rate=learning_rate,
+            random_state=142,
+        )
         self.name = "AdaBoost" + str(n_iter)
 
     def Scoring(self, x, y=None):
