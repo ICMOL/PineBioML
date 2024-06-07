@@ -21,7 +21,7 @@ class Lasso_selection(SelectionPipeline):
                  unbalanced=True,
                  center=True,
                  scale=True,
-                 objective="BinaryClassificaation"):
+                 objective="Regression"):  #"BinaryClassificaation"
         """
         Args:
             unbalanced (bool, optional): False to imply class weight to samples. Defaults to True.
@@ -56,12 +56,11 @@ class Lasso_selection(SelectionPipeline):
         if self.regression:
             return Lasso(alpha=C)
         else:
-            return LogisticRegression(
-                penalty="l1",
-                C=1 / C,
-                solver="liblinear",
-                #n_jobs=-1,
-                class_weight="balanced")
+            return LogisticRegression(penalty="l1",
+                                      C=1 / C,
+                                      solver="liblinear",
+                                      random_state=142,
+                                      class_weight="balanced")
 
     def Scoring(self, x, y=None):
         """
@@ -163,12 +162,11 @@ class Lasso_bisection_selection(SelectionPipeline):
         if self.regression:
             return Lasso(alpha=C)
         else:
-            return LogisticRegression(
-                penalty="l1",
-                C=1 / C,
-                solver="liblinear",
-                #n_jobs=-1,
-                class_weight="balanced")
+            return LogisticRegression(penalty="l1",
+                                      C=1 / C,
+                                      solver="liblinear",
+                                      random_state=142,
+                                      class_weight="balanced")
 
     def Select(self, x, y, k):
         """

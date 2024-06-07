@@ -91,3 +91,6 @@ Chosse one of the following examples, double click it in jupyter interface:
 ![image](./documents/images/tutorial/jupyter_runall.png)
 click the buttom and the script should start.
 
+# Cites
+The example data is from [LinkedOmicsKB](https://kb.linkedomics.org/)
+>  **A proteogenomics data-driven knowledge base of human cancer**, Yuxing Liao, Sara R. Savage, Yongchao Dou, Zhiao Shi, Xinpei Yi, Wen Jiang, Jonathan T. Lei, Bing Zhang, Cell Systems, 2023.

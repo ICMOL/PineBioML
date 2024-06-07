@@ -19,7 +19,9 @@ class SVM_selection(SelectionPipeline):
             scale (bool, optional): _description_. Defaults to True.
         """
         super().__init__(center=center, scale=scale, global_scale=True)
-        self.kernel = LinearSVC(dual="auto", class_weight="balanced")
+        self.kernel = LinearSVC(dual="auto",
+                                class_weight="balanced",
+                                random_state=142)
         self.name = "SVM"
 
     def Scoring(self, x, y=None):
