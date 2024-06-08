@@ -25,7 +25,7 @@ Step 1. Download our scripts from Release and unzip it.
 
 Step 2. Install dependencies: Please open Windows PowerShell, move to the directory of our scripts, and execute the following command.
 
-    > pip install -r ./requirements.txt          
+    pip install -r ./requirements.txt          
 
 Step 3. Open the jupyter interface
 
