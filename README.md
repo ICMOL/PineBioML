@@ -31,7 +31,8 @@ Step 3. Open the jupyter interface
 
 Please execute the following command to open jupyter. You will see the figure, if the scripts execute correctly.
 
-    jupyter notebook    
+    jupyter notebook  
+    python -m notebook
 
 ![image](./documents/images/tutorial/browser_jupyter.png)
 
