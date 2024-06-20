@@ -1,9 +1,28 @@
+2024/6/21 0.56
+    description:
+        1. adjusting missing value in volcano plot. In the past, we use imputed value to construct volcano plot, which may lead to misestimate the group size.
+
+    On going:
+        1. normalize issue.
+        2. tutorial for mac
+        3. tutorial for general using
+        4. auto ml (auto sklearn, mljar, H2O)
+
+    bug:
+        1. bagging:
+             - contradicts to log domain in selection method (the negative output of pca)
+             - the variance of feature will change during bagging (variance matters)
+        2. logistic regression + L1 grid search need to to modified. In temporary using binary search.
+    to do:
+        1. add parameter dict(json or yaml-like)
+        2. report
+        n. interactive interface or GUI (maybe nicegui/ plotly)
+
 2024/6/8 for_present
     description:
         1. remove h2o futrue tabulate from requirment
         2. set random states (need to check)
         3. boosting mehtod sub sampling.
-
 
 
 2024/6/1 0.55

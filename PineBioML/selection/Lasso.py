@@ -21,7 +21,7 @@ class Lasso_selection(SelectionPipeline):
                  unbalanced=True,
                  center=True,
                  scale=True,
-                 objective="Regression"):  #"BinaryClassificaation"
+                 objective="Regression"):
         """
         Args:
             unbalanced (bool, optional): False to imply class weight to samples. Defaults to True.
@@ -138,7 +138,7 @@ class Lasso_bisection_selection(SelectionPipeline):
                  center=True,
                  scale=True,
                  unbalanced=True,
-                 objective="BinaryClassificaation"):
+                 objective="regression"):
         """
         Args:
             unbalanced (bool, optional): False to imply class weight to samples. Defaults to True.
@@ -147,7 +147,7 @@ class Lasso_bisection_selection(SelectionPipeline):
             objective (str, optional): one of {"Regression", "BinaryClassification"}
         """
         super().__init__(center=center, scale=scale, global_scale=True)
-        self.upper_init = 100
+        self.upper_init = 1e+3
         self.lower_init = 1e-3
         self.objective = objective
         if self.objective in ["regression", "Regression"]:
@@ -253,10 +253,7 @@ class multi_Lasso_selection(SelectionPipeline):
     That leads to diffirent behavior between select k features in a time and select k//n features in n times.
     """
 
-    def __init__(self,
-                 center=True,
-                 scale=True,
-                 objective="BinaryClassificaation"):
+    def __init__(self, center=True, scale=True, objective="regression"):
         """
         Args:
             center (bool, optional): Pass to Normalizer. Defaults to True.

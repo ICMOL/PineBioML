@@ -47,7 +47,11 @@ class selector(SelectionPipeline):
             #                 center=center,
             #                scale=scale,
             #               log_domain=log_domain),
-            #"Volcano_fold":Volcano_selection(strategy = "fold", center = center, scale = scale, log_domain=log_domain),
+            #"Volcano_fold":
+            #Volcano_selection(strategy="fold",
+            #                  center=center,
+            #                  scale=scale,
+            #                  log_domain=log_domain),
             "XGboost":
             XGboost_selection(center=center, scale=scale),
             #"Lightgbm":

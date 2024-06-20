@@ -37,6 +37,7 @@ class Volcano_selection(SelectionPipeline):
         self.log_domain = log_domain
         self.absolute = absolute
         self.name = "Volcano Plot_" + self.strategy
+        self.missing_value = 0
 
     def Scoring(self, x, y):
         """
@@ -51,6 +52,8 @@ class Volcano_selection(SelectionPipeline):
         """
         positive = y == 1
         negative = y == 0
+
+        x = x.replace(0, np.nan)
 
         # fold change
         if not self.log_domain:

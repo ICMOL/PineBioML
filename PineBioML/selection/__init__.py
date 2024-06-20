@@ -36,7 +36,7 @@ class Normalizer:
         The support of box-cox transform and power transform.
     """
 
-    def __init__(self, center=True, scale=True, global_scale=False):
+    def __init__(self, center=True, scale=True, global_scale=False, axis=0):
         """
         Args:
             center (bool, optional): Whether to centralize in selection preprocessing. For input X, if ture then X = X- X.mean(axis = 0)    
@@ -44,6 +44,7 @@ class Normalizer:
             global_scale (bool, optional): Whether to scale data in global. For input X, if ture then X = X / X.std(axis = [0, 1]). One of scale or global_scale sould be True, or lasso will raise an numerical error. 
 
         """
+        self.axis = axis
         self.center = center
         self.mean = 0
         self.scale = scale
@@ -63,6 +64,9 @@ class Normalizer:
         Returns:
             Normalizer: self after fitting.
         """
+        if self.axis:
+            x = x.T
+
         if self.center:
             self.mean = x.mean()
             #print("mean: ", self.mean)
@@ -70,12 +74,15 @@ class Normalizer:
         if self.scale:
             self.norm = x.std()
             #print("std: ", self.norm)
+
             x = x / self.norm
         if self.global_scale:
             self.global_norm = x.values.std()
             #print("global std: ", self.global_norm)
             x = x / self.global_norm
 
+        if self.axis:
+            x = x.T
         self.fitted = True
         return self
 
@@ -95,12 +102,16 @@ class Normalizer:
             print("WARNING: please call fit before calling transform")
         #if self.log_transform:
         #   x = np.log(x)
+        if self.axis:
+            x = x.T
         if self.center:
             x = x - self.mean
         if self.scale:
             x = x / self.norm
         if self.global_scale:
             x = x / self.global_norm
+        if self.axis:
+            x = x.T
         x_normalized = x
         return x_normalized, y
 
@@ -130,12 +141,16 @@ class Normalizer:
         Returns:
             pandas.DataFrame or a 2D array: x in original scale.
         """
+        if self.axis:
+            x = x.T
         if self.global_scale:
             x = x * self.global_norm
         if self.scale:
             x = x * self.norm
         if self.center:
             x = x + self.mean
+        if self.axis:
+            x = x.T
         return x, y
 
 

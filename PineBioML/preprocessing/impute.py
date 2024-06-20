@@ -135,7 +135,7 @@ class simple_imputer(imputer):
             threshold (float): float from (0, 1]. If missing value rate of a feature is higher than threshold, it will be deleted. Defaults to 0.333
             strategy (str, optional): The strategy to impute. One of {"mean", "median", "constant"}. Defaults to "median".
         """
-        super().__init__(threshold)
+        super().__init__(threshold, center=False, scale=False)
 
         self.kernel = SimpleImputer(strategy=strategy)
 
