@@ -1,0 +1,11 @@
+,DT_score_c45,RandomForest_gini,AdaBoost128,LassoLinear,multi_Lasso,SVM,XGboost,Lightgbm
+0,feature0,feature0,feature0,feature0,feature0,feature0,feature95,feature0
+1,feature11,feature24,feature24,feature24,feature24,feature18,feature0,feature18
+2,feature59,feature60,feature66,feature18,feature48,feature66,feature60,feature60
+3,feature88,feature48,feature18,feature60,feature3,feature24,feature76,feature38
+4,feature36,feature66,feature60,feature66,feature18,feature47,feature66,feature11
+5,feature25,feature18,feature38,feature95,feature99,feature95,feature5,feature24
+6,feature27,feature30,,feature30,feature50,feature34,feature10,feature65
+7,feature35,feature99,,feature48,feature60,feature76,feature38,feature95
+8,feature46,feature59,,feature88,feature66,feature43,feature29,feature66
+9,feature60,feature38,,feature51,feature8,feature27,feature44,feature47

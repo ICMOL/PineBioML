@@ -17,19 +17,13 @@ class Lasso_selection(SelectionPipeline):
 
     """
 
-    def __init__(self,
-                 unbalanced=True,
-                 center=True,
-                 scale=True,
-                 objective="Regression"):  #"BinaryClassificaation"
+    def __init__(self, unbalanced=True, objective="Regression"):
         """
         Args:
             unbalanced (bool, optional): False to imply class weight to samples. Defaults to True.
-            center (bool, optional): Pass to Normalizer. Defaults to True.
-            scale (bool, optional): Pass to Normalizer. Defaults to True.
             objective (str, optional): one of {"Regression", "BinaryClassification"}
         """
-        super().__init__(center=center, scale=scale, global_scale=True)
+        super().__init__()
 
         # parameters
         self.objective = objective
@@ -134,20 +128,14 @@ class Lasso_bisection_selection(SelectionPipeline):
 
     """
 
-    def __init__(self,
-                 center=True,
-                 scale=True,
-                 unbalanced=True,
-                 objective="BinaryClassificaation"):
+    def __init__(self, unbalanced=True, objective="regression"):
         """
         Args:
             unbalanced (bool, optional): False to imply class weight to samples. Defaults to True.
-            center (bool, optional): Pass to Normalizer. Defaults to True.
-            scale (bool, optional): Pass to Normalizer. Defaults to True.
             objective (str, optional): one of {"Regression", "BinaryClassification"}
         """
-        super().__init__(center=center, scale=scale, global_scale=True)
-        self.upper_init = 100
+        super().__init__()
+        self.upper_init = 1e+3
         self.lower_init = 1e-3
         self.objective = objective
         if self.objective in ["regression", "Regression"]:
@@ -184,9 +172,6 @@ class Lasso_bisection_selection(SelectionPipeline):
             pandas.Series: The score for k selected features. May less than k.
         """
 
-        # normalize
-        x, y = self.normalizer.fit_transform(x, y)
-
         # train test split
         if not self.blind:
             X_train, X_test, y_train, y_test = train_test_split(
@@ -203,6 +188,9 @@ class Lasso_bisection_selection(SelectionPipeline):
         lassoes = []
         score = []
         # Bisection searching
+        ### scaling x
+        X_train = X_train / X_train.values.std()
+
         upper = self.upper_init
         lassoes.append(self.create_kernel(C=upper))
         lassoes[-1].fit(X_train, y_train, weights)
@@ -221,6 +209,7 @@ class Lasso_bisection_selection(SelectionPipeline):
         lower_alive = (lassoes[-1].coef_ != 0).sum()
         #print(lower, lower_alive)
 
+        counter = 0
         while not lower_alive == k:
             alpha = (upper + lower) / 2
             lassoes.append(self.create_kernel(C=alpha))
@@ -238,6 +227,10 @@ class Lasso_bisection_selection(SelectionPipeline):
                 upper = alpha
                 upper_alive = alive
 
+            counter += 1
+            if counter > 40:
+                break
+
         coef = np.array([clr.coef_ for clr in lassoes])
 
         self.scores = pd.Series(np.abs(coef[-1]).flatten(),
@@ -253,19 +246,12 @@ class multi_Lasso_selection(SelectionPipeline):
     That leads to diffirent behavior between select k features in a time and select k//n features in n times.
     """
 
-    def __init__(self,
-                 center=True,
-                 scale=True,
-                 objective="BinaryClassificaation"):
+    def __init__(self, objective="regression"):
         """
         Args:
-            center (bool, optional): Pass to Normalizer. Defaults to True.
-            scale (bool, optional): Pass to Normalizer. Defaults to True.
             objective (str, optional): one of {"Regression", "BinaryClassification"}
         """
         super().__init__()
-        self.center = center
-        self.scale = scale
         self.name = "multi_Lasso"
         self.objective = objective
 
@@ -290,10 +276,8 @@ class multi_Lasso_selection(SelectionPipeline):
 
         for i in range(n):
             result.append(
-                Lasso_bisection_selection(center=self.center,
-                                          scale=self.scale,
-                                          objective=self.objective).Select(
-                                              x, y, k=batch_size))
+                Lasso_bisection_selection(objective=self.objective).Select(
+                    x, y, k=batch_size))
             x = x.drop(result[-1].index, axis=1)
         result = pd.concat(result)
         result = result - result.min()

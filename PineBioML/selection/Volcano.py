@@ -16,8 +16,6 @@ class Volcano_selection(SelectionPipeline):
                  p_threshold=0.05,
                  fc_threshold=2,
                  log_domain=False,
-                 center=True,
-                 scale=False,
                  absolute=True):
         """
 
@@ -26,17 +24,16 @@ class Volcano_selection(SelectionPipeline):
             p_threshold (float, optional): p-value threshold. Only feature has p-value higher than threshold will be considered. Defaults to 0.05.
             fc_threshold (int, optional): fold change threshold. Only feature has fold change higher than threshold will be considered. Defaults to 2.
             log_domain (bool, optional): Whether input data is in log_domain. Defaults to False.
-            center (bool, optional): Pass to Normalizer. Defaults to True.
-            scale (bool, optional): Pass to Normalizer. Defaults to True.
             absolute (bool, optional): If true, then take absolute value on score while strategy == "p". Defaults to True.
         """
-        super().__init__(center=False, scale=False)
+        super().__init__()
         self.strategy = strategy
         self.fc_threshold = fc_threshold
         self.p_threshold = p_threshold
         self.log_domain = log_domain
         self.absolute = absolute
         self.name = "Volcano Plot_" + self.strategy
+        self.missing_value = 0
 
     def Scoring(self, x, y):
         """
@@ -51,6 +48,8 @@ class Volcano_selection(SelectionPipeline):
         """
         positive = y == 1
         negative = y == 0
+
+        x = x.replace(0, np.nan)
 
         # fold change
         if not self.log_domain:

@@ -10,15 +10,12 @@ class SVM_selection(SelectionPipeline):
 
     SVM_selection is scale sensitive in result.
 
+    <<Feature Ranking Using Linear SVM>> section 3.2
+
     """
 
-    def __init__(self, center=True, scale=True):
-        """
-        Args:
-            center (bool, optional): _description_. Defaults to True.
-            scale (bool, optional): _description_. Defaults to True.
-        """
-        super().__init__(center=center, scale=scale, global_scale=True)
+    def __init__(self):
+        super().__init__()
         self.kernel = LinearSVC(dual="auto",
                                 class_weight="balanced",
                                 random_state=142)
