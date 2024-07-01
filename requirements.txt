@@ -1,6 +1,5 @@
 numpy
 pandas
-ydata-profiling
 tqdm
 matplotlib
 seaborn
@@ -11,3 +10,4 @@ scikit-learn
 lightgbm
 xgboost
 mljar-supervised
+joblib

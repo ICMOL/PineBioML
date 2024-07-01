@@ -14,14 +14,12 @@ class XGboost_selection(SelectionPipeline):
     Warning: If data is too easy, boosting methods is difficult to give score to all features.
     """
 
-    def __init__(self, unbalanced=True, center=True, scale=True):
+    def __init__(self, unbalanced=True):
         """
         Args:
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
-            center (bool, optional): Pass to Normalizer. Defaults to True.
-            scale (bool, optional): Pass to Normalizer. Defaults to True.
         """
-        super().__init__(center=center, scale=scale)
+        super().__init__()
         self.unbalanced = unbalanced
 
         self.kernel = xgb.XGBClassifier(random_state=142, subsample=0.7)
@@ -57,14 +55,12 @@ class Lightgbm_selection(SelectionPipeline):
     Warning: If data is too easy, boosting methods is difficult to give score to all features.
     """
 
-    def __init__(self, unbalanced=True, center=True, scale=False):
+    def __init__(self, unbalanced=True):
         """
         Args:
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
-            center (bool, optional): Pass to Normalizer. Defaults to True.
-            scale (bool, optional): Pass to Normalizer. Defaults to True.
         """
-        super().__init__(center=center, scale=scale)
+        super().__init__()
         self.unbalanced = unbalanced
 
         self.kernel = lgbm.LGBMClassifier(learning_rate=0.01,
@@ -103,21 +99,14 @@ class AdaBoost_selection(SelectionPipeline):
     Warning: If data is too easy, boosting methods is difficult to give score to all features.
     """
 
-    def __init__(self,
-                 unbalanced=True,
-                 n_iter=128,
-                 learning_rate=0.01,
-                 center=True,
-                 scale=True):
+    def __init__(self, unbalanced=True, n_iter=128, learning_rate=0.01):
         """
         Args:
             n_iter (int, optional): Number of trees also number of iteration to boost. Defaults to 64.
             learning_rate (float, optional): boosting learning rate. Defaults to 0.01.
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
-            center (bool, optional): Pass to Normalizer. Defaults to True.
-            scale (bool, optional): Pass to Normalizer. Defaults to True.
         """
-        super().__init__(center=center, scale=scale)
+        super().__init__()
         self.unbalanced = unbalanced
         self.kernel = AdaBoostClassifier(
             n_estimators=n_iter,

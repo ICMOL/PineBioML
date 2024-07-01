@@ -1,3 +1,35 @@
+2024/7/2 0.6.0
+    description:
+        !. remove normalization from selection block.
+        1. example for general using
+        2. report utils:
+            a. data_overview: give an glance to data distribution
+            b. classification summary: gathering usual metrics for classification
+        3. auto modeling:
+            a. optuna model tuner for SVM and random forest.
+            b. example: mljar
+
+    On going:
+        1. normalize issue.
+        2. tutorial for mac
+        3. report:
+            1. reference
+            2. diagnose
+        4. auto modeling:
+            a. optuna: auto tune for all models
+            b. auto-sklearn, H2O
+
+    bug:
+        1. bagging:
+             - contradicts to log domain in selection method (the negative output of pca)
+             - the variance of feature will change during bagging (variance matters)
+        2. logistic regression + L1 grid search need to to modified. In temporary using binary search.
+    to do:
+        1. add parameter dict(json or yaml-like)
+        2. document maintainess
+        n. interactive interface or GUI (maybe nicegui/ plotly)
+
+
 2024/6/21 0.56
     description:
         1. adjusting missing value in volcano plot. In the past, we use imputed value to construct volcano plot, which may lead to misestimate the group size.

@@ -14,48 +14,26 @@ class selector(SelectionPipeline):
     
     """
 
-    def __init__(self, center=True, scale=True, log_domain=False):
+    def __init__(self):
         """
 
         Args:
-            center (bool, optional): Pass to Normalizer. Defaults to True.
-            scale (bool, optional): Pass to Normalizer. Defaults to True.
-            log_domain (bool, optional): Whether input data is in log_domain. Defaults to False.
+
         """
         self.kernels = {
-            #"id3": DT_selection(strategy = "id3", center = center, scale = scale),
-            "c45":
-            DT_selection(strategy="c45", center=center, scale=scale),
-            "RF_gini":
-            RF_selection(strategy="gini", center=center, scale=scale),
-            #"RF_entropy": RF_selection(strategy = "entropy", center = center, scale = scale),
-            #"pcRF_permutation": pcRF_selection(center = center, scale = scale),
-            #"pcRF_entropy": pcRF_selection(strategy = "entropy", center = center, scale = scale),
-            #"pcRF_permute": pcRF_selection(strategy = "permutation", center = center, scale = scale),
-            "AdaBoost":
-            AdaBoost_selection(center=center, scale=scale),
-            #"Lasso": Lasso_selection(center=center, scale=scale),
-            "Lasso_Bisection":
-            Lasso_bisection_selection(center=center, scale=scale),
-            "multi_Lasso":
-            multi_Lasso_selection(center=center, scale=scale),
-            "SVM":
-            SVM_selection(center=center, scale=scale),
-            #"multi_SVM": multi_SVM_selection(center = center, scale = scale),
-            #"Volcano_p":
-            #Volcano_selection(strategy="p",
-            #                 center=center,
-            #                scale=scale,
-            #               log_domain=log_domain),
-            #"Volcano_fold":
-            #Volcano_selection(strategy="fold",
-            #                  center=center,
-            #                  scale=scale,
-            #                  log_domain=log_domain),
-            "XGboost":
-            XGboost_selection(center=center, scale=scale),
-            #"Lightgbm":
-            #Lightgbm_selection(center=center, scale=scale)
+            "c45": DT_selection(strategy="c45"),
+            "RF_gini": RF_selection(strategy="gini"),
+            #"RF_entropy": RF_selection(strategy = "entropy"),
+            #"pcRF_permutation": pcRF_selection(),
+            #"pcRF_entropy": pcRF_selection(strategy = "entropy"),
+            #"pcRF_permute": pcRF_selection(strategy = "permutation"),
+            "AdaBoost": AdaBoost_selection(),
+            #"Lasso": Lasso_selection(center=center),
+            "Lasso_Bisection": Lasso_bisection_selection(),
+            "multi_Lasso": multi_Lasso_selection(),
+            "SVM": SVM_selection(),
+            "XGboost": XGboost_selection(),
+            "Lightgbm": Lightgbm_selection()
         }
 
     def Select(self, x, y, k):

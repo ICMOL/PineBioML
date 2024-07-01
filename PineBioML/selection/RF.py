@@ -15,21 +15,14 @@ class RF_selection(SelectionPipeline):
 
     """
 
-    def __init__(self,
-                 trees=1024 * 16,
-                 unbalanced=True,
-                 strategy="gini",
-                 center=True,
-                 scale=True):
+    def __init__(self, trees=1024 * 16, unbalanced=True, strategy="gini"):
         """
         Args:
             trees (int, optional): Number of trees. Defaults to 1024*16.
             strategy (str, optional): Scoring strategy, one of {"gini", "entropy"}. Defaults to "gini".
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to True.
-            center (bool, optional): Pass to Normalizer. Defaults to True.
-            scale (bool, optional): Pass to Normalizer. Defaults to True.
         """
-        super().__init__(center=center, scale=scale)
+        super().__init__()
         self.strategy = strategy
         if unbalanced:
             class_weight = "balanced"
@@ -197,24 +190,22 @@ class pcRF_selection(SelectionPipeline):
     Expiriment method. PCA->RF->importance->inverse_PCA
     """
 
-    def __init__(self,
-                 trees=512,
-                 unbalanced=True,
-                 strategy="permutation",
-                 factorize_method="PCA",
-                 center=True,
-                 scale=True):
+    def __init__(
+        self,
+        trees=512,
+        unbalanced=True,
+        strategy="permutation",
+        factorize_method="PCA",
+    ):
         """
         Args:
             trees (int, optional): Number of trees. Defaults to 512.
             unbalanced (bool, optional): _description_. Defaults to True.
             strategy (str, optional): Scoring strategy, one of {"gini", "entropy", "permutation"}. Defaults to "permutation".
             factorize_method (str, optional): One of {"PCA"}. Method to reduce dimension.  Defaults to "PCA".
-            center (bool, optional): Pass to Normalizer. Defaults to True.
-            scale (bool, optional): Pass to Normalizer. Defaults to True.
                     
         """
-        super().__init__(center=center, scale=scale)
+        super().__init__()
         # remove colinearity
         #        if factorize_method == "NMF":
         #           self.fatorizer = NMF()
@@ -277,7 +268,6 @@ class pcRF_selection(SelectionPipeline):
         """
 
         # x should be a pd dataframe or a numpy array without missing value
-        x, y = self.normalizer.fit_transform(x, y)
         columns = x.columns
         index = x.index
 
