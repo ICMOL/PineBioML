@@ -1,13 +1,11 @@
-numpy
-pandas
 tqdm
-matplotlib
 seaborn
 gprofiler-official
-jupyter
+jupyterlab
 optuna
 scikit-learn
-lightgbm
-xgboost
+umap-learn
+pacmap
+statsmodels
 mljar-supervised
 joblib

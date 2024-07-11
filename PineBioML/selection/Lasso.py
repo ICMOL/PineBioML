@@ -279,6 +279,8 @@ class multi_Lasso_selection(SelectionPipeline):
                 Lasso_bisection_selection(objective=self.objective).Select(
                     x, y, k=batch_size))
             x = x.drop(result[-1].index, axis=1)
+            if x.shape[1] == 0:
+                break
         result = pd.concat(result)
         result = result - result.min()
         result.name = self.name

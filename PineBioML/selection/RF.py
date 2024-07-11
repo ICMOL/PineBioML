@@ -15,7 +15,7 @@ class RF_selection(SelectionPipeline):
 
     """
 
-    def __init__(self, trees=1024 * 16, unbalanced=True, strategy="gini"):
+    def __init__(self, trees=1024, unbalanced=True, strategy="gini"):
         """
         Args:
             trees (int, optional): Number of trees. Defaults to 1024*16.

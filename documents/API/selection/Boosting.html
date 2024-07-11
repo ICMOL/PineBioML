@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>package.selection.Boosting API documentation</title>
+<title>PineBioML.selection.Boosting API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>package.selection.Boosting</code></h1>
+<h1 class="title">Module <code>PineBioML.selection.Boosting</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -42,17 +42,15 @@ class XGboost_selection(SelectionPipeline):
     Warning: If data is too easy, boosting methods is difficult to give score to all features.
     &#34;&#34;&#34;
 
-    def __init__(self, unbalanced=True, center=True, scale=True):
+    def __init__(self, unbalanced=True):
         &#34;&#34;&#34;
         Args:
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
-            center (bool, optional): Pass to Normalizer. Defaults to True.
-            scale (bool, optional): Pass to Normalizer. Defaults to True.
         &#34;&#34;&#34;
-        super().__init__(center=center, scale=scale)
+        super().__init__()
         self.unbalanced = unbalanced
 
-        self.kernel = xgb.XGBClassifier()
+        self.kernel = xgb.XGBClassifier(random_state=142, subsample=0.7)
         self.name = &#34;XGboost&#34;
 
     def Scoring(self, x, y=None):
@@ -85,17 +83,18 @@ class Lightgbm_selection(SelectionPipeline):
     Warning: If data is too easy, boosting methods is difficult to give score to all features.
     &#34;&#34;&#34;
 
-    def __init__(self, unbalanced=True, center=True, scale=False):
+    def __init__(self, unbalanced=True):
         &#34;&#34;&#34;
         Args:
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
-            center (bool, optional): Pass to Normalizer. Defaults to True.
-            scale (bool, optional): Pass to Normalizer. Defaults to True.
         &#34;&#34;&#34;
-        super().__init__(center=center, scale=scale)
+        super().__init__()
         self.unbalanced = unbalanced
 
-        self.kernel = lgbm.LGBMClassifier(learning_rate=0.01)
+        self.kernel = lgbm.LGBMClassifier(learning_rate=0.01,
+                                          random_state=142,
+                                          subsample=0.7,
+                                          subsample_freq=1)
         self.name = &#34;Lightgbm&#34;
 
     def Scoring(self, x, y=None):
@@ -128,24 +127,20 @@ class AdaBoost_selection(SelectionPipeline):
     Warning: If data is too easy, boosting methods is difficult to give score to all features.
     &#34;&#34;&#34;
 
-    def __init__(self,
-                 unbalanced=True,
-                 n_iter=128,
-                 learning_rate=0.01,
-                 center=True,
-                 scale=True):
+    def __init__(self, unbalanced=True, n_iter=128, learning_rate=0.01):
         &#34;&#34;&#34;
         Args:
             n_iter (int, optional): Number of trees also number of iteration to boost. Defaults to 64.
             learning_rate (float, optional): boosting learning rate. Defaults to 0.01.
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
-            center (bool, optional): Pass to Normalizer. Defaults to True.
-            scale (bool, optional): Pass to Normalizer. Defaults to True.
         &#34;&#34;&#34;
-        super().__init__(center=center, scale=scale)
+        super().__init__()
         self.unbalanced = unbalanced
-        self.kernel = AdaBoostClassifier(n_estimators=n_iter,
-                                         learning_rate=learning_rate)
+        self.kernel = AdaBoostClassifier(
+            n_estimators=n_iter,
+            learning_rate=learning_rate,
+            random_state=142,
+        )
         self.name = &#34;AdaBoost&#34; + str(n_iter)
 
     def Scoring(self, x, y=None):
@@ -180,9 +175,9 @@ class AdaBoost_selection(SelectionPipeline):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="package.selection.Boosting.AdaBoost_selection"><code class="flex name class">
+<dt id="PineBioML.selection.Boosting.AdaBoost_selection"><code class="flex name class">
 <span>class <span class="ident">AdaBoost_selection</span></span>
-<span>(</span><span>unbalanced=True, n_iter=128, learning_rate=0.01, center=True, scale=True)</span>
+<span>(</span><span>unbalanced=True, n_iter=128, learning_rate=0.01)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Using AdaBoost to scoring (gini impurity / entropy) features.</p>
@@ -195,10 +190,6 @@ class AdaBoost_selection(SelectionPipeline):
 <dd>boosting learning rate. Defaults to 0.01.</dd>
 <dt><strong><code>unbalanced</code></strong> :&ensp;<code>bool</code>, optional</dt>
 <dd>True to imply class weight to samples. Defaults to False.</dd>
-<dt><strong><code>center</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Pass to Normalizer. Defaults to True.</dd>
-<dt><strong><code>scale</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Pass to Normalizer. Defaults to True.</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -211,24 +202,20 @@ class AdaBoost_selection(SelectionPipeline):
     Warning: If data is too easy, boosting methods is difficult to give score to all features.
     &#34;&#34;&#34;
 
-    def __init__(self,
-                 unbalanced=True,
-                 n_iter=128,
-                 learning_rate=0.01,
-                 center=True,
-                 scale=True):
+    def __init__(self, unbalanced=True, n_iter=128, learning_rate=0.01):
         &#34;&#34;&#34;
         Args:
             n_iter (int, optional): Number of trees also number of iteration to boost. Defaults to 64.
             learning_rate (float, optional): boosting learning rate. Defaults to 0.01.
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
-            center (bool, optional): Pass to Normalizer. Defaults to True.
-            scale (bool, optional): Pass to Normalizer. Defaults to True.
         &#34;&#34;&#34;
-        super().__init__(center=center, scale=scale)
+        super().__init__()
         self.unbalanced = unbalanced
-        self.kernel = AdaBoostClassifier(n_estimators=n_iter,
-                                         learning_rate=learning_rate)
+        self.kernel = AdaBoostClassifier(
+            n_estimators=n_iter,
+            learning_rate=learning_rate,
+            random_state=142,
+        )
         self.name = &#34;AdaBoost&#34; + str(n_iter)
 
     def Scoring(self, x, y=None):
@@ -255,11 +242,11 @@ class AdaBoost_selection(SelectionPipeline):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="package.selection.SelectionPipeline" href="index.html#package.selection.SelectionPipeline">SelectionPipeline</a></li>
+<li><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="package.selection.Boosting.AdaBoost_selection.Scoring"><code class="name flex">
+<dt id="PineBioML.selection.Boosting.AdaBoost_selection.Scoring"><code class="name flex">
 <span>def <span class="ident">Scoring</span></span>(<span>self, x, y=None)</span>
 </code></dt>
 <dd>
@@ -306,20 +293,20 @@ class AdaBoost_selection(SelectionPipeline):
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="package.selection.SelectionPipeline" href="index.html#package.selection.SelectionPipeline">SelectionPipeline</a></b></code>:
+<li><code><b><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></b></code>:
 <ul class="hlist">
-<li><code><a title="package.selection.SelectionPipeline.Choose" href="index.html#package.selection.SelectionPipeline.Choose">Choose</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Diagnose" href="index.html#package.selection.SelectionPipeline.Diagnose">Diagnose</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Plotting" href="index.html#package.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Report" href="index.html#package.selection.SelectionPipeline.Report">Report</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Select" href="index.html#package.selection.SelectionPipeline.Select">Select</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Choose" href="index.html#PineBioML.selection.SelectionPipeline.Choose">Choose</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Diagnose" href="index.html#PineBioML.selection.SelectionPipeline.Diagnose">Diagnose</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Select" href="index.html#PineBioML.selection.SelectionPipeline.Select">Select</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
-<dt id="package.selection.Boosting.Lightgbm_selection"><code class="flex name class">
+<dt id="PineBioML.selection.Boosting.Lightgbm_selection"><code class="flex name class">
 <span>class <span class="ident">Lightgbm_selection</span></span>
-<span>(</span><span>unbalanced=True, center=True, scale=False)</span>
+<span>(</span><span>unbalanced=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Using Lightgbm to scoring (gini impurity / entropy) features. </p>
@@ -328,10 +315,6 @@ class AdaBoost_selection(SelectionPipeline):
 <dl>
 <dt><strong><code>unbalanced</code></strong> :&ensp;<code>bool</code>, optional</dt>
 <dd>True to imply class weight to samples. Defaults to False.</dd>
-<dt><strong><code>center</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Pass to Normalizer. Defaults to True.</dd>
-<dt><strong><code>scale</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Pass to Normalizer. Defaults to True.</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -344,17 +327,18 @@ class AdaBoost_selection(SelectionPipeline):
     Warning: If data is too easy, boosting methods is difficult to give score to all features.
     &#34;&#34;&#34;
 
-    def __init__(self, unbalanced=True, center=True, scale=False):
+    def __init__(self, unbalanced=True):
         &#34;&#34;&#34;
         Args:
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
-            center (bool, optional): Pass to Normalizer. Defaults to True.
-            scale (bool, optional): Pass to Normalizer. Defaults to True.
         &#34;&#34;&#34;
-        super().__init__(center=center, scale=scale)
+        super().__init__()
         self.unbalanced = unbalanced
 
-        self.kernel = lgbm.LGBMClassifier(learning_rate=0.01)
+        self.kernel = lgbm.LGBMClassifier(learning_rate=0.01,
+                                          random_state=142,
+                                          subsample=0.7,
+                                          subsample_freq=1)
         self.name = &#34;Lightgbm&#34;
 
     def Scoring(self, x, y=None):
@@ -381,11 +365,11 @@ class AdaBoost_selection(SelectionPipeline):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="package.selection.SelectionPipeline" href="index.html#package.selection.SelectionPipeline">SelectionPipeline</a></li>
+<li><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="package.selection.Boosting.Lightgbm_selection.Scoring"><code class="name flex">
+<dt id="PineBioML.selection.Boosting.Lightgbm_selection.Scoring"><code class="name flex">
 <span>def <span class="ident">Scoring</span></span>(<span>self, x, y=None)</span>
 </code></dt>
 <dd>
@@ -432,20 +416,20 @@ class AdaBoost_selection(SelectionPipeline):
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="package.selection.SelectionPipeline" href="index.html#package.selection.SelectionPipeline">SelectionPipeline</a></b></code>:
+<li><code><b><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></b></code>:
 <ul class="hlist">
-<li><code><a title="package.selection.SelectionPipeline.Choose" href="index.html#package.selection.SelectionPipeline.Choose">Choose</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Diagnose" href="index.html#package.selection.SelectionPipeline.Diagnose">Diagnose</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Plotting" href="index.html#package.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Report" href="index.html#package.selection.SelectionPipeline.Report">Report</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Select" href="index.html#package.selection.SelectionPipeline.Select">Select</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Choose" href="index.html#PineBioML.selection.SelectionPipeline.Choose">Choose</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Diagnose" href="index.html#PineBioML.selection.SelectionPipeline.Diagnose">Diagnose</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Select" href="index.html#PineBioML.selection.SelectionPipeline.Select">Select</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
-<dt id="package.selection.Boosting.XGboost_selection"><code class="flex name class">
+<dt id="PineBioML.selection.Boosting.XGboost_selection"><code class="flex name class">
 <span>class <span class="ident">XGboost_selection</span></span>
-<span>(</span><span>unbalanced=True, center=True, scale=True)</span>
+<span>(</span><span>unbalanced=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Using XGboost to scoring (gini impurity / entropy) features.</p>
@@ -454,10 +438,6 @@ class AdaBoost_selection(SelectionPipeline):
 <dl>
 <dt><strong><code>unbalanced</code></strong> :&ensp;<code>bool</code>, optional</dt>
 <dd>True to imply class weight to samples. Defaults to False.</dd>
-<dt><strong><code>center</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Pass to Normalizer. Defaults to True.</dd>
-<dt><strong><code>scale</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Pass to Normalizer. Defaults to True.</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -470,17 +450,15 @@ class AdaBoost_selection(SelectionPipeline):
     Warning: If data is too easy, boosting methods is difficult to give score to all features.
     &#34;&#34;&#34;
 
-    def __init__(self, unbalanced=True, center=True, scale=True):
+    def __init__(self, unbalanced=True):
         &#34;&#34;&#34;
         Args:
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
-            center (bool, optional): Pass to Normalizer. Defaults to True.
-            scale (bool, optional): Pass to Normalizer. Defaults to True.
         &#34;&#34;&#34;
-        super().__init__(center=center, scale=scale)
+        super().__init__()
         self.unbalanced = unbalanced
 
-        self.kernel = xgb.XGBClassifier()
+        self.kernel = xgb.XGBClassifier(random_state=142, subsample=0.7)
         self.name = &#34;XGboost&#34;
 
     def Scoring(self, x, y=None):
@@ -507,11 +485,11 @@ class AdaBoost_selection(SelectionPipeline):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="package.selection.SelectionPipeline" href="index.html#package.selection.SelectionPipeline">SelectionPipeline</a></li>
+<li><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="package.selection.Boosting.XGboost_selection.Scoring"><code class="name flex">
+<dt id="PineBioML.selection.Boosting.XGboost_selection.Scoring"><code class="name flex">
 <span>def <span class="ident">Scoring</span></span>(<span>self, x, y=None)</span>
 </code></dt>
 <dd>
@@ -558,13 +536,13 @@ class AdaBoost_selection(SelectionPipeline):
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="package.selection.SelectionPipeline" href="index.html#package.selection.SelectionPipeline">SelectionPipeline</a></b></code>:
+<li><code><b><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></b></code>:
 <ul class="hlist">
-<li><code><a title="package.selection.SelectionPipeline.Choose" href="index.html#package.selection.SelectionPipeline.Choose">Choose</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Diagnose" href="index.html#package.selection.SelectionPipeline.Diagnose">Diagnose</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Plotting" href="index.html#package.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Report" href="index.html#package.selection.SelectionPipeline.Report">Report</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Select" href="index.html#package.selection.SelectionPipeline.Select">Select</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Choose" href="index.html#PineBioML.selection.SelectionPipeline.Choose">Choose</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Diagnose" href="index.html#PineBioML.selection.SelectionPipeline.Diagnose">Diagnose</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Select" href="index.html#PineBioML.selection.SelectionPipeline.Select">Select</a></code></li>
 </ul>
 </li>
 </ul>
@@ -580,27 +558,27 @@ class AdaBoost_selection(SelectionPipeline):
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="package.selection" href="index.html">package.selection</a></code></li>
+<li><code><a title="PineBioML.selection" href="index.html">PineBioML.selection</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="package.selection.Boosting.AdaBoost_selection" href="#package.selection.Boosting.AdaBoost_selection">AdaBoost_selection</a></code></h4>
+<h4><code><a title="PineBioML.selection.Boosting.AdaBoost_selection" href="#PineBioML.selection.Boosting.AdaBoost_selection">AdaBoost_selection</a></code></h4>
 <ul class="">
-<li><code><a title="package.selection.Boosting.AdaBoost_selection.Scoring" href="#package.selection.Boosting.AdaBoost_selection.Scoring">Scoring</a></code></li>
+<li><code><a title="PineBioML.selection.Boosting.AdaBoost_selection.Scoring" href="#PineBioML.selection.Boosting.AdaBoost_selection.Scoring">Scoring</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="package.selection.Boosting.Lightgbm_selection" href="#package.selection.Boosting.Lightgbm_selection">Lightgbm_selection</a></code></h4>
+<h4><code><a title="PineBioML.selection.Boosting.Lightgbm_selection" href="#PineBioML.selection.Boosting.Lightgbm_selection">Lightgbm_selection</a></code></h4>
 <ul class="">
-<li><code><a title="package.selection.Boosting.Lightgbm_selection.Scoring" href="#package.selection.Boosting.Lightgbm_selection.Scoring">Scoring</a></code></li>
+<li><code><a title="PineBioML.selection.Boosting.Lightgbm_selection.Scoring" href="#PineBioML.selection.Boosting.Lightgbm_selection.Scoring">Scoring</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="package.selection.Boosting.XGboost_selection" href="#package.selection.Boosting.XGboost_selection">XGboost_selection</a></code></h4>
+<h4><code><a title="PineBioML.selection.Boosting.XGboost_selection" href="#PineBioML.selection.Boosting.XGboost_selection">XGboost_selection</a></code></h4>
 <ul class="">
-<li><code><a title="package.selection.Boosting.XGboost_selection.Scoring" href="#package.selection.Boosting.XGboost_selection.Scoring">Scoring</a></code></li>
+<li><code><a title="PineBioML.selection.Boosting.XGboost_selection.Scoring" href="#PineBioML.selection.Boosting.XGboost_selection.Scoring">Scoring</a></code></li>
 </ul>
 </li>
 </ul>

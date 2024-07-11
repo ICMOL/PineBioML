@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>package.preprocessing.impute API documentation</title>
+<title>PineBioML.preprocessing.impute API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>package.preprocessing.impute</code></h1>
+<h1 class="title">Module <code>PineBioML.preprocessing.impute</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -29,6 +29,7 @@
 <pre><code class="python">from sklearn.impute import KNNImputer, SimpleImputer
 import pandas as pd
 import numpy as np
+from . import Normalizer
 
 
 class imputer():
@@ -163,127 +164,9 @@ class simple_imputer(imputer):
             threshold (float): float from (0, 1]. If missing value rate of a feature is higher than threshold, it will be deleted. Defaults to 0.333
             strategy (str, optional): The strategy to impute. One of {&#34;mean&#34;, &#34;median&#34;, &#34;constant&#34;}. Defaults to &#34;median&#34;.
         &#34;&#34;&#34;
-        super().__init__(threshold)
+        super().__init__(threshold, center=False, scale=False)
 
-        self.kernel = SimpleImputer(strategy=strategy)
-
-
-class Normalizer:
-    &#34;&#34;&#34; 
-    A preprocessing class for selection methods.
-
-    Defaults to standarization. For input X, it will sequantially do :    
-        1. If center then X = X - mean(axis = 0)    
-        2. If scale then X = X / X.std(axis = 0)    
-        3. If global_scale then X = X / X.std(axis = [0, 1])    
-
-    SVM-based and Lasso-based methods are sensitive to the the scale of input (in numerical and in result).    
-
-    To do:
-        The support of box-cox transform and power transform.
-    &#34;&#34;&#34;
-
-    def __init__(self, center=True, scale=True, global_scale=False):
-        &#34;&#34;&#34;
-        Args:
-            center (bool, optional): Whether to centralize in selection preprocessing. For input X, if ture then X = X- X.mean(axis = 0)    
-            scale (bool, optional): Whether to scale after centralized. For input X, if ture then X = X / X.std(axis = 0). scale will overlap the effects of global_scale.
-            global_scale (bool, optional): Whether to scale data in global. For input X, if ture then X = X / X.std(axis = [0, 1]). One of scale or global_scale sould be True, or lasso will raise an numerical error. 
-
-        &#34;&#34;&#34;
-        self.center = center
-        self.mean = 0
-        self.scale = scale
-        self.norm = 1
-        self.global_scale = global_scale
-        self.global_norm = 1
-        self.fitted = False
-
-    def fit(self, x, y=None):
-        &#34;&#34;&#34;
-        Computing and Recording the mean and std of X for prediction.    
-
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to normalize.    
-            y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.    
-
-        Returns:
-            Normalizer: self after fitting.
-        &#34;&#34;&#34;
-        if self.center:
-            self.mean = x.mean()
-            #print(&#34;mean: &#34;, self.mean)
-            x = x - self.mean
-        if self.scale:
-            self.norm = x.std()
-            #print(&#34;std: &#34;, self.norm)
-            x = x / self.norm
-        if self.global_scale:
-            self.global_norm = x.values.std()
-            #print(&#34;global std: &#34;, self.global_norm)
-            x = x / self.global_norm
-
-        self.fitted = True
-        return self
-
-    def transform(self, x, y=None):
-        &#34;&#34;&#34;
-        Transform input x. Only activates after &#34;fit&#34; was called.
-
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to normalize.    
-            y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.    
-
-        Returns:
-            pandas.DataFrame or a 2D array: Normalized x.
-            pandas.Series or a 1D array: Same as input y.
-        &#34;&#34;&#34;
-        if not self.fitted:
-            print(&#34;WARNING: please call fit before calling transform&#34;)
-        #if self.log_transform:
-        #   x = np.log(x)
-        if self.center:
-            x = x - self.mean
-        if self.scale:
-            x = x / self.norm
-        if self.global_scale:
-            x = x / self.global_norm
-        x_normalized = x
-        return x_normalized, y
-
-    def fit_transform(self, x, y=None):
-        &#34;&#34;&#34;
-        A functional stack of &#34;fit&#34; and &#34;transform&#34;.
-
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to normalize.
-            y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.
-
-        Returns:
-            pandas.DataFrame or a 2D array: Normalized x.
-        &#34;&#34;&#34;
-        self.fit(x, y)
-        x_normalized = self.transform(x, y)
-        return x_normalized
-
-    def inverse_transform(self, x, y=None):
-        &#34;&#34;&#34;
-        The inverse transform of normalize.
-
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to revert original scale.
-            y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.
-
-        Returns:
-            pandas.DataFrame or a 2D array: x in original scale.
-        &#34;&#34;&#34;
-        if self.global_scale:
-            x = x * self.global_norm
-        if self.scale:
-            x = x * self.norm
-        if self.center:
-            x = x + self.mean
-        return x, y</code></pre>
+        self.kernel = SimpleImputer(strategy=strategy)</code></pre>
 </details>
 </section>
 <section>
@@ -295,341 +178,7 @@ class Normalizer:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="package.preprocessing.impute.Normalizer"><code class="flex name class">
-<span>class <span class="ident">Normalizer</span></span>
-<span>(</span><span>center=True, scale=True, global_scale=False)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>A preprocessing class for selection methods.</p>
-<p>Defaults to standarization. For input X, it will sequantially do :
-<br>
-1. If center then X = X - mean(axis = 0)
-<br>
-2. If scale then X = X / X.std(axis = 0)
-<br>
-3. If global_scale then X = X / X.std(axis = [0, 1])
-</p>
-<p>SVM-based and Lasso-based methods are sensitive to the the scale of input (in numerical and in result).
-</p>
-<p>To do:
-The support of box-cox transform and power transform.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>center</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Whether to centralize in selection preprocessing. For input X, if ture then X = X- X.mean(axis = 0)
-</dd>
-<dt><strong><code>scale</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Whether to scale after centralized. For input X, if ture then X = X / X.std(axis = 0). scale will overlap the effects of global_scale.</dd>
-<dt><strong><code>global_scale</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Whether to scale data in global. For input X, if ture then X = X / X.std(axis = [0, 1]). One of scale or global_scale sould be True, or lasso will raise an numerical error.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class Normalizer:
-    &#34;&#34;&#34; 
-    A preprocessing class for selection methods.
-
-    Defaults to standarization. For input X, it will sequantially do :    
-        1. If center then X = X - mean(axis = 0)    
-        2. If scale then X = X / X.std(axis = 0)    
-        3. If global_scale then X = X / X.std(axis = [0, 1])    
-
-    SVM-based and Lasso-based methods are sensitive to the the scale of input (in numerical and in result).    
-
-    To do:
-        The support of box-cox transform and power transform.
-    &#34;&#34;&#34;
-
-    def __init__(self, center=True, scale=True, global_scale=False):
-        &#34;&#34;&#34;
-        Args:
-            center (bool, optional): Whether to centralize in selection preprocessing. For input X, if ture then X = X- X.mean(axis = 0)    
-            scale (bool, optional): Whether to scale after centralized. For input X, if ture then X = X / X.std(axis = 0). scale will overlap the effects of global_scale.
-            global_scale (bool, optional): Whether to scale data in global. For input X, if ture then X = X / X.std(axis = [0, 1]). One of scale or global_scale sould be True, or lasso will raise an numerical error. 
-
-        &#34;&#34;&#34;
-        self.center = center
-        self.mean = 0
-        self.scale = scale
-        self.norm = 1
-        self.global_scale = global_scale
-        self.global_norm = 1
-        self.fitted = False
-
-    def fit(self, x, y=None):
-        &#34;&#34;&#34;
-        Computing and Recording the mean and std of X for prediction.    
-
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to normalize.    
-            y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.    
-
-        Returns:
-            Normalizer: self after fitting.
-        &#34;&#34;&#34;
-        if self.center:
-            self.mean = x.mean()
-            #print(&#34;mean: &#34;, self.mean)
-            x = x - self.mean
-        if self.scale:
-            self.norm = x.std()
-            #print(&#34;std: &#34;, self.norm)
-            x = x / self.norm
-        if self.global_scale:
-            self.global_norm = x.values.std()
-            #print(&#34;global std: &#34;, self.global_norm)
-            x = x / self.global_norm
-
-        self.fitted = True
-        return self
-
-    def transform(self, x, y=None):
-        &#34;&#34;&#34;
-        Transform input x. Only activates after &#34;fit&#34; was called.
-
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to normalize.    
-            y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.    
-
-        Returns:
-            pandas.DataFrame or a 2D array: Normalized x.
-            pandas.Series or a 1D array: Same as input y.
-        &#34;&#34;&#34;
-        if not self.fitted:
-            print(&#34;WARNING: please call fit before calling transform&#34;)
-        #if self.log_transform:
-        #   x = np.log(x)
-        if self.center:
-            x = x - self.mean
-        if self.scale:
-            x = x / self.norm
-        if self.global_scale:
-            x = x / self.global_norm
-        x_normalized = x
-        return x_normalized, y
-
-    def fit_transform(self, x, y=None):
-        &#34;&#34;&#34;
-        A functional stack of &#34;fit&#34; and &#34;transform&#34;.
-
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to normalize.
-            y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.
-
-        Returns:
-            pandas.DataFrame or a 2D array: Normalized x.
-        &#34;&#34;&#34;
-        self.fit(x, y)
-        x_normalized = self.transform(x, y)
-        return x_normalized
-
-    def inverse_transform(self, x, y=None):
-        &#34;&#34;&#34;
-        The inverse transform of normalize.
-
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to revert original scale.
-            y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.
-
-        Returns:
-            pandas.DataFrame or a 2D array: x in original scale.
-        &#34;&#34;&#34;
-        if self.global_scale:
-            x = x * self.global_norm
-        if self.scale:
-            x = x * self.norm
-        if self.center:
-            x = x + self.mean
-        return x, y</code></pre>
-</details>
-<h3>Methods</h3>
-<dl>
-<dt id="package.preprocessing.impute.Normalizer.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, x, y=None)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Computing and Recording the mean and std of X for prediction.
-</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
-<dd>The data to normalize.
-</dd>
-<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
-<dd>A placeholder only. Normalizer do nothing to y.
-</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code><a title="package.preprocessing.impute.Normalizer" href="#package.preprocessing.impute.Normalizer">Normalizer</a></code></dt>
-<dd>self after fitting.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def fit(self, x, y=None):
-    &#34;&#34;&#34;
-    Computing and Recording the mean and std of X for prediction.    
-
-    Args:
-        x (pandas.DataFrame or a 2D array): The data to normalize.    
-        y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.    
-
-    Returns:
-        Normalizer: self after fitting.
-    &#34;&#34;&#34;
-    if self.center:
-        self.mean = x.mean()
-        #print(&#34;mean: &#34;, self.mean)
-        x = x - self.mean
-    if self.scale:
-        self.norm = x.std()
-        #print(&#34;std: &#34;, self.norm)
-        x = x / self.norm
-    if self.global_scale:
-        self.global_norm = x.values.std()
-        #print(&#34;global std: &#34;, self.global_norm)
-        x = x / self.global_norm
-
-    self.fitted = True
-    return self</code></pre>
-</details>
-</dd>
-<dt id="package.preprocessing.impute.Normalizer.fit_transform"><code class="name flex">
-<span>def <span class="ident">fit_transform</span></span>(<span>self, x, y=None)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>A functional stack of "fit" and "transform".</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
-<dd>The data to normalize.</dd>
-<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
-<dd>A placeholder only. Normalizer do nothing to y.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
-<dd>Normalized x.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def fit_transform(self, x, y=None):
-    &#34;&#34;&#34;
-    A functional stack of &#34;fit&#34; and &#34;transform&#34;.
-
-    Args:
-        x (pandas.DataFrame or a 2D array): The data to normalize.
-        y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.
-
-    Returns:
-        pandas.DataFrame or a 2D array: Normalized x.
-    &#34;&#34;&#34;
-    self.fit(x, y)
-    x_normalized = self.transform(x, y)
-    return x_normalized</code></pre>
-</details>
-</dd>
-<dt id="package.preprocessing.impute.Normalizer.inverse_transform"><code class="name flex">
-<span>def <span class="ident">inverse_transform</span></span>(<span>self, x, y=None)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>The inverse transform of normalize.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
-<dd>The data to revert original scale.</dd>
-<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
-<dd>A placeholder only. Normalizer do nothing to y.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
-<dd>x in original scale.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def inverse_transform(self, x, y=None):
-    &#34;&#34;&#34;
-    The inverse transform of normalize.
-
-    Args:
-        x (pandas.DataFrame or a 2D array): The data to revert original scale.
-        y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.
-
-    Returns:
-        pandas.DataFrame or a 2D array: x in original scale.
-    &#34;&#34;&#34;
-    if self.global_scale:
-        x = x * self.global_norm
-    if self.scale:
-        x = x * self.norm
-    if self.center:
-        x = x + self.mean
-    return x, y</code></pre>
-</details>
-</dd>
-<dt id="package.preprocessing.impute.Normalizer.transform"><code class="name flex">
-<span>def <span class="ident">transform</span></span>(<span>self, x, y=None)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Transform input x. Only activates after "fit" was called.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
-<dd>The data to normalize.
-</dd>
-<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
-<dd>A placeholder only. Normalizer do nothing to y.
-</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
-<dd>Normalized x.</dd>
-<dt><code>pandas.Series</code> or <code>a 1D array</code></dt>
-<dd>Same as input y.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def transform(self, x, y=None):
-    &#34;&#34;&#34;
-    Transform input x. Only activates after &#34;fit&#34; was called.
-
-    Args:
-        x (pandas.DataFrame or a 2D array): The data to normalize.    
-        y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.    
-
-    Returns:
-        pandas.DataFrame or a 2D array: Normalized x.
-        pandas.Series or a 1D array: Same as input y.
-    &#34;&#34;&#34;
-    if not self.fitted:
-        print(&#34;WARNING: please call fit before calling transform&#34;)
-    #if self.log_transform:
-    #   x = np.log(x)
-    if self.center:
-        x = x - self.mean
-    if self.scale:
-        x = x / self.norm
-    if self.global_scale:
-        x = x / self.global_norm
-    x_normalized = x
-    return x_normalized, y</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
-<dt id="package.preprocessing.impute.imputer"><code class="flex name class">
+<dt id="PineBioML.preprocessing.impute.imputer"><code class="flex name class">
 <span>class <span class="ident">imputer</span></span>
 <span>(</span><span>threshold=0.333, center=True, scale=True)</span>
 </code></dt>
@@ -767,12 +316,12 @@ The support of box-cox transform and power transform.</p>
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li><a title="package.preprocessing.impute.knn_imputer" href="#package.preprocessing.impute.knn_imputer">knn_imputer</a></li>
-<li><a title="package.preprocessing.impute.simple_imputer" href="#package.preprocessing.impute.simple_imputer">simple_imputer</a></li>
+<li><a title="PineBioML.preprocessing.impute.knn_imputer" href="#PineBioML.preprocessing.impute.knn_imputer">knn_imputer</a></li>
+<li><a title="PineBioML.preprocessing.impute.simple_imputer" href="#PineBioML.preprocessing.impute.simple_imputer">simple_imputer</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="package.preprocessing.impute.imputer.fit"><code class="name flex">
+<dt id="PineBioML.preprocessing.impute.imputer.fit"><code class="name flex">
 <span>def <span class="ident">fit</span></span>(<span>self, x, y=None)</span>
 </code></dt>
 <dd>
@@ -817,7 +366,7 @@ The support of box-cox transform and power transform.</p>
     return self</code></pre>
 </details>
 </dd>
-<dt id="package.preprocessing.impute.imputer.fit_transform"><code class="name flex">
+<dt id="PineBioML.preprocessing.impute.imputer.fit_transform"><code class="name flex">
 <span>def <span class="ident">fit_transform</span></span>(<span>self, x, y=None)</span>
 </code></dt>
 <dd>
@@ -854,7 +403,7 @@ The support of box-cox transform and power transform.</p>
     return x, y</code></pre>
 </details>
 </dd>
-<dt id="package.preprocessing.impute.imputer.transform"><code class="name flex">
+<dt id="PineBioML.preprocessing.impute.imputer.transform"><code class="name flex">
 <span>def <span class="ident">transform</span></span>(<span>self, x, y=None)</span>
 </code></dt>
 <dd>
@@ -910,7 +459,7 @@ The support of box-cox transform and power transform.</p>
 </dd>
 </dl>
 </dd>
-<dt id="package.preprocessing.impute.knn_imputer"><code class="flex name class">
+<dt id="PineBioML.preprocessing.impute.knn_imputer"><code class="flex name class">
 <span>class <span class="ident">knn_imputer</span></span>
 <span>(</span><span>threshold=0.333, n_neighbor=5)</span>
 </code></dt>
@@ -946,20 +495,20 @@ The support of box-cox transform and power transform.</p>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="package.preprocessing.impute.imputer" href="#package.preprocessing.impute.imputer">imputer</a></li>
+<li><a title="PineBioML.preprocessing.impute.imputer" href="#PineBioML.preprocessing.impute.imputer">imputer</a></li>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="package.preprocessing.impute.imputer" href="#package.preprocessing.impute.imputer">imputer</a></b></code>:
+<li><code><b><a title="PineBioML.preprocessing.impute.imputer" href="#PineBioML.preprocessing.impute.imputer">imputer</a></b></code>:
 <ul class="hlist">
-<li><code><a title="package.preprocessing.impute.imputer.fit" href="#package.preprocessing.impute.imputer.fit">fit</a></code></li>
-<li><code><a title="package.preprocessing.impute.imputer.fit_transform" href="#package.preprocessing.impute.imputer.fit_transform">fit_transform</a></code></li>
-<li><code><a title="package.preprocessing.impute.imputer.transform" href="#package.preprocessing.impute.imputer.transform">transform</a></code></li>
+<li><code><a title="PineBioML.preprocessing.impute.imputer.fit" href="#PineBioML.preprocessing.impute.imputer.fit">fit</a></code></li>
+<li><code><a title="PineBioML.preprocessing.impute.imputer.fit_transform" href="#PineBioML.preprocessing.impute.imputer.fit_transform">fit_transform</a></code></li>
+<li><code><a title="PineBioML.preprocessing.impute.imputer.transform" href="#PineBioML.preprocessing.impute.imputer.transform">transform</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
-<dt id="package.preprocessing.impute.simple_imputer"><code class="flex name class">
+<dt id="PineBioML.preprocessing.impute.simple_imputer"><code class="flex name class">
 <span>class <span class="ident">simple_imputer</span></span>
 <span>(</span><span>threshold=0.3333, strategy='median')</span>
 </code></dt>
@@ -988,21 +537,21 @@ The support of box-cox transform and power transform.</p>
             threshold (float): float from (0, 1]. If missing value rate of a feature is higher than threshold, it will be deleted. Defaults to 0.333
             strategy (str, optional): The strategy to impute. One of {&#34;mean&#34;, &#34;median&#34;, &#34;constant&#34;}. Defaults to &#34;median&#34;.
         &#34;&#34;&#34;
-        super().__init__(threshold)
+        super().__init__(threshold, center=False, scale=False)
 
         self.kernel = SimpleImputer(strategy=strategy)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="package.preprocessing.impute.imputer" href="#package.preprocessing.impute.imputer">imputer</a></li>
+<li><a title="PineBioML.preprocessing.impute.imputer" href="#PineBioML.preprocessing.impute.imputer">imputer</a></li>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="package.preprocessing.impute.imputer" href="#package.preprocessing.impute.imputer">imputer</a></b></code>:
+<li><code><b><a title="PineBioML.preprocessing.impute.imputer" href="#PineBioML.preprocessing.impute.imputer">imputer</a></b></code>:
 <ul class="hlist">
-<li><code><a title="package.preprocessing.impute.imputer.fit" href="#package.preprocessing.impute.imputer.fit">fit</a></code></li>
-<li><code><a title="package.preprocessing.impute.imputer.fit_transform" href="#package.preprocessing.impute.imputer.fit_transform">fit_transform</a></code></li>
-<li><code><a title="package.preprocessing.impute.imputer.transform" href="#package.preprocessing.impute.imputer.transform">transform</a></code></li>
+<li><code><a title="PineBioML.preprocessing.impute.imputer.fit" href="#PineBioML.preprocessing.impute.imputer.fit">fit</a></code></li>
+<li><code><a title="PineBioML.preprocessing.impute.imputer.fit_transform" href="#PineBioML.preprocessing.impute.imputer.fit_transform">fit_transform</a></code></li>
+<li><code><a title="PineBioML.preprocessing.impute.imputer.transform" href="#PineBioML.preprocessing.impute.imputer.transform">transform</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1018,33 +567,24 @@ The support of box-cox transform and power transform.</p>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="package.preprocessing" href="index.html">package.preprocessing</a></code></li>
+<li><code><a title="PineBioML.preprocessing" href="index.html">PineBioML.preprocessing</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="package.preprocessing.impute.Normalizer" href="#package.preprocessing.impute.Normalizer">Normalizer</a></code></h4>
+<h4><code><a title="PineBioML.preprocessing.impute.imputer" href="#PineBioML.preprocessing.impute.imputer">imputer</a></code></h4>
 <ul class="">
-<li><code><a title="package.preprocessing.impute.Normalizer.fit" href="#package.preprocessing.impute.Normalizer.fit">fit</a></code></li>
-<li><code><a title="package.preprocessing.impute.Normalizer.fit_transform" href="#package.preprocessing.impute.Normalizer.fit_transform">fit_transform</a></code></li>
-<li><code><a title="package.preprocessing.impute.Normalizer.inverse_transform" href="#package.preprocessing.impute.Normalizer.inverse_transform">inverse_transform</a></code></li>
-<li><code><a title="package.preprocessing.impute.Normalizer.transform" href="#package.preprocessing.impute.Normalizer.transform">transform</a></code></li>
+<li><code><a title="PineBioML.preprocessing.impute.imputer.fit" href="#PineBioML.preprocessing.impute.imputer.fit">fit</a></code></li>
+<li><code><a title="PineBioML.preprocessing.impute.imputer.fit_transform" href="#PineBioML.preprocessing.impute.imputer.fit_transform">fit_transform</a></code></li>
+<li><code><a title="PineBioML.preprocessing.impute.imputer.transform" href="#PineBioML.preprocessing.impute.imputer.transform">transform</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="package.preprocessing.impute.imputer" href="#package.preprocessing.impute.imputer">imputer</a></code></h4>
-<ul class="">
-<li><code><a title="package.preprocessing.impute.imputer.fit" href="#package.preprocessing.impute.imputer.fit">fit</a></code></li>
-<li><code><a title="package.preprocessing.impute.imputer.fit_transform" href="#package.preprocessing.impute.imputer.fit_transform">fit_transform</a></code></li>
-<li><code><a title="package.preprocessing.impute.imputer.transform" href="#package.preprocessing.impute.imputer.transform">transform</a></code></li>
-</ul>
+<h4><code><a title="PineBioML.preprocessing.impute.knn_imputer" href="#PineBioML.preprocessing.impute.knn_imputer">knn_imputer</a></code></h4>
 </li>
 <li>
-<h4><code><a title="package.preprocessing.impute.knn_imputer" href="#package.preprocessing.impute.knn_imputer">knn_imputer</a></code></h4>
-</li>
-<li>
-<h4><code><a title="package.preprocessing.impute.simple_imputer" href="#package.preprocessing.impute.simple_imputer">simple_imputer</a></code></h4>
+<h4><code><a title="PineBioML.preprocessing.impute.simple_imputer" href="#PineBioML.preprocessing.impute.simple_imputer">simple_imputer</a></code></h4>
 </li>
 </ul>
 </li>

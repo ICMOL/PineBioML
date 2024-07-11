@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>package.report.utils API documentation</title>
+<title>PineBioML.report.utils API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,14 +19,23 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>package.report.utils</code></h1>
+<h1 class="title">Module <code>PineBioML.report.utils</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import matplotlib.pyplot as plt
+<pre><code class="python">import pandas as pd
+import numpy as np
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.decomposition import PCA
+import sklearn.metrics as metrics
+from sklearn.cross_decomposition import PLSRegression
+from umap import UMAP
 
 
 class task_card:
@@ -44,7 +53,142 @@ class data_card:
     &#34;&#34;&#34;
 
     def __init__(self, data):
-        pass</code></pre>
+        pass
+
+
+def data_overview(input_x, y, label_name=&#34;y&#34;, title=&#34;&#34;):
+    &#34;&#34;&#34;
+    Give a data overview, including:
+        1. raw data boxplot, pairplot.    
+        2. pca pairt plot.    
+        3. corelation heatmap.
+
+    Args:
+            input_x (pandas.DataFrame): the data
+            y (pandas.Series or a 1D array): label
+            label_name (str): the name of y
+            title (str): the name of data
+    &#34;&#34;&#34;
+
+    x = input_x.copy()
+
+    # PCA
+    print(&#34;start PCA&#34;)
+    pcs = PCA(4).fit_transform((x - x.mean()) / x.std())
+    # turn into pandas dataframe format
+    pcs = pd.DataFrame(pcs,
+                       index=x.index,
+                       columns=[&#34;pc_&#34; + str(i + 1) for i in range(4)])
+
+    # PLS
+    print(&#34;start PLS&#34;)
+    pls = PLSRegression().fit(x, y)
+    plscs = pls.transform(x)
+    plscs = pd.DataFrame(plscs,
+                         index=x.index,
+                         columns=[&#34;pls componet 1&#34;, &#34;pls componet 2&#34;])
+
+    # UMAP
+    print(&#34;start UMAP&#34;)
+    umapcs = UMAP(n_neighbors=round(np.log2(x.shape[0])),
+                  n_components=2).fit_transform(x)
+    umapcs = pd.DataFrame(umapcs,
+                          index=x.index,
+                          columns=[&#34;umap dimension 1&#34;, &#34;umap dimension 2&#34;])
+
+    x[label_name] = y
+    pcs[label_name] = y
+    plscs[label_name] = y
+    umapcs[label_name] = y
+
+    # plotting
+    ### correlation heatmap
+    fig = sns.heatmap(x.corr(), vmin=-1, vmax=1,
+                      cmap=&#39;RdBu&#39;).set_title(title + &#34; Variable Correlation&#34;)
+    plt.tight_layout()
+    plt.show()
+
+    ### pca pair plot
+    print(title + &#34; PCA Scatter plot&#34;)
+    # plot up to 12 principle complenent
+    fig = sns.pairplot(pcs, hue=label_name)
+    #sns.scatterplot(pcs[[&#34;pc_1&#34;, &#34;pc_2&#34;, label_name]], hue=label_name)
+    plt.show()
+
+    ### Umap
+    fig = sns.scatterplot(data=umapcs,
+                          x=&#34;umap dimension 1&#34;,
+                          y=&#34;umap dimension 2&#34;,
+                          hue=label_name)
+    fig.set_title(&#34;umap&#34;)
+    plt.show()
+
+    ### PLS
+    fig = sns.scatterplot(data=plscs,
+                          x=&#34;pls componet 1&#34;,
+                          y=&#34;pls componet 2&#34;,
+                          hue=label_name)
+    fig.set_title(&#34;PLS&#34;)
+    plt.show()
+
+
+def classification_summary(y_true, y_pred_prob, title=&#34;&#34;):
+    &#34;&#34;&#34;
+    Give a classification summary, including:
+        1. recall, precision, f1 and accuracy.    
+        2. confusion matrix.    
+        3. ROC curve.
+
+    Args:
+            y_true (pandas.Series or a 1D array): Bool, the label
+            y_pred_prob (pandas.Series or a 1D array): float in [0, 1]. prediction from model
+    &#34;&#34;&#34;
+    y_pred = np.round(y_pred_prob)
+
+    print(&#34;\n&#34;, title)
+    print(metrics.classification_report(y_true, y_pred))
+
+    # confusion matrix
+    metrics.ConfusionMatrixDisplay.from_predictions(y_true, y_pred)
+    plt.tight_layout()
+    plt.show()
+
+    # ROC curve
+    fpr, tpr, threshold = metrics.roc_curve(y_true, y_pred_prob)
+    roc_auc = metrics.auc(fpr, tpr)
+
+    plt.plot(fpr, tpr, &#39;b&#39;, label=&#39;AUC = %0.3f&#39; % roc_auc)
+    plt.plot([0, 1], [0, 1], &#39;r--&#39;)
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.ylabel(&#39;True Positive Rate&#39;)
+    plt.xlabel(&#39;False Positive Rate&#39;)
+    plt.title(title + &#39; ROC curve&#39;)
+    plt.legend(loc=&#39;lower right&#39;)
+
+    plt.tight_layout()
+    plt.show()
+    &#34;&#34;&#34;
+    fig, ax = plt.subplots(1, 2)
+    # confusion matrix
+    metrics.ConfusionMatrixDisplay.from_predictions(y_true, y_pred, ax = ax[0])
+    
+    # ROC curve
+    fpr, tpr, threshold = metrics.roc_curve(y_true, y_pred_prob)
+    roc_auc = metrics.auc(fpr, tpr)
+    
+    ax[1].plot(fpr, tpr, &#39;b&#39;, label = &#39;AUC = %0.2f&#39; % roc_auc)
+    ax[1].plot([0, 1], [0, 1],&#39;r--&#39;)
+    ax[1].set_xlim([0, 1])
+    ax[1].set_ylim([0, 1])
+    ax[1].set_ylabel(&#39;True Positive Rate&#39;)
+    ax[1].set_xlabel(&#39;False Positive Rate&#39;)
+    ax[1].set_title(title+&#39; ROC curve&#39;)
+    ax[1].legend(loc = &#39;lower right&#39;)
+    
+    plt.tight_layout()
+    plt.show()
+    &#34;&#34;&#34;</code></pre>
 </details>
 </section>
 <section>
@@ -52,11 +196,195 @@ class data_card:
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="PineBioML.report.utils.classification_summary"><code class="name flex">
+<span>def <span class="ident">classification_summary</span></span>(<span>y_true, y_pred_prob, title='')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Give a classification summary, including:
+1. recall, precision, f1 and accuracy.
+<br>
+2. confusion matrix.
+<br>
+3. ROC curve.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>y_true</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
+<dd>Bool, the label</dd>
+<dt><strong><code>y_pred_prob</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
+<dd>float in [0, 1]. prediction from model</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def classification_summary(y_true, y_pred_prob, title=&#34;&#34;):
+    &#34;&#34;&#34;
+    Give a classification summary, including:
+        1. recall, precision, f1 and accuracy.    
+        2. confusion matrix.    
+        3. ROC curve.
+
+    Args:
+            y_true (pandas.Series or a 1D array): Bool, the label
+            y_pred_prob (pandas.Series or a 1D array): float in [0, 1]. prediction from model
+    &#34;&#34;&#34;
+    y_pred = np.round(y_pred_prob)
+
+    print(&#34;\n&#34;, title)
+    print(metrics.classification_report(y_true, y_pred))
+
+    # confusion matrix
+    metrics.ConfusionMatrixDisplay.from_predictions(y_true, y_pred)
+    plt.tight_layout()
+    plt.show()
+
+    # ROC curve
+    fpr, tpr, threshold = metrics.roc_curve(y_true, y_pred_prob)
+    roc_auc = metrics.auc(fpr, tpr)
+
+    plt.plot(fpr, tpr, &#39;b&#39;, label=&#39;AUC = %0.3f&#39; % roc_auc)
+    plt.plot([0, 1], [0, 1], &#39;r--&#39;)
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.ylabel(&#39;True Positive Rate&#39;)
+    plt.xlabel(&#39;False Positive Rate&#39;)
+    plt.title(title + &#39; ROC curve&#39;)
+    plt.legend(loc=&#39;lower right&#39;)
+
+    plt.tight_layout()
+    plt.show()
+    &#34;&#34;&#34;
+    fig, ax = plt.subplots(1, 2)
+    # confusion matrix
+    metrics.ConfusionMatrixDisplay.from_predictions(y_true, y_pred, ax = ax[0])
+    
+    # ROC curve
+    fpr, tpr, threshold = metrics.roc_curve(y_true, y_pred_prob)
+    roc_auc = metrics.auc(fpr, tpr)
+    
+    ax[1].plot(fpr, tpr, &#39;b&#39;, label = &#39;AUC = %0.2f&#39; % roc_auc)
+    ax[1].plot([0, 1], [0, 1],&#39;r--&#39;)
+    ax[1].set_xlim([0, 1])
+    ax[1].set_ylim([0, 1])
+    ax[1].set_ylabel(&#39;True Positive Rate&#39;)
+    ax[1].set_xlabel(&#39;False Positive Rate&#39;)
+    ax[1].set_title(title+&#39; ROC curve&#39;)
+    ax[1].legend(loc = &#39;lower right&#39;)
+    
+    plt.tight_layout()
+    plt.show()
+    &#34;&#34;&#34;</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.report.utils.data_overview"><code class="name flex">
+<span>def <span class="ident">data_overview</span></span>(<span>input_x, y, label_name='y', title='')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Give a data overview, including:
+1. raw data boxplot, pairplot.
+<br>
+2. pca pairt plot.
+<br>
+3. corelation heatmap.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>input_x</code></strong> :&ensp;<code>pandas.DataFrame</code></dt>
+<dd>the data</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
+<dd>label</dd>
+<dt><strong><code>label_name</code></strong> :&ensp;<code>str</code></dt>
+<dd>the name of y</dd>
+<dt><strong><code>title</code></strong> :&ensp;<code>str</code></dt>
+<dd>the name of data</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def data_overview(input_x, y, label_name=&#34;y&#34;, title=&#34;&#34;):
+    &#34;&#34;&#34;
+    Give a data overview, including:
+        1. raw data boxplot, pairplot.    
+        2. pca pairt plot.    
+        3. corelation heatmap.
+
+    Args:
+            input_x (pandas.DataFrame): the data
+            y (pandas.Series or a 1D array): label
+            label_name (str): the name of y
+            title (str): the name of data
+    &#34;&#34;&#34;
+
+    x = input_x.copy()
+
+    # PCA
+    print(&#34;start PCA&#34;)
+    pcs = PCA(4).fit_transform((x - x.mean()) / x.std())
+    # turn into pandas dataframe format
+    pcs = pd.DataFrame(pcs,
+                       index=x.index,
+                       columns=[&#34;pc_&#34; + str(i + 1) for i in range(4)])
+
+    # PLS
+    print(&#34;start PLS&#34;)
+    pls = PLSRegression().fit(x, y)
+    plscs = pls.transform(x)
+    plscs = pd.DataFrame(plscs,
+                         index=x.index,
+                         columns=[&#34;pls componet 1&#34;, &#34;pls componet 2&#34;])
+
+    # UMAP
+    print(&#34;start UMAP&#34;)
+    umapcs = UMAP(n_neighbors=round(np.log2(x.shape[0])),
+                  n_components=2).fit_transform(x)
+    umapcs = pd.DataFrame(umapcs,
+                          index=x.index,
+                          columns=[&#34;umap dimension 1&#34;, &#34;umap dimension 2&#34;])
+
+    x[label_name] = y
+    pcs[label_name] = y
+    plscs[label_name] = y
+    umapcs[label_name] = y
+
+    # plotting
+    ### correlation heatmap
+    fig = sns.heatmap(x.corr(), vmin=-1, vmax=1,
+                      cmap=&#39;RdBu&#39;).set_title(title + &#34; Variable Correlation&#34;)
+    plt.tight_layout()
+    plt.show()
+
+    ### pca pair plot
+    print(title + &#34; PCA Scatter plot&#34;)
+    # plot up to 12 principle complenent
+    fig = sns.pairplot(pcs, hue=label_name)
+    #sns.scatterplot(pcs[[&#34;pc_1&#34;, &#34;pc_2&#34;, label_name]], hue=label_name)
+    plt.show()
+
+    ### Umap
+    fig = sns.scatterplot(data=umapcs,
+                          x=&#34;umap dimension 1&#34;,
+                          y=&#34;umap dimension 2&#34;,
+                          hue=label_name)
+    fig.set_title(&#34;umap&#34;)
+    plt.show()
+
+    ### PLS
+    fig = sns.scatterplot(data=plscs,
+                          x=&#34;pls componet 1&#34;,
+                          y=&#34;pls componet 2&#34;,
+                          hue=label_name)
+    fig.set_title(&#34;PLS&#34;)
+    plt.show()</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="package.report.utils.data_card"><code class="flex name class">
+<dt id="PineBioML.report.utils.data_card"><code class="flex name class">
 <span>class <span class="ident">data_card</span></span>
 <span>(</span><span>data)</span>
 </code></dt>
@@ -75,7 +403,7 @@ class data_card:
         pass</code></pre>
 </details>
 </dd>
-<dt id="package.report.utils.task_card"><code class="flex name class">
+<dt id="PineBioML.report.utils.task_card"><code class="flex name class">
 <span>class <span class="ident">task_card</span></span>
 <span>(</span><span>**parms)</span>
 </code></dt>
@@ -105,16 +433,22 @@ class data_card:
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="package.report" href="index.html">package.report</a></code></li>
+<li><code><a title="PineBioML.report" href="index.html">PineBioML.report</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="PineBioML.report.utils.classification_summary" href="#PineBioML.report.utils.classification_summary">classification_summary</a></code></li>
+<li><code><a title="PineBioML.report.utils.data_overview" href="#PineBioML.report.utils.data_overview">data_overview</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="package.report.utils.data_card" href="#package.report.utils.data_card">data_card</a></code></h4>
+<h4><code><a title="PineBioML.report.utils.data_card" href="#PineBioML.report.utils.data_card">data_card</a></code></h4>
 </li>
 <li>
-<h4><code><a title="package.report.utils.task_card" href="#package.report.utils.task_card">task_card</a></code></h4>
+<h4><code><a title="PineBioML.report.utils.task_card" href="#PineBioML.report.utils.task_card">task_card</a></code></h4>
 </li>
 </ul>
 </li>
