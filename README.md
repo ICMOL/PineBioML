@@ -26,7 +26,7 @@ Step 1. Download our scripts from Release and unzip it.
 
 Step 2. Install dependencies: Please open Windows PowerShell, move to the directory of our scripts, and execute the following command.
 
-    > pip install -r ./requirements.txt          
+    pip install -r ./requirements.txt          
 
 Step 3. Open the jupyter interface
 
@@ -43,7 +43,7 @@ The input data should be tabular and placed in the ./input folder. We accept .cs
 
 # Process
 
-[API](./documents/API/index.html)
+[API](https://htmlpreview.github.io/?https://github.com/ICMOL/PineBioML/blob/main/documents/API/index.html)
 
 ### 1. Missing value preprocess
 |        ID         |        Option         |  Definition |
