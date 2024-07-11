@@ -18,7 +18,7 @@ def read_file(file_path, index_col=0):
     if file_type == "csv":
         file = read_csv(file_path, index_col=index_col)
     elif file_type == "tsv":
-        file = read_csv(file_path, sep="\t", index_col=index_col)
+        file = read_csv(file_path, sep=" ", index_col=index_col)
     elif file_type in ["xls", "xlsx", "xlsm", "xlsb"]:
         file = read_excel(file_path, sheet_name=None, index_col=index_col)
         if len(file) == 1:
@@ -46,17 +46,17 @@ def read_multiple_files(file_path_list, transpose=False, index_col=0):
         list: a list contains data in pandas.DataFrame formate.
     """
     # sparse csv, tsv or excel
-    files = []
+    datas = []
     group_label = []
     label = 0
     for path in file_path_list:
-        data = read_file(path, index_col)
+        group = read_file(path, index_col)
         if transpose:
-            data = data.T
+            group = group.T
 
-        files.append(data)
+        datas.append(group)
         group_label.append(
-            Series(ones(data.shape[0]) * label, index=data.index))
+            Series(ones(group.shape[0]) * label, index=group.index))
         label += 1
 
-    return concat(files, axis=0), concat(group_label, axis=0)
+    return concat(datas, axis=0), concat(group_label, axis=0)

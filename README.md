@@ -1,17 +1,18 @@
 # Overview
-This package aims to help analysis biomedical data using ML method in python. 
+This package aims to help analysising biomedical data using ML method in python.    
+We only support binary classification now.
 
 ![image](./documents/images/workflow/auto_selection_workflow.png) 
 
 # System requirements
    1. Python 3.9+
-   2. The following dependencies are required: numpy, pandas, scikit-learn, matplotlib, seaborn, tqdm, jupyter, lightgbm, xgboost
+   2. The following dependencies are required: tqdm, seaborn, gprofiler-official, jupyterlab, optuna, scikit-learn, umap-learn, pacmap, statsmodels, mljar-supervised, joblib
 
 
 # Installation
 
 ### 1. Install Python
-Please follow the tutorial to install python (the "Visual Studio Code" and "Git" are optional):
+Please follow the tutorial to install python (the sections "Visual Studio Code" and "Git" are optional):
 
     https://learn.microsoft.com/en-us/windows/python/beginners 
     
@@ -31,7 +32,7 @@ Step 3. Open the jupyter interface
 
 Please execute the following command to open jupyter. You will see the figure, if the scripts execute correctly.
 
-    > jupyter notebook    
+    > jupyter lab    
 
 ![image](./documents/images/tutorial/browser_jupyter.png)
 
@@ -60,36 +61,40 @@ The input data should be tabular and placed in the ./input folder. We accept .cs
 |  3 | Feature clustering        | Group similar features into a cluster.  |  |
 
 
-### 3. Feature Selection
+### 3. Feature selection
 |        ID         |        Option         |  Definition |
 |---------------------|----------------|------------------------------|
-|  1 | Volcano plot  | Seleting by group p-value and fold change   |  |
-|  2 | Lasso regression | Seleting by Linear models with L1 penalty |   |
-|  3 | Decision stump        | Seleting by 1-layer decision tree  |  |
-|  4 | Random Forest        | Seleting by Gini impurity or permutation importance over a Random Forest |  |
-|  5 | AdaBoost        | Seleting by Gini impurity over a AdaBoost model  |  |
-|  6 | Gradient boosting        | Seleting by Gini impurity over a gradient boosting, such as XGboost or LightGBM  |  |
-|  7 | SVM        | Selectiing by support vector from support vector machine |  |
+|  1 | Volcano plot     | Selecting by group p-value and fold change   |  |
+|  2 | Lasso regression | Selecting by Linear models with L1 penalty |   |
+|  3 | Decision stump   | Selecting by 1-layer decision tree  |  |
+|  4 | Random Forest    | Selecting by Gini impurity or permutation importance over a Random Forest |  |
+|  5 | AdaBoost         | Selecting by Gini impurity over a AdaBoost model  |  |
+|  6 | Gradient boosting| Selecting by Gini impurity over a gradient boosting, such as XGboost or LightGBM  |  |
+|  7 | Linear SVM              | Selecting by support vector from support vector machine |  |
 
 
 ### 4. Model building
- - Single model hyper parameter tuner (by optuna)
- <!--
- - H2O
- - auto sklearn
- - mljar 
-
+|        ID         |        Option         |  Definition |
+|---------------------|----------------|------------------------------|
+|  1 | ElasticNet    | Using Optuna to find a not-bad hyper parameters on given dataset.   |  |
+|  2 | SVM       | Using Optuna to find a not-bad hyper parameters on given dataset. |   |
+|  3 | Random Forest | Using Optuna to find a not-bad hyper parameters on given dataset.  |  |
 
 ### 5. Report and visualization
--->
+|        ID         |        Option         |  Definition |
+|---------------------|----------------|------------------------------|
+|  1 | data_overview  | Giving a glance to input data.   |  |
+|  2 | classification_summary | Summarizing a classification task |  |
 
 # An Example for Program Demonstration    
 
 Chosse one of the following examples, double click it in jupyter interface:    
-- example_feature_selection.ipynb
+- example_BasicUsage.ipynb
+- example_Proteomics.ipynb
 
+Click the buttom and the script should start.
 ![image](./documents/images/tutorial/jupyter_runall.png)
-click the buttom and the script should start.
+
 
 # Cites
 The example data is from [LinkedOmicsKB](https://kb.linkedomics.org/)

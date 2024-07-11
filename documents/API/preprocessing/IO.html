@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>package.preprocessing.IO API documentation</title>
+<title>PineBioML.preprocessing.IO API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,22 +19,24 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>package.preprocessing.IO</code></h1>
+<h1 class="title">Module <code>PineBioML.preprocessing.IO</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from pandas import read_csv, read_excel, read_table
+<pre><code class="python">from pandas import read_csv, read_excel, read_table, concat, Series
+from numpy import ones
 
 
-def read_file(file_path):
+def read_file(file_path, index_col=0):
     &#34;&#34;&#34;
     Sparse the file name. Support .csv, .tsv, .xlsx and R-table in .txt format.
 
     Args:
         file_path (str): The path to data.
+        index_col (int or str): The column to set as the index of dataframe
 
     Returns:
         pandas.DataFrame: Data
@@ -42,19 +44,50 @@ def read_file(file_path):
     # sparse csv, tsv or excel
     file_type = file_path.split(&#34;.&#34;)[-1]
     if file_type == &#34;csv&#34;:
-        file = read_csv(file_path)
+        file = read_csv(file_path, index_col=index_col)
     elif file_type == &#34;tsv&#34;:
-        file = read_csv(file_path, sep=&#34;\t&#34;)
+        file = read_csv(file_path, sep=&#34; &#34;, index_col=index_col)
     elif file_type in [&#34;xls&#34;, &#34;xlsx&#34;, &#34;xlsm&#34;, &#34;xlsb&#34;]:
-        file = read_excel(file_path)
+        file = read_excel(file_path, sheet_name=None, index_col=index_col)
+        if len(file) == 1:
+            file = file[list(file.keys())[0]]
+
     elif file_type == &#34;txt&#34;:
-        file = read_table(file_path)
+        file = read_table(file_path, index_col=index_col)
     else:
         print(
             &#34;Not support input type. Must be one of .csv, .tsv, .xls, .xlsx formate.&#34;
         )
         file = None
-    return file</code></pre>
+    return file
+
+
+def read_multiple_files(file_path_list, transpose=False, index_col=0):
+    &#34;&#34;&#34;
+    Read files in file_path_list
+
+    Args:
+        file_path_list (list): List of string. The pathes to data.
+        transpose (boolean): weather to transpose input.
+
+    Returns:
+        list: a list contains data in pandas.DataFrame formate.
+    &#34;&#34;&#34;
+    # sparse csv, tsv or excel
+    datas = []
+    group_label = []
+    label = 0
+    for path in file_path_list:
+        group = read_file(path, index_col)
+        if transpose:
+            group = group.T
+
+        datas.append(group)
+        group_label.append(
+            Series(ones(group.shape[0]) * label, index=group.index))
+        label += 1
+
+    return concat(datas, axis=0), concat(group_label, axis=0)</code></pre>
 </details>
 </section>
 <section>
@@ -64,8 +97,8 @@ def read_file(file_path):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="package.preprocessing.IO.read_file"><code class="name flex">
-<span>def <span class="ident">read_file</span></span>(<span>file_path)</span>
+<dt id="PineBioML.preprocessing.IO.read_file"><code class="name flex">
+<span>def <span class="ident">read_file</span></span>(<span>file_path, index_col=0)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Sparse the file name. Support .csv, .tsv, .xlsx and R-table in .txt format.</p>
@@ -73,6 +106,8 @@ def read_file(file_path):
 <dl>
 <dt><strong><code>file_path</code></strong> :&ensp;<code>str</code></dt>
 <dd>The path to data.</dd>
+<dt><strong><code>index_col</code></strong> :&ensp;<code>int</code> or <code>str</code></dt>
+<dd>The column to set as the index of dataframe</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -83,12 +118,13 @@ def read_file(file_path):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def read_file(file_path):
+<pre><code class="python">def read_file(file_path, index_col=0):
     &#34;&#34;&#34;
     Sparse the file name. Support .csv, .tsv, .xlsx and R-table in .txt format.
 
     Args:
         file_path (str): The path to data.
+        index_col (int or str): The column to set as the index of dataframe
 
     Returns:
         pandas.DataFrame: Data
@@ -96,19 +132,71 @@ def read_file(file_path):
     # sparse csv, tsv or excel
     file_type = file_path.split(&#34;.&#34;)[-1]
     if file_type == &#34;csv&#34;:
-        file = read_csv(file_path)
+        file = read_csv(file_path, index_col=index_col)
     elif file_type == &#34;tsv&#34;:
-        file = read_csv(file_path, sep=&#34;\t&#34;)
+        file = read_csv(file_path, sep=&#34; &#34;, index_col=index_col)
     elif file_type in [&#34;xls&#34;, &#34;xlsx&#34;, &#34;xlsm&#34;, &#34;xlsb&#34;]:
-        file = read_excel(file_path)
+        file = read_excel(file_path, sheet_name=None, index_col=index_col)
+        if len(file) == 1:
+            file = file[list(file.keys())[0]]
+
     elif file_type == &#34;txt&#34;:
-        file = read_table(file_path)
+        file = read_table(file_path, index_col=index_col)
     else:
         print(
             &#34;Not support input type. Must be one of .csv, .tsv, .xls, .xlsx formate.&#34;
         )
         file = None
     return file</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.preprocessing.IO.read_multiple_files"><code class="name flex">
+<span>def <span class="ident">read_multiple_files</span></span>(<span>file_path_list, transpose=False, index_col=0)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Read files in file_path_list</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>file_path_list</code></strong> :&ensp;<code>list</code></dt>
+<dd>List of string. The pathes to data.</dd>
+<dt><strong><code>transpose</code></strong> :&ensp;<code>boolean</code></dt>
+<dd>weather to transpose input.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>list</code></dt>
+<dd>a list contains data in pandas.DataFrame formate.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def read_multiple_files(file_path_list, transpose=False, index_col=0):
+    &#34;&#34;&#34;
+    Read files in file_path_list
+
+    Args:
+        file_path_list (list): List of string. The pathes to data.
+        transpose (boolean): weather to transpose input.
+
+    Returns:
+        list: a list contains data in pandas.DataFrame formate.
+    &#34;&#34;&#34;
+    # sparse csv, tsv or excel
+    datas = []
+    group_label = []
+    label = 0
+    for path in file_path_list:
+        group = read_file(path, index_col)
+        if transpose:
+            group = group.T
+
+        datas.append(group)
+        group_label.append(
+            Series(ones(group.shape[0]) * label, index=group.index))
+        label += 1
+
+    return concat(datas, axis=0), concat(group_label, axis=0)</code></pre>
 </details>
 </dd>
 </dl>
@@ -124,12 +212,13 @@ def read_file(file_path):
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="package.preprocessing" href="index.html">package.preprocessing</a></code></li>
+<li><code><a title="PineBioML.preprocessing" href="index.html">PineBioML.preprocessing</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="package.preprocessing.IO.read_file" href="#package.preprocessing.IO.read_file">read_file</a></code></li>
+<li><code><a title="PineBioML.preprocessing.IO.read_file" href="#PineBioML.preprocessing.IO.read_file">read_file</a></code></li>
+<li><code><a title="PineBioML.preprocessing.IO.read_multiple_files" href="#PineBioML.preprocessing.IO.read_multiple_files">read_multiple_files</a></code></li>
 </ul>
 </li>
 </ul>

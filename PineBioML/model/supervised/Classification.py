@@ -1,29 +1,98 @@
+from . import Basic_tuner
+
 from sklearn.model_selection import StratifiedKFold, cross_val_score
+import sklearn.metrics as metrics
+
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
-import sklearn.metrics as metrics
+from sklearn.linear_model import LogisticRegression
+
 import optuna
 
 
 # linear model
-# RF
-class RandomForest_tuner():
+class ElasticNet_tuner(Basic_tuner):
+    """
+    [sklearn logistic Regression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression), reminds the choice of the algorithm depends on the penalty chosen and on (multinomial) multiclass support.
+    """
 
-    def __init__(self, x, y, target="accuracy"):
-        self.x = x
-        self.y = y
-        #self.cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=142)
-        self.n_try = 50
-        self.eval_prob = not target in ["accuracy", "f1"]
+    def __init__(self,
+                 x,
+                 y,
+                 kernel="saga",
+                 n_try=50,
+                 cv=None,
+                 target="accuracy",
+                 kernel_seed=None,
+                 optuna_seed=71):
+        super().__init__(x,
+                         y,
+                         n_try=n_try,
+                         cv=cv,
+                         target=target,
+                         kernel_seed=kernel_seed,
+                         optuna_seed=optuna_seed)
 
-        self.metric = metrics.get_scorer(target)
+        # ‘saga’ fast convergence is only guaranteed on features with approximately the same scale. You should do a feature-wise (between sample) normalization before fitting.
+        self.kernel = kernel  # sage, lbfgs
+        self.penalty = "elasticnet"
+        print("Logistic Regression with: ", self.penalty, " penalty, ",
+              self.kernel, " solver.")
 
-        self.study = optuna.create_study(direction="maximize")
+    def create_model(self, trial):
+        C = trial.suggest_float('C', 1e-6, 1e+2, log=True)
+        l1_ratio = trial.suggest_float('l1_ratio', 0, 1)
+
+        lg = LogisticRegression(penalty=self.penalty,
+                                C=C,
+                                class_weight="balanced",
+                                solver=self.kernel,
+                                max_iter=100,
+                                verbose=0,
+                                l1_ratio=l1_ratio)
+        return lg
 
     def evaluate(self, trial):
+        classifier_obj = self.create_model(trial)
+        score = cross_val_score(
+            classifier_obj,
+            self.x,
+            self.y,
+            n_jobs=-1,
+            cv=StratifiedKFold(n_splits=5,
+                               shuffle=True,
+                               random_state=self.seed_recorder[trial.number]),
+            scoring=self.metric)
+        score = score.mean()
+        return score
+
+
+# RF
+class RandomForest_tuner(Basic_tuner):
+
+    def __init__(self,
+                 x,
+                 y,
+                 using_oob=True,
+                 n_try=50,
+                 cv=None,
+                 target="accuracy",
+                 kernel_seed=None,
+                 optuna_seed=71):
+        super().__init__(x,
+                         y,
+                         n_try=n_try,
+                         cv=cv,
+                         target=target,
+                         kernel_seed=kernel_seed,
+                         optuna_seed=optuna_seed)
+
+        self.using_oob = using_oob
+
+    def create_model(self, trial):
         parms = {
             "n_estimators":
-            trial.suggest_int('n_estimators', 16, 1024, log=True),
+            trial.suggest_int('n_estimators', 32, 1024, log=True),
             "max_depth":
             trial.suggest_int('max_depth', 2, 32, log=True),
             "min_samples_split":
@@ -41,78 +110,93 @@ class RandomForest_tuner():
             "n_jobs":
             -1,
             "random_state":
-            142,
+            self.seed_recorder[trial.number],
             "verbose":
             0,
             "class_weight":
             "balanced_subsample"
         }
 
-        classifier_obj = RandomForestClassifier(**parms).fit(self.x, self.y)
-        # oob predict
-        y_pred = classifier_obj.oob_decision_function_[:, 1]
-        # oob score
-        if not self.eval_prob:
-            y_pred = y_pred > 0.5
-        score = self.metric._score_func(self.y, y_pred)
-
-        return score
-
-    def tune(self):
-        self.study.optimize(self.evaluate, n_trials=self.n_try)
-        parms = {
-            "bootstrap": True,
-            "oob_score": True,
-            "n_jobs": -1,
-            "random_state": 142,
-            "verbose": 0,
-            "class_weight": "balanced_subsample"
-        }
-        for parameter in self.study.best_params:
-            parms[parameter] = self.study.best_params[parameter]
-
-        self.best_model = RandomForestClassifier(**parms)
-        return self.best_model
-
-
-# rbf-SVM
-class SVC_tuner():
-
-    def __init__(self, x, y, target="accuracy"):
-        self.x = x
-        self.y = y
-        self.cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=142)
-        self.n_try = 50
-        self.metric = metrics.get_scorer(target)
-
-        self.study = optuna.create_study(direction="maximize")
+        rf = RandomForestClassifier(**parms).fit(self.x, self.y)
+        return rf
 
     def evaluate(self, trial):
-        svc_c = trial.suggest_float('svc_c', 1e-6, 1e+2, log=True)
-        classifier_obj = SVC(C=svc_c,
-                             cache_size=1e+3,
-                             class_weight="balanced",
-                             gamma="auto",
-                             probability=True)
+        classifier_obj = self.create_model(trial)
 
-        score = cross_val_score(classifier_obj,
-                                self.x,
-                                self.y,
-                                n_jobs=-1,
-                                cv=self.cv,
-                                scoring=self.metric)
-        score = score.mean()
+        if self.using_oob:
+            # oob predict
+            y_pred = classifier_obj.oob_decision_function_[:, 1]
+
+            # oob score
+            if not self.eval_prob:
+                # !!! some metrics (such as accuracy and F1) require discrete predictions.
+                # !!! If the score function raise an error about y_pred should not be float,
+                # !!! then please add the name of your metric(target) into Basic_tuner's "discrete_target" in ./__init__.py.
+                y_pred = y_pred > 0.5
+            score = self.metric._score_func(self.y, y_pred)
+        else:
+            # cv score
+            score = cross_val_score(
+                classifier_obj,
+                self.x,
+                self.y,
+                n_jobs=-1,
+                cv=StratifiedKFold(
+                    n_splits=5,
+                    shuffle=True,
+                    random_state=self.seed_recorder[trial.number]),
+                scoring=self.metric)
+            score = score.mean()
         return score
 
-    def tune(self):
-        self.study.optimize(self.evaluate, n_trials=self.n_try)
 
-        self.best_model = SVC(C=self.study.best_params["svc_c"],
-                              probability=True,
-                              cache_size=1e+3,
-                              class_weight="balanced",
-                              gamma="auto")
-        return self.best_model
+# SVM
+class SVC_tuner(Basic_tuner):
+
+    def __init__(self,
+                 x,
+                 y,
+                 kernel="rbf",
+                 n_try=50,
+                 cv=None,
+                 target="accuracy",
+                 kernel_seed=None,
+                 optuna_seed=71):
+        super().__init__(x,
+                         y,
+                         n_try=n_try,
+                         cv=cv,
+                         target=target,
+                         kernel_seed=kernel_seed,
+                         optuna_seed=optuna_seed)
+
+        self.kernel = kernel  # rbf, linear, poly, sigmoid
+
+    def create_model(self, trial):
+        svc_c = trial.suggest_float('svc_c', 1e-6, 1e+6, log=True)
+        svm = SVC(C=svc_c,
+                  kernel=self.kernel,
+                  cache_size=1e+3,
+                  class_weight="balanced",
+                  gamma="auto",
+                  probability=True,
+                  random_state=self.seed_recorder[trial.number])
+        return svm
+
+    def evaluate(self, trial):
+        classifier_obj = self.create_model(trial)
+
+        score = cross_val_score(
+            classifier_obj,
+            self.x,
+            self.y,
+            n_jobs=-1,
+            cv=StratifiedKFold(n_splits=5,
+                               shuffle=True,
+                               random_state=self.seed_recorder[trial.number]),
+            scoring=self.metric)
+        score = score.mean()
+        return score
 
 
 # XGboost

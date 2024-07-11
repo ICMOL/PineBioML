@@ -6,6 +6,8 @@ import seaborn as sns
 
 from sklearn.decomposition import PCA
 import sklearn.metrics as metrics
+from sklearn.cross_decomposition import PLSRegression
+from umap import UMAP
 
 
 class task_card:
@@ -42,58 +44,63 @@ def data_overview(input_x, y, label_name="y", title=""):
 
     x = input_x.copy()
 
-    n_feature = x.shape[1]
-    max_display_number = 12
-    n_pc = min(n_feature, max_display_number)
-
     # PCA
-    pcs = PCA(n_pc).fit_transform((x - x.mean()) / x.std())
-
+    print("start PCA")
+    pcs = PCA(4).fit_transform((x - x.mean()) / x.std())
     # turn into pandas dataframe format
     pcs = pd.DataFrame(pcs,
                        index=x.index,
-                       columns=["pc_" + str(i) for i in range(n_pc)])
+                       columns=["pc_" + str(i + 1) for i in range(4)])
+
+    # PLS
+    print("start PLS")
+    pls = PLSRegression().fit(x, y)
+    plscs = pls.transform(x)
+    plscs = pd.DataFrame(plscs,
+                         index=x.index,
+                         columns=["pls componet 1", "pls componet 2"])
+
+    # UMAP
+    print("start UMAP")
+    umapcs = UMAP(n_neighbors=round(np.log2(x.shape[0])),
+                  n_components=2).fit_transform(x)
+    umapcs = pd.DataFrame(umapcs,
+                          index=x.index,
+                          columns=["umap dimension 1", "umap dimension 2"])
 
     x[label_name] = y
     pcs[label_name] = y
+    plscs[label_name] = y
+    umapcs[label_name] = y
 
-    if n_feature > max_display_number:
-        print("x has too many features(>", max_display_number,
-              "), pass boxplot")
-    else:
-        # variable box plot
-        fig = sns.boxplot(x)
-        fig.set_title(title + " Variable Boxplot")
-        for label in fig.get_xticklabels(which="major"):
-            label.set(rotation=45, horizontalalignment='right')
-        fig.set_ylabel("values")
-        plt.tight_layout()
-        plt.show()
+    # plotting
+    ### correlation heatmap
+    fig = sns.heatmap(x.corr(), vmin=-1, vmax=1,
+                      cmap='RdBu').set_title(title + " Variable Correlation")
+    plt.tight_layout()
+    plt.show()
 
-    if n_feature > max_display_number * 2:
-        print("x has too many features(>", max_display_number * 2,
-              "), pass correlation heatmap")
-    else:
-        # correlation heatmap
-        fig = sns.heatmap(x.corr(), vmin=-1, vmax=1,
-                          cmap='BrBG').set_title(title +
-                                                 " Variable Correlation")
-        plt.tight_layout()
-        plt.show()
-
-    if n_feature > max_display_number:
-        print("x has too many features(>", max_display_number,
-              "), pass pairplot")
-    else:
-        # pair plot
-        print(title + " Paired Scatter plot")
-        fig = sns.pairplot(x, hue=label_name)
-        plt.show()
-
-    # pca pair plot
+    ### pca pair plot
     print(title + " PCA Scatter plot")
     # plot up to 12 principle complenent
     fig = sns.pairplot(pcs, hue=label_name)
+    #sns.scatterplot(pcs[["pc_1", "pc_2", label_name]], hue=label_name)
+    plt.show()
+
+    ### Umap
+    fig = sns.scatterplot(data=umapcs,
+                          x="umap dimension 1",
+                          y="umap dimension 2",
+                          hue=label_name)
+    fig.set_title("umap")
+    plt.show()
+
+    ### PLS
+    fig = sns.scatterplot(data=plscs,
+                          x="pls componet 1",
+                          y="pls componet 2",
+                          hue=label_name)
+    fig.set_title("PLS")
     plt.show()
 
 

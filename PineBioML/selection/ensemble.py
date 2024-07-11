@@ -14,7 +14,7 @@ class selector(SelectionPipeline):
     
     """
 
-    def __init__(self):
+    def __init__(self, RF_trees=1024):
         """
 
         Args:
@@ -22,7 +22,7 @@ class selector(SelectionPipeline):
         """
         self.kernels = {
             "c45": DT_selection(strategy="c45"),
-            "RF_gini": RF_selection(strategy="gini"),
+            "RF_gini": RF_selection(strategy="gini", trees=RF_trees),
             #"RF_entropy": RF_selection(strategy = "entropy"),
             #"pcRF_permutation": pcRF_selection(),
             #"pcRF_entropy": pcRF_selection(strategy = "entropy"),

@@ -1,3 +1,45 @@
+2024/7/12 0.6.1
+    description:
+        1. bug fixed:
+            a. IO.read_file can read tsv now.
+        2. report utils:
+            a. data_overview: 
+                I. Abandon boxplot and pairplot.
+                II. PCA use 4 component. 
+                III. add UMAP, PLS 
+                ToDo: add pacmap and hysterical clustering
+        3. auto modeling:
+            a. optuna model tuner for ElasticNet.
+            b. stablity of svm tuner
+        4. preprocessing.utils
+            a. feature_extension: extend input features by a*b, arctan a/b, pca component.
+        5. tutorial updating
+        6. ...etc (sorry I forget what I changed...)
+
+    On going:
+        1. auto modeling:
+            a. Performance oriented modeling.
+            b. optuna: auto tuner for all models
+        2. Diagnose and report
+        
+    bug:
+        1. bagging:
+             - contradicts to log domain in selection method (the negative output of pca)
+             - the variance of feature will change during bagging (variance matters)
+        2. Lasso logistic regression in grid search need to to modified. In temporary using binary search.
+
+    to do:
+        0. Tutorial for mac
+        1. Document and reference
+        2. using pretty, beautiful, good-looking, precise packages:
+            a. pca
+            b. The only OPLS da reliable(compare to others), alive, python implement 
+               https://github.com/Omicometrics/pypls?tab=readme-ov-file 
+        3. One click everything
+        n. add parameter dict(json or yaml-like)
+        n. interactive interface or GUI (maybe nicegui/ plotly)    
+
+
 2024/7/2 0.6.0
     description:
         !. remove normalization from selection block.
@@ -26,7 +68,6 @@
         2. logistic regression + L1 grid search need to to modified. In temporary using binary search.
     to do:
         1. add parameter dict(json or yaml-like)
-        2. document maintainess
         n. interactive interface or GUI (maybe nicegui/ plotly)
 
 

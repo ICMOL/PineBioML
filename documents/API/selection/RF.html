@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>package.selection.RF API documentation</title>
+<title>PineBioML.selection.RF API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>package.selection.RF</code></h1>
+<h1 class="title">Module <code>PineBioML.selection.RF</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -43,21 +43,14 @@ class RF_selection(SelectionPipeline):
 
     &#34;&#34;&#34;
 
-    def __init__(self,
-                 trees=1024 * 16,
-                 unbalanced=True,
-                 strategy=&#34;gini&#34;,
-                 center=True,
-                 scale=True):
+    def __init__(self, trees=1024, unbalanced=True, strategy=&#34;gini&#34;):
         &#34;&#34;&#34;
         Args:
             trees (int, optional): Number of trees. Defaults to 1024*16.
             strategy (str, optional): Scoring strategy, one of {&#34;gini&#34;, &#34;entropy&#34;}. Defaults to &#34;gini&#34;.
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to True.
-            center (bool, optional): Pass to Normalizer. Defaults to True.
-            scale (bool, optional): Pass to Normalizer. Defaults to True.
         &#34;&#34;&#34;
-        super().__init__(center=center, scale=scale)
+        super().__init__()
         self.strategy = strategy
         if unbalanced:
             class_weight = &#34;balanced&#34;
@@ -70,7 +63,8 @@ class RF_selection(SelectionPipeline):
                                              class_weight=class_weight,
                                              criterion=strategy,
                                              verbose=1,
-                                             ccp_alpha=1e-2)
+                                             ccp_alpha=1e-2,
+                                             random_state=142)
         self.name = &#34;RandomForest_&#34; + self.strategy
 
     def Scoring(self, x, y=None):
@@ -224,24 +218,22 @@ class pcRF_selection(SelectionPipeline):
     Expiriment method. PCA-&gt;RF-&gt;importance-&gt;inverse_PCA
     &#34;&#34;&#34;
 
-    def __init__(self,
-                 trees=512,
-                 unbalanced=True,
-                 strategy=&#34;permutation&#34;,
-                 factorize_method=&#34;PCA&#34;,
-                 center=True,
-                 scale=True):
+    def __init__(
+        self,
+        trees=512,
+        unbalanced=True,
+        strategy=&#34;permutation&#34;,
+        factorize_method=&#34;PCA&#34;,
+    ):
         &#34;&#34;&#34;
         Args:
             trees (int, optional): Number of trees. Defaults to 512.
             unbalanced (bool, optional): _description_. Defaults to True.
             strategy (str, optional): Scoring strategy, one of {&#34;gini&#34;, &#34;entropy&#34;, &#34;permutation&#34;}. Defaults to &#34;permutation&#34;.
             factorize_method (str, optional): One of {&#34;PCA&#34;}. Method to reduce dimension.  Defaults to &#34;PCA&#34;.
-            center (bool, optional): Pass to Normalizer. Defaults to True.
-            scale (bool, optional): Pass to Normalizer. Defaults to True.
                     
         &#34;&#34;&#34;
-        super().__init__(center=center, scale=scale)
+        super().__init__()
         # remove colinearity
         #        if factorize_method == &#34;NMF&#34;:
         #           self.fatorizer = NMF()
@@ -304,7 +296,6 @@ class pcRF_selection(SelectionPipeline):
         &#34;&#34;&#34;
 
         # x should be a pd dataframe or a numpy array without missing value
-        x, y = self.normalizer.fit_transform(x, y)
         columns = x.columns
         index = x.index
 
@@ -351,9 +342,9 @@ class pcRF_selection(SelectionPipeline):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="package.selection.RF.RF_selection"><code class="flex name class">
+<dt id="PineBioML.selection.RF.RF_selection"><code class="flex name class">
 <span>class <span class="ident">RF_selection</span></span>
-<span>(</span><span>trees=16384, unbalanced=True, strategy='gini', center=True, scale=True)</span>
+<span>(</span><span>trees=1024, unbalanced=True, strategy='gini')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Using random forest to scoring (gini impurity / entropy) features.</p>
@@ -365,10 +356,6 @@ class pcRF_selection(SelectionPipeline):
 <dd>Scoring strategy, one of {"gini", "entropy"}. Defaults to "gini".</dd>
 <dt><strong><code>unbalanced</code></strong> :&ensp;<code>bool</code>, optional</dt>
 <dd>True to imply class weight to samples. Defaults to True.</dd>
-<dt><strong><code>center</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Pass to Normalizer. Defaults to True.</dd>
-<dt><strong><code>scale</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Pass to Normalizer. Defaults to True.</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -380,21 +367,14 @@ class pcRF_selection(SelectionPipeline):
 
     &#34;&#34;&#34;
 
-    def __init__(self,
-                 trees=1024 * 16,
-                 unbalanced=True,
-                 strategy=&#34;gini&#34;,
-                 center=True,
-                 scale=True):
+    def __init__(self, trees=1024, unbalanced=True, strategy=&#34;gini&#34;):
         &#34;&#34;&#34;
         Args:
             trees (int, optional): Number of trees. Defaults to 1024*16.
             strategy (str, optional): Scoring strategy, one of {&#34;gini&#34;, &#34;entropy&#34;}. Defaults to &#34;gini&#34;.
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to True.
-            center (bool, optional): Pass to Normalizer. Defaults to True.
-            scale (bool, optional): Pass to Normalizer. Defaults to True.
         &#34;&#34;&#34;
-        super().__init__(center=center, scale=scale)
+        super().__init__()
         self.strategy = strategy
         if unbalanced:
             class_weight = &#34;balanced&#34;
@@ -407,7 +387,8 @@ class pcRF_selection(SelectionPipeline):
                                              class_weight=class_weight,
                                              criterion=strategy,
                                              verbose=1,
-                                             ccp_alpha=1e-2)
+                                             ccp_alpha=1e-2,
+                                             random_state=142)
         self.name = &#34;RandomForest_&#34; + self.strategy
 
     def Scoring(self, x, y=None):
@@ -429,11 +410,11 @@ class pcRF_selection(SelectionPipeline):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="package.selection.SelectionPipeline" href="index.html#package.selection.SelectionPipeline">SelectionPipeline</a></li>
+<li><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="package.selection.RF.RF_selection.Scoring"><code class="name flex">
+<dt id="PineBioML.selection.RF.RF_selection.Scoring"><code class="name flex">
 <span>def <span class="ident">Scoring</span></span>(<span>self, x, y=None)</span>
 </code></dt>
 <dd>
@@ -475,18 +456,18 @@ class pcRF_selection(SelectionPipeline):
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="package.selection.SelectionPipeline" href="index.html#package.selection.SelectionPipeline">SelectionPipeline</a></b></code>:
+<li><code><b><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></b></code>:
 <ul class="hlist">
-<li><code><a title="package.selection.SelectionPipeline.Choose" href="index.html#package.selection.SelectionPipeline.Choose">Choose</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Diagnose" href="index.html#package.selection.SelectionPipeline.Diagnose">Diagnose</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Plotting" href="index.html#package.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Report" href="index.html#package.selection.SelectionPipeline.Report">Report</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Select" href="index.html#package.selection.SelectionPipeline.Select">Select</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Choose" href="index.html#PineBioML.selection.SelectionPipeline.Choose">Choose</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Diagnose" href="index.html#PineBioML.selection.SelectionPipeline.Diagnose">Diagnose</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Select" href="index.html#PineBioML.selection.SelectionPipeline.Select">Select</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
-<dt id="package.selection.RF.oob_RFClassifier"><code class="flex name class">
+<dt id="PineBioML.selection.RF.oob_RFClassifier"><code class="flex name class">
 <span>class <span class="ident">oob_RFClassifier</span></span>
 <span>(</span><span>trees=8192, unbalanced=True)</span>
 </code></dt>
@@ -634,7 +615,7 @@ Now is only for classification.</p></div>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="package.selection.RF.oob_RFClassifier.evaluate"><code class="name flex">
+<dt id="PineBioML.selection.RF.oob_RFClassifier.evaluate"><code class="name flex">
 <span>def <span class="ident">evaluate</span></span>(<span>self, x, y, metric='ACC', oob=False)</span>
 </code></dt>
 <dd>
@@ -691,7 +672,7 @@ Now is only for classification.</p></div>
         return 0</code></pre>
 </details>
 </dd>
-<dt id="package.selection.RF.oob_RFClassifier.fit"><code class="name flex">
+<dt id="PineBioML.selection.RF.oob_RFClassifier.fit"><code class="name flex">
 <span>def <span class="ident">fit</span></span>(<span>self, x, y)</span>
 </code></dt>
 <dd>
@@ -728,7 +709,7 @@ Now is only for classification.</p></div>
             sub_x, sub_y)</code></pre>
 </details>
 </dd>
-<dt id="package.selection.RF.oob_RFClassifier.oob_predict_prob"><code class="name flex">
+<dt id="PineBioML.selection.RF.oob_RFClassifier.oob_predict_prob"><code class="name flex">
 <span>def <span class="ident">oob_predict_prob</span></span>(<span>self, x)</span>
 </code></dt>
 <dd>
@@ -778,7 +759,7 @@ Now is only for classification.</p></div>
     return predicts.sum(axis=1) / oob_mask.sum(axis=1)</code></pre>
 </details>
 </dd>
-<dt id="package.selection.RF.oob_RFClassifier.predict_prob"><code class="name flex">
+<dt id="PineBioML.selection.RF.oob_RFClassifier.predict_prob"><code class="name flex">
 <span>def <span class="ident">predict_prob</span></span>(<span>self, x)</span>
 </code></dt>
 <dd>
@@ -814,9 +795,9 @@ Now is only for classification.</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="package.selection.RF.pcRF_selection"><code class="flex name class">
+<dt id="PineBioML.selection.RF.pcRF_selection"><code class="flex name class">
 <span>class <span class="ident">pcRF_selection</span></span>
-<span>(</span><span>trees=512, unbalanced=True, strategy='permutation', factorize_method='PCA', center=True, scale=True)</span>
+<span>(</span><span>trees=512, unbalanced=True, strategy='permutation', factorize_method='PCA')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Expiriment method. PCA-&gt;RF-&gt;importance-&gt;inverse_PCA</p>
@@ -831,10 +812,6 @@ Now is only for classification.</p></div>
 <dt><strong><code>factorize_method</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>One of {"PCA"}. Method to reduce dimension.
 Defaults to "PCA".</dd>
-<dt><strong><code>center</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Pass to Normalizer. Defaults to True.</dd>
-<dt><strong><code>scale</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Pass to Normalizer. Defaults to True.</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -845,24 +822,22 @@ Defaults to "PCA".</dd>
     Expiriment method. PCA-&gt;RF-&gt;importance-&gt;inverse_PCA
     &#34;&#34;&#34;
 
-    def __init__(self,
-                 trees=512,
-                 unbalanced=True,
-                 strategy=&#34;permutation&#34;,
-                 factorize_method=&#34;PCA&#34;,
-                 center=True,
-                 scale=True):
+    def __init__(
+        self,
+        trees=512,
+        unbalanced=True,
+        strategy=&#34;permutation&#34;,
+        factorize_method=&#34;PCA&#34;,
+    ):
         &#34;&#34;&#34;
         Args:
             trees (int, optional): Number of trees. Defaults to 512.
             unbalanced (bool, optional): _description_. Defaults to True.
             strategy (str, optional): Scoring strategy, one of {&#34;gini&#34;, &#34;entropy&#34;, &#34;permutation&#34;}. Defaults to &#34;permutation&#34;.
             factorize_method (str, optional): One of {&#34;PCA&#34;}. Method to reduce dimension.  Defaults to &#34;PCA&#34;.
-            center (bool, optional): Pass to Normalizer. Defaults to True.
-            scale (bool, optional): Pass to Normalizer. Defaults to True.
                     
         &#34;&#34;&#34;
-        super().__init__(center=center, scale=scale)
+        super().__init__()
         # remove colinearity
         #        if factorize_method == &#34;NMF&#34;:
         #           self.fatorizer = NMF()
@@ -925,7 +900,6 @@ Defaults to "PCA".</dd>
         &#34;&#34;&#34;
 
         # x should be a pd dataframe or a numpy array without missing value
-        x, y = self.normalizer.fit_transform(x, y)
         columns = x.columns
         index = x.index
 
@@ -964,11 +938,11 @@ Defaults to "PCA".</dd>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="package.selection.SelectionPipeline" href="index.html#package.selection.SelectionPipeline">SelectionPipeline</a></li>
+<li><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="package.selection.RF.pcRF_selection.Scoring"><code class="name flex">
+<dt id="PineBioML.selection.RF.pcRF_selection.Scoring"><code class="name flex">
 <span>def <span class="ident">Scoring</span></span>(<span>self, x, y=None)</span>
 </code></dt>
 <dd>
@@ -1022,7 +996,7 @@ Defaults to "PCA".</dd>
     return score</code></pre>
 </details>
 </dd>
-<dt id="package.selection.RF.pcRF_selection.Select"><code class="name flex">
+<dt id="PineBioML.selection.RF.pcRF_selection.Select"><code class="name flex">
 <span>def <span class="ident">Select</span></span>(<span>self, x, y, k)</span>
 </code></dt>
 <dd>
@@ -1059,7 +1033,6 @@ Defaults to "PCA".</dd>
     &#34;&#34;&#34;
 
     # x should be a pd dataframe or a numpy array without missing value
-    x, y = self.normalizer.fit_transform(x, y)
     columns = x.columns
     index = x.index
 
@@ -1100,12 +1073,12 @@ Defaults to "PCA".</dd>
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="package.selection.SelectionPipeline" href="index.html#package.selection.SelectionPipeline">SelectionPipeline</a></b></code>:
+<li><code><b><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></b></code>:
 <ul class="hlist">
-<li><code><a title="package.selection.SelectionPipeline.Choose" href="index.html#package.selection.SelectionPipeline.Choose">Choose</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Diagnose" href="index.html#package.selection.SelectionPipeline.Diagnose">Diagnose</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Plotting" href="index.html#package.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Report" href="index.html#package.selection.SelectionPipeline.Report">Report</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Choose" href="index.html#PineBioML.selection.SelectionPipeline.Choose">Choose</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Diagnose" href="index.html#PineBioML.selection.SelectionPipeline.Diagnose">Diagnose</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1121,31 +1094,31 @@ Defaults to "PCA".</dd>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="package.selection" href="index.html">package.selection</a></code></li>
+<li><code><a title="PineBioML.selection" href="index.html">PineBioML.selection</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="package.selection.RF.RF_selection" href="#package.selection.RF.RF_selection">RF_selection</a></code></h4>
+<h4><code><a title="PineBioML.selection.RF.RF_selection" href="#PineBioML.selection.RF.RF_selection">RF_selection</a></code></h4>
 <ul class="">
-<li><code><a title="package.selection.RF.RF_selection.Scoring" href="#package.selection.RF.RF_selection.Scoring">Scoring</a></code></li>
+<li><code><a title="PineBioML.selection.RF.RF_selection.Scoring" href="#PineBioML.selection.RF.RF_selection.Scoring">Scoring</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="package.selection.RF.oob_RFClassifier" href="#package.selection.RF.oob_RFClassifier">oob_RFClassifier</a></code></h4>
+<h4><code><a title="PineBioML.selection.RF.oob_RFClassifier" href="#PineBioML.selection.RF.oob_RFClassifier">oob_RFClassifier</a></code></h4>
 <ul class="">
-<li><code><a title="package.selection.RF.oob_RFClassifier.evaluate" href="#package.selection.RF.oob_RFClassifier.evaluate">evaluate</a></code></li>
-<li><code><a title="package.selection.RF.oob_RFClassifier.fit" href="#package.selection.RF.oob_RFClassifier.fit">fit</a></code></li>
-<li><code><a title="package.selection.RF.oob_RFClassifier.oob_predict_prob" href="#package.selection.RF.oob_RFClassifier.oob_predict_prob">oob_predict_prob</a></code></li>
-<li><code><a title="package.selection.RF.oob_RFClassifier.predict_prob" href="#package.selection.RF.oob_RFClassifier.predict_prob">predict_prob</a></code></li>
+<li><code><a title="PineBioML.selection.RF.oob_RFClassifier.evaluate" href="#PineBioML.selection.RF.oob_RFClassifier.evaluate">evaluate</a></code></li>
+<li><code><a title="PineBioML.selection.RF.oob_RFClassifier.fit" href="#PineBioML.selection.RF.oob_RFClassifier.fit">fit</a></code></li>
+<li><code><a title="PineBioML.selection.RF.oob_RFClassifier.oob_predict_prob" href="#PineBioML.selection.RF.oob_RFClassifier.oob_predict_prob">oob_predict_prob</a></code></li>
+<li><code><a title="PineBioML.selection.RF.oob_RFClassifier.predict_prob" href="#PineBioML.selection.RF.oob_RFClassifier.predict_prob">predict_prob</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="package.selection.RF.pcRF_selection" href="#package.selection.RF.pcRF_selection">pcRF_selection</a></code></h4>
+<h4><code><a title="PineBioML.selection.RF.pcRF_selection" href="#PineBioML.selection.RF.pcRF_selection">pcRF_selection</a></code></h4>
 <ul class="">
-<li><code><a title="package.selection.RF.pcRF_selection.Scoring" href="#package.selection.RF.pcRF_selection.Scoring">Scoring</a></code></li>
-<li><code><a title="package.selection.RF.pcRF_selection.Select" href="#package.selection.RF.pcRF_selection.Select">Select</a></code></li>
+<li><code><a title="PineBioML.selection.RF.pcRF_selection.Scoring" href="#PineBioML.selection.RF.pcRF_selection.Scoring">Scoring</a></code></li>
+<li><code><a title="PineBioML.selection.RF.pcRF_selection.Select" href="#PineBioML.selection.RF.pcRF_selection.Select">Select</a></code></li>
 </ul>
 </li>
 </ul>

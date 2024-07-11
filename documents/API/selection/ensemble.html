@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>package.selection.ensemble API documentation</title>
+<title>PineBioML.selection.ensemble API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>package.selection.ensemble</code></h1>
+<h1 class="title">Module <code>PineBioML.selection.ensemble</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -42,40 +42,26 @@ class selector(SelectionPipeline):
     
     &#34;&#34;&#34;
 
-    def __init__(self, center=True, scale=True, log_domain=False):
+    def __init__(self, RF_trees=1024):
         &#34;&#34;&#34;
 
         Args:
-            center (bool, optional): Pass to Normalizer. Defaults to True.
-            scale (bool, optional): Pass to Normalizer. Defaults to True.
-            log_domain (bool, optional): Whether input data is in log_domain. Defaults to False.
+
         &#34;&#34;&#34;
         self.kernels = {
-            #&#34;id3&#34;: DT_selection(strategy = &#34;id3&#34;, center = center, scale = scale),
-            &#34;c45&#34;:
-            DT_selection(strategy=&#34;c45&#34;, center=center, scale=scale),
-            &#34;RF_gini&#34;:
-            RF_selection(strategy=&#34;gini&#34;, center=center, scale=scale),
-            #&#34;RF_entropy&#34;: RF_selection(strategy = &#34;entropy&#34;, center = center, scale = scale),
-            #&#34;pcRF_permutation&#34;: pcRF_selection(center = center, scale = scale),
-            #&#34;pcRF_entropy&#34;: pcRF_selection(strategy = &#34;entropy&#34;, center = center, scale = scale),
-            #&#34;pcRF_permute&#34;: pcRF_selection(strategy = &#34;permutation&#34;, center = center, scale = scale),
-            &#34;AdaBoost&#34;:
-            AdaBoost_selection(center=center, scale=scale),
-            #&#34;Lasso&#34;: Lasso_selection(center=center, scale=scale),
-            &#34;Lasso_Bisection&#34;:
-            Lasso_bisection_selection(center=center, scale=scale),
-            &#34;multi_Lasso&#34;:
-            multi_Lasso_selection(center=center, scale=scale),
-            &#34;SVM&#34;:
-            SVM_selection(center=center, scale=scale),
-            #&#34;multi_SVM&#34;: multi_SVM_selection(center = center, scale = scale),
-            #&#34;Volcano_p&#34;: Volcano_selection(strategy = &#34;p&#34;, center = center, scale = scale, log_domain=log_domain),
-            #&#34;Volcano_fold&#34;:Volcano_selection(strategy = &#34;fold&#34;, center = center, scale = scale, log_domain=log_domain),
-            &#34;XGboost&#34;:
-            XGboost_selection(center=center, scale=scale),
-            &#34;Lightgbm&#34;:
-            Lightgbm_selection(center=center, scale=scale)
+            &#34;c45&#34;: DT_selection(strategy=&#34;c45&#34;),
+            &#34;RF_gini&#34;: RF_selection(strategy=&#34;gini&#34;, trees=RF_trees),
+            #&#34;RF_entropy&#34;: RF_selection(strategy = &#34;entropy&#34;),
+            #&#34;pcRF_permutation&#34;: pcRF_selection(),
+            #&#34;pcRF_entropy&#34;: pcRF_selection(strategy = &#34;entropy&#34;),
+            #&#34;pcRF_permute&#34;: pcRF_selection(strategy = &#34;permutation&#34;),
+            &#34;AdaBoost&#34;: AdaBoost_selection(),
+            #&#34;Lasso&#34;: Lasso_selection(center=center),
+            &#34;Lasso_Bisection&#34;: Lasso_bisection_selection(),
+            &#34;multi_Lasso&#34;: multi_Lasso_selection(),
+            &#34;SVM&#34;: SVM_selection(),
+            &#34;XGboost&#34;: XGboost_selection(),
+            &#34;Lightgbm&#34;: Lightgbm_selection()
         }
 
     def Select(self, x, y, k):
@@ -115,21 +101,13 @@ class selector(SelectionPipeline):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="package.selection.ensemble.selector"><code class="flex name class">
+<dt id="PineBioML.selection.ensemble.selector"><code class="flex name class">
 <span>class <span class="ident">selector</span></span>
-<span>(</span><span>center=True, scale=True, log_domain=False)</span>
+<span>(</span><span>RF_trees=1024)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A functional stack of diffirent methods.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>center</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Pass to Normalizer. Defaults to True.</dd>
-<dt><strong><code>scale</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Pass to Normalizer. Defaults to True.</dd>
-<dt><strong><code>log_domain</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Whether input data is in log_domain. Defaults to False.</dd>
-</dl></div>
+<p>Args:</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -140,40 +118,26 @@ class selector(SelectionPipeline):
     
     &#34;&#34;&#34;
 
-    def __init__(self, center=True, scale=True, log_domain=False):
+    def __init__(self, RF_trees=1024):
         &#34;&#34;&#34;
 
         Args:
-            center (bool, optional): Pass to Normalizer. Defaults to True.
-            scale (bool, optional): Pass to Normalizer. Defaults to True.
-            log_domain (bool, optional): Whether input data is in log_domain. Defaults to False.
+
         &#34;&#34;&#34;
         self.kernels = {
-            #&#34;id3&#34;: DT_selection(strategy = &#34;id3&#34;, center = center, scale = scale),
-            &#34;c45&#34;:
-            DT_selection(strategy=&#34;c45&#34;, center=center, scale=scale),
-            &#34;RF_gini&#34;:
-            RF_selection(strategy=&#34;gini&#34;, center=center, scale=scale),
-            #&#34;RF_entropy&#34;: RF_selection(strategy = &#34;entropy&#34;, center = center, scale = scale),
-            #&#34;pcRF_permutation&#34;: pcRF_selection(center = center, scale = scale),
-            #&#34;pcRF_entropy&#34;: pcRF_selection(strategy = &#34;entropy&#34;, center = center, scale = scale),
-            #&#34;pcRF_permute&#34;: pcRF_selection(strategy = &#34;permutation&#34;, center = center, scale = scale),
-            &#34;AdaBoost&#34;:
-            AdaBoost_selection(center=center, scale=scale),
-            #&#34;Lasso&#34;: Lasso_selection(center=center, scale=scale),
-            &#34;Lasso_Bisection&#34;:
-            Lasso_bisection_selection(center=center, scale=scale),
-            &#34;multi_Lasso&#34;:
-            multi_Lasso_selection(center=center, scale=scale),
-            &#34;SVM&#34;:
-            SVM_selection(center=center, scale=scale),
-            #&#34;multi_SVM&#34;: multi_SVM_selection(center = center, scale = scale),
-            #&#34;Volcano_p&#34;: Volcano_selection(strategy = &#34;p&#34;, center = center, scale = scale, log_domain=log_domain),
-            #&#34;Volcano_fold&#34;:Volcano_selection(strategy = &#34;fold&#34;, center = center, scale = scale, log_domain=log_domain),
-            &#34;XGboost&#34;:
-            XGboost_selection(center=center, scale=scale),
-            &#34;Lightgbm&#34;:
-            Lightgbm_selection(center=center, scale=scale)
+            &#34;c45&#34;: DT_selection(strategy=&#34;c45&#34;),
+            &#34;RF_gini&#34;: RF_selection(strategy=&#34;gini&#34;, trees=RF_trees),
+            #&#34;RF_entropy&#34;: RF_selection(strategy = &#34;entropy&#34;),
+            #&#34;pcRF_permutation&#34;: pcRF_selection(),
+            #&#34;pcRF_entropy&#34;: pcRF_selection(strategy = &#34;entropy&#34;),
+            #&#34;pcRF_permute&#34;: pcRF_selection(strategy = &#34;permutation&#34;),
+            &#34;AdaBoost&#34;: AdaBoost_selection(),
+            #&#34;Lasso&#34;: Lasso_selection(center=center),
+            &#34;Lasso_Bisection&#34;: Lasso_bisection_selection(),
+            &#34;multi_Lasso&#34;: multi_Lasso_selection(),
+            &#34;SVM&#34;: SVM_selection(),
+            &#34;XGboost&#34;: XGboost_selection(),
+            &#34;Lightgbm&#34;: Lightgbm_selection()
         }
 
     def Select(self, x, y, k):
@@ -205,11 +169,11 @@ class selector(SelectionPipeline):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="package.selection.SelectionPipeline" href="index.html#package.selection.SelectionPipeline">SelectionPipeline</a></li>
+<li><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="package.selection.ensemble.selector.Select"><code class="name flex">
+<dt id="PineBioML.selection.ensemble.selector.Select"><code class="name flex">
 <span>def <span class="ident">Select</span></span>(<span>self, x, y, k)</span>
 </code></dt>
 <dd>
@@ -256,7 +220,7 @@ class selector(SelectionPipeline):
     return name, importance</code></pre>
 </details>
 </dd>
-<dt id="package.selection.ensemble.selector.plotting"><code class="name flex">
+<dt id="PineBioML.selection.ensemble.selector.plotting"><code class="name flex">
 <span>def <span class="ident">plotting</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -273,13 +237,13 @@ class selector(SelectionPipeline):
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="package.selection.SelectionPipeline" href="index.html#package.selection.SelectionPipeline">SelectionPipeline</a></b></code>:
+<li><code><b><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></b></code>:
 <ul class="hlist">
-<li><code><a title="package.selection.SelectionPipeline.Choose" href="index.html#package.selection.SelectionPipeline.Choose">Choose</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Diagnose" href="index.html#package.selection.SelectionPipeline.Diagnose">Diagnose</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Plotting" href="index.html#package.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Report" href="index.html#package.selection.SelectionPipeline.Report">Report</a></code></li>
-<li><code><a title="package.selection.SelectionPipeline.Scoring" href="index.html#package.selection.SelectionPipeline.Scoring">Scoring</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Choose" href="index.html#PineBioML.selection.SelectionPipeline.Choose">Choose</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Diagnose" href="index.html#PineBioML.selection.SelectionPipeline.Diagnose">Diagnose</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Scoring" href="index.html#PineBioML.selection.SelectionPipeline.Scoring">Scoring</a></code></li>
 </ul>
 </li>
 </ul>
@@ -295,16 +259,16 @@ class selector(SelectionPipeline):
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="package.selection" href="index.html">package.selection</a></code></li>
+<li><code><a title="PineBioML.selection" href="index.html">PineBioML.selection</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="package.selection.ensemble.selector" href="#package.selection.ensemble.selector">selector</a></code></h4>
+<h4><code><a title="PineBioML.selection.ensemble.selector" href="#PineBioML.selection.ensemble.selector">selector</a></code></h4>
 <ul class="">
-<li><code><a title="package.selection.ensemble.selector.Select" href="#package.selection.ensemble.selector.Select">Select</a></code></li>
-<li><code><a title="package.selection.ensemble.selector.plotting" href="#package.selection.ensemble.selector.plotting">plotting</a></code></li>
+<li><code><a title="PineBioML.selection.ensemble.selector.Select" href="#PineBioML.selection.ensemble.selector.Select">Select</a></code></li>
+<li><code><a title="PineBioML.selection.ensemble.selector.plotting" href="#PineBioML.selection.ensemble.selector.plotting">plotting</a></code></li>
 </ul>
 </li>
 </ul>
