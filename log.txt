@@ -1,3 +1,9 @@
+2024/7/20 0.6.2
+    description:
+        1. defualt tuner target changes to mcc
+        2. defualt tuner parameters changes
+
+
 2024/7/12 0.6.1
     description:
         1. bug fixed:
@@ -37,7 +43,7 @@
                https://github.com/Omicometrics/pypls?tab=readme-ov-file 
         3. One click everything
         n. add parameter dict(json or yaml-like)
-        n. interactive interface or GUI (maybe nicegui/ plotly)    
+        n. interactive interface or GUI (maybe nicegui/ plotly)
 
 
 2024/7/2 0.6.0

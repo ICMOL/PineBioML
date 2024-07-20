@@ -10,14 +10,7 @@ optuna.logging.set_verbosity(optuna.logging.WARNING)
 
 class Basic_tuner(ABC):
 
-    def __init__(self,
-                 x,
-                 y,
-                 n_try=50,
-                 cv=None,
-                 target="neg_log_loss",
-                 kernel_seed=None,
-                 optuna_seed=None):
+    def __init__(self, x, y, n_try, cv, target, kernel_seed, optuna_seed):
         """
         To reduce the overfitting of optuna on validation set.
         
@@ -37,7 +30,7 @@ class Basic_tuner(ABC):
         self.kernel_seed = kernel_seed
         self.optuna_seed = optuna_seed
 
-        self.discrete_target = ["accuracy", "f1"]
+        self.discrete_target = ["accuracy", "f1", "matthews_corrcoef"]
         self.eval_prob = not target in self.discrete_target
         self.metric = metrics.get_scorer(target)
 

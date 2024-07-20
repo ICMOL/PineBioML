@@ -1,8 +1,10 @@
 pandas
 openpyxl
+xlrd
 tqdm
 seaborn
 gprofiler-official
+jupyter
 jupyterlab
 optuna
 scikit-learn

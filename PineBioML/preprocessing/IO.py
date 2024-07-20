@@ -4,14 +4,15 @@ from numpy import ones
 
 def read_file(file_path, index_col=0):
     """
-    Sparse the file name. Support .csv, .tsv, .xlsx and R-table in .txt format.
+    Read files, which supports common data format .csv, .tsv, .xlsx and R-table in .txt format.    
+    Notice that while an excel file has several data sheet, this function will return a python dict with corresponding sheet name as dict keys.    
 
     Args:
         file_path (str): The path to data.
-        index_col (int or str): The column to set as the index of dataframe
+        index_col (int or str): Default is 0. The column index or name to set as the index of dataframe. Set None to ignore.
 
     Returns:
-        pandas.DataFrame: Data
+        pandas.DataFrame: Data or a dict to data sheets
     """
     # sparse csv, tsv or excel
     file_type = file_path.split(".")[-1]
