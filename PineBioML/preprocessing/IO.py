@@ -19,7 +19,13 @@ def read_file(file_path, index_col=0):
     if file_type == "csv":
         file = read_csv(file_path, index_col=index_col)
     elif file_type == "tsv":
-        file = read_csv(file_path, sep=" ", index_col=index_col)
+        file_a = read_csv(file_path, sep=" ", index_col=index_col)
+        file_b = read_csv(file_path, sep="\t", index_col=index_col)
+        if file_a.isna().mean().mean() > file_b.isna().mean().mean():
+            file = file_b
+        else:
+            file = file_a
+
     elif file_type in ["xls", "xlsx", "xlsm", "xlsb"]:
         file = read_excel(file_path, sheet_name=None, index_col=index_col)
         if len(file) == 1:

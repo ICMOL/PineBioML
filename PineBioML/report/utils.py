@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 import matplotlib.pyplot as plt
-import seaborn as sns
+from seaborn import scatterplot, heatmap, pairplot
 
 from sklearn.decomposition import PCA
 import sklearn.metrics as metrics
@@ -75,31 +75,31 @@ def data_overview(input_x, y, label_name="y", title=""):
 
     # plotting
     ### correlation heatmap
-    fig = sns.heatmap(x.corr(), vmin=-1, vmax=1,
-                      cmap='RdBu').set_title(title + " Variable Correlation")
+    fig = heatmap(x.corr(), vmin=-1, vmax=1,
+                  cmap='RdBu').set_title(title + " Variable Correlation")
     plt.tight_layout()
     plt.show()
 
     ### pca pair plot
     print(title + " PCA Scatter plot")
     # plot up to 12 principle complenent
-    fig = sns.pairplot(pcs, hue=label_name)
+    fig = pairplot(pcs, hue=label_name)
     #sns.scatterplot(pcs[["pc_1", "pc_2", label_name]], hue=label_name)
     plt.show()
 
     ### Umap
-    fig = sns.scatterplot(data=umapcs,
-                          x="umap dimension 1",
-                          y="umap dimension 2",
-                          hue=label_name)
+    fig = scatterplot(data=umapcs,
+                      x="umap dimension 1",
+                      y="umap dimension 2",
+                      hue=label_name)
     fig.set_title("umap")
     plt.show()
 
     ### PLS
-    fig = sns.scatterplot(data=plscs,
-                          x="pls componet 1",
-                          y="pls componet 2",
-                          hue=label_name)
+    fig = scatterplot(data=plscs,
+                      x="pls componet 1",
+                      y="pls componet 2",
+                      hue=label_name)
     fig.set_title("PLS")
     plt.show()
 

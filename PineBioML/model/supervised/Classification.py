@@ -7,26 +7,23 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 
 import numpy as np
+from statsmodels.discrete.discrete_model import Logit
 
 
 # linear model
-class ElasticNet_tuner(Basic_tuner):
+class ElasticLogit_tuner(Basic_tuner):
     """
     [sklearn logistic Regression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression), reminds the choice of the algorithm depends on the penalty chosen and on (multinomial) multiclass support.
     """
 
     def __init__(self,
-                 x,
-                 y,
                  kernel="saga",
-                 n_try=20,
+                 n_try=25,
                  cv=None,
                  target="matthews_corrcoef",
                  kernel_seed=None,
                  optuna_seed=71):
-        super().__init__(x,
-                         y,
-                         n_try=n_try,
+        super().__init__(n_try=n_try,
                          cv=cv,
                          target=target,
                          kernel_seed=kernel_seed,
@@ -65,22 +62,26 @@ class ElasticNet_tuner(Basic_tuner):
         score = score.mean()
         return score
 
+    def summary(self):
+        log_reg = Logit(self.y, self.x).fit(
+            disp=False,
+            start_params=self.best_model.coef_.flatten(),
+            maxiter=0,
+            warn_convergence=False)
+        print(log_reg.summary())
+
 
 # RF
 class RandomForest_tuner(Basic_tuner):
 
     def __init__(self,
-                 x,
-                 y,
                  using_oob=True,
                  n_try=50,
                  cv=None,
                  target="matthews_corrcoef",
                  kernel_seed=None,
                  optuna_seed=71):
-        super().__init__(x,
-                         y,
-                         n_try=n_try,
+        super().__init__(n_try=n_try,
                          cv=cv,
                          target=target,
                          kernel_seed=kernel_seed,
@@ -95,7 +96,7 @@ class RandomForest_tuner(Basic_tuner):
             "max_depth":
             trial.suggest_int('max_depth', 2, 32, log=True),
             "min_samples_split":
-            trial.suggest_int('min_samples_split', 1, 32, log=True),
+            trial.suggest_int('min_samples_split', 2, 32, log=True),
             "min_samples_leaf":
             trial.suggest_int('min_samples_leaf', 1, 32, log=True),
             "ccp_alpha":
@@ -153,23 +154,17 @@ class RandomForest_tuner(Basic_tuner):
 class SVC_tuner(Basic_tuner):
 
     def __init__(self,
-                 x,
-                 y,
                  kernel="rbf",
-                 n_try=20,
+                 n_try=25,
                  cv=None,
                  target="matthews_corrcoef",
                  kernel_seed=None,
                  optuna_seed=71):
-        super().__init__(x,
-                         y,
-                         n_try=n_try,
+        super().__init__(n_try=n_try,
                          cv=cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          optuna_seed=optuna_seed)
-
-        self.n_sample = x.shape[0]
         self.kernel = kernel  # rbf, linear, poly, sigmoid
 
     def create_model(self, trial):

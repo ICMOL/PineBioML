@@ -1,3 +1,12 @@
+2024/7/20 0.6.3
+    description:
+        1. change the order of tuner data pipeline
+        2. defualt tuner parameters changes
+        3. add statsmodels summary (R style) into elasticnet tuner
+        4. the name of ElasticNet turner was changed to ElasticLogit
+        5. add fit and predict api to tuner (for potential usage of sklearn pipeline)
+
+
 2024/7/20 0.6.2
     description:
         1. defualt tuner target changes to mcc

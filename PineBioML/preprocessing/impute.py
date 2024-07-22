@@ -51,7 +51,8 @@ class imputer():
         x = x.loc[:, self.not_too_empty]  # keep those who not too empty
 
         # normalize
-        x, y = self.normalizer.fit_transform(x, y)
+        self.normalizer.fit(x, y)
+        x, y = self.normalizer.transform(x, y)
 
         # call the kernel
         self.kernel.fit(x)
@@ -78,7 +79,7 @@ class imputer():
         idx = x.index
 
         # normalize
-        x, y = self.normalizer.fit_transform(x, y)
+        x, y = self.normalizer.transform(x, y)
 
         # call the kernel
         x = self.kernel.transform(x)

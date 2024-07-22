@@ -10,7 +10,7 @@ optuna.logging.set_verbosity(optuna.logging.WARNING)
 
 class Basic_tuner(ABC):
 
-    def __init__(self, x, y, n_try, cv, target, kernel_seed, optuna_seed):
+    def __init__(self, n_try, cv, target, kernel_seed, optuna_seed):
         """
         To reduce the overfitting of optuna on validation set.
         
@@ -23,8 +23,6 @@ class Basic_tuner(ABC):
             kernel_seed(float): random seed for kernel.
             optuna_seed(float): random seed for optuna.
         """
-        self.x = x
-        self.y = y
         self.cv = cv
         self.n_try = n_try
         self.kernel_seed = kernel_seed
@@ -70,13 +68,17 @@ class Basic_tuner(ABC):
         """
         pass
 
-    def tune(self):
+    def tune(self, x, y):
         """
         this function should tune the hyperparameters of a given kernel.
         
         Returns :
             sklearn.base.BaseEstimator: A sklearn style model object which has the best hyperparameters.
         """
+        self.x = x
+        self.y = y
+        self.n_sample = x.shape[0]
+
         print("start tuning. it will take a while.")
         self.study.optimize(self.evaluate, n_trials=self.n_try)
 
@@ -86,3 +88,14 @@ class Basic_tuner(ABC):
         print("best parameters: ", self.study.best_params)
         self.best_model = self.create_model(self.study.best_trial)
         return self.best_model
+
+    def fit(self, x, y):
+        self.tune(x, y)
+
+        self.best_model.fit(x, y)
+
+    def predict(self, x):
+        return self.best_model.predict(x)
+
+    def predict_prob(self, x):
+        return self.best_model.predict_prob(x)
