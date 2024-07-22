@@ -1,33 +1,29 @@
 from . import Basic_tuner
 
 from sklearn.model_selection import StratifiedKFold, cross_val_score
-import sklearn.metrics as metrics
 
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 
-import optuna
+import numpy as np
+from statsmodels.discrete.discrete_model import Logit
 
 
 # linear model
-class ElasticNet_tuner(Basic_tuner):
+class ElasticLogit_tuner(Basic_tuner):
     """
     [sklearn logistic Regression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression), reminds the choice of the algorithm depends on the penalty chosen and on (multinomial) multiclass support.
     """
 
     def __init__(self,
-                 x,
-                 y,
                  kernel="saga",
-                 n_try=50,
+                 n_try=25,
                  cv=None,
-                 target="accuracy",
+                 target="matthews_corrcoef",
                  kernel_seed=None,
                  optuna_seed=71):
-        super().__init__(x,
-                         y,
-                         n_try=n_try,
+        super().__init__(n_try=n_try,
                          cv=cv,
                          target=target,
                          kernel_seed=kernel_seed,
@@ -66,22 +62,26 @@ class ElasticNet_tuner(Basic_tuner):
         score = score.mean()
         return score
 
+    def summary(self):
+        log_reg = Logit(self.y, self.x).fit(
+            disp=False,
+            start_params=self.best_model.coef_.flatten(),
+            maxiter=0,
+            warn_convergence=False)
+        print(log_reg.summary())
+
 
 # RF
 class RandomForest_tuner(Basic_tuner):
 
     def __init__(self,
-                 x,
-                 y,
                  using_oob=True,
                  n_try=50,
                  cv=None,
-                 target="accuracy",
+                 target="matthews_corrcoef",
                  kernel_seed=None,
                  optuna_seed=71):
-        super().__init__(x,
-                         y,
-                         n_try=n_try,
+        super().__init__(n_try=n_try,
                          cv=cv,
                          target=target,
                          kernel_seed=kernel_seed,
@@ -96,13 +96,13 @@ class RandomForest_tuner(Basic_tuner):
             "max_depth":
             trial.suggest_int('max_depth', 2, 32, log=True),
             "min_samples_split":
-            trial.suggest_int('min_samples_split', 2, 16, log=True),
+            trial.suggest_int('min_samples_split', 2, 32, log=True),
             "min_samples_leaf":
-            trial.suggest_int('min_samples_leaf', 2, 16, log=True),
+            trial.suggest_int('min_samples_leaf', 1, 32, log=True),
             "ccp_alpha":
             trial.suggest_float('ccp_alpha', 1e-4, 1e-1, log=True),
             "max_samples":
-            trial.suggest_float('max_samples', 0.5, 1.0, log=True),
+            trial.suggest_float('max_samples', 0.5, 0.95, log=True),
             "bootstrap":
             True,
             "oob_score":
@@ -154,26 +154,25 @@ class RandomForest_tuner(Basic_tuner):
 class SVC_tuner(Basic_tuner):
 
     def __init__(self,
-                 x,
-                 y,
                  kernel="rbf",
-                 n_try=50,
+                 n_try=25,
                  cv=None,
-                 target="accuracy",
+                 target="matthews_corrcoef",
                  kernel_seed=None,
                  optuna_seed=71):
-        super().__init__(x,
-                         y,
-                         n_try=n_try,
+        super().__init__(n_try=n_try,
                          cv=cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          optuna_seed=optuna_seed)
-
         self.kernel = kernel  # rbf, linear, poly, sigmoid
 
     def create_model(self, trial):
-        svc_c = trial.suggest_float('svc_c', 1e-6, 1e+6, log=True)
+        # scaling penalty: https://scikit-learn.org/stable/auto_examples/svm/plot_svm_scale_c.html#sphx-glr-auto-examples-svm-plot-svm-scale-c-py
+        svc_c = trial.suggest_float('svc_c',
+                                    1e-4 * np.sqrt(self.n_sample),
+                                    1e+2 * np.sqrt(self.n_sample),
+                                    log=True)
         svm = SVC(C=svc_c,
                   kernel=self.kernel,
                   cache_size=1e+3,
