@@ -79,6 +79,8 @@ The input data should be tabular and placed in the ./input folder. We accept .cs
 |  1 | ElasticNet    | Using Optuna to find a not-bad hyper parameters on given dataset.   |  |
 |  2 | SVM       | Using Optuna to find a not-bad hyper parameters on given dataset. |   |
 |  3 | Random Forest | Using Optuna to find a not-bad hyper parameters on given dataset.  |  |
+|  4 | XGBoost | Using Optuna to find a not-bad hyper parameters on given dataset.  |  |
+|  3 | LightGBM | Using Optuna to find a not-bad hyper parameters on given dataset.  |  |
 
 ### 5. Report and visualization
 |        ID         |        Option         |  Definition |

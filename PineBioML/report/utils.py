@@ -10,30 +10,12 @@ from sklearn.cross_decomposition import PLSRegression
 from umap import UMAP
 
 
-class task_card:
-    """ 
-    task information
-    """
-
-    def __init__(self, **parms):
-        self.parms = parms
-
-
-class data_card:
-    """ 
-    task information
-    """
-
-    def __init__(self, data):
-        pass
-
-
 def data_overview(input_x, y, label_name="y", title=""):
     """
-    Give a data overview, including:
-        1. raw data boxplot, pairplot.    
-        2. pca pairt plot.    
-        3. corelation heatmap.
+    Give a data overview, including:    
+        1. raw data boxplot, pairplot.        
+        2. pca pairt plot.     
+        3. corelation heatmap.    
 
     Args:
             input_x (pandas.DataFrame): the data
@@ -106,19 +88,34 @@ def data_overview(input_x, y, label_name="y", title=""):
 
 def classification_summary(y_true, y_pred_prob, title=""):
     """
-    Give a classification summary, including:
+    Give a classification summary, including:    
         1. recall, precision, f1 and accuracy.    
         2. confusion matrix.    
-        3. ROC curve.
+        3. ROC curve.    
 
     Args:
             y_true (pandas.Series or a 1D array): Bool, the label
             y_pred_prob (pandas.Series or a 1D array): float in [0, 1]. prediction from model
+    Todo:
+        1. support to multi-class classification and regression
     """
     y_pred = np.round(y_pred_prob)
 
     print("\n", title)
     print(metrics.classification_report(y_true, y_pred))
+
+    confusion_scores = metrics.classification_report(y_true,
+                                                     y_pred,
+                                                     output_dict=True)
+    if len(confusion_scores) == 5:
+        if "1" in confusion_scores:
+            sensitivity = confusion_scores["1"]["recall"]
+            specificity = confusion_scores["0"]["recall"]
+        if "1.0" in confusion_scores:
+            sensitivity = confusion_scores["1.0"]["recall"]
+            specificity = confusion_scores["0.0"]["recall"]
+        print("sensitivity: {:.3f}".format(sensitivity))
+        print("specificity: {:.3f}".format(specificity))
 
     # confusion matrix
     metrics.ConfusionMatrixDisplay.from_predictions(y_true, y_pred)
