@@ -29,130 +29,172 @@
 <pre><code class="python">from . import Basic_tuner
 
 from sklearn.model_selection import StratifiedKFold, cross_val_score
-import sklearn.metrics as metrics
+from sklearn.utils.class_weight import compute_sample_weight
 
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
+from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
 
-import optuna
+import numpy as np
+from statsmodels.discrete.discrete_model import Logit
+
+# ToDo: multi class support
+# ToDo: optuna pruner
+#       see section Acticating Pruners in https://optuna.readthedocs.io/en/stable/tutorial/10_key_features/003_efficient_optimization_algorithms.html
 
 
 # linear model
-class ElasticNet_tuner(Basic_tuner):
+class ElasticLogit_tuner(Basic_tuner):
     &#34;&#34;&#34;
-    [sklearn logistic Regression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression), reminds the choice of the algorithm depends on the penalty chosen and on (multinomial) multiclass support.
+    Tuning a elasic net logistic regression.    
+    [sklearn.linear_model.LogisticRegression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression), reminds the choice of the algorithm depends on the penalty chosen and on (multinomial) multiclass support.    
     &#34;&#34;&#34;
 
     def __init__(self,
-                 x,
-                 y,
                  kernel=&#34;saga&#34;,
-                 n_try=50,
-                 cv=None,
-                 target=&#34;accuracy&#34;,
+                 n_try=25,
+                 target=&#34;matthews_corrcoef&#34;,
                  kernel_seed=None,
+                 valid_seed=None,
                  optuna_seed=71):
-        super().__init__(x,
-                         y,
-                         n_try=n_try,
-                         cv=cv,
+        &#34;&#34;&#34;
+        Args:
+            kernel (str, optional): It will be passed to &#34;solver&#34; of sklearn.linear_model.LogisticRegression . Defaults to &#34;saga&#34;.    
+            n_try (int, optional): Times to try. Defaults to 25.    
+            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;matthews_corrcoef&#34; (mcc score).    
+            kernel_seed (int): random seed for model kernel. 
+            valid_seed (int): random seed for cross validation
+            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+        &#34;&#34;&#34;
+        super().__init__(n_try=n_try,
                          target=target,
                          kernel_seed=kernel_seed,
+                         valid_seed=valid_seed,
                          optuna_seed=optuna_seed)
 
         # ‘saga’ fast convergence is only guaranteed on features with approximately the same scale. You should do a feature-wise (between sample) normalization before fitting.
         self.kernel = kernel  # sage, lbfgs
         self.penalty = &#34;elasticnet&#34;
-        print(&#34;Logistic Regression with: &#34;, self.penalty, &#34; penalty, &#34;,
-              self.kernel, &#34; solver.&#34;)
+        #print(&#34;Logistic Regression with: &#34;, self.penalty, &#34; penalty, &#34;, self.kernel, &#34; solver.&#34;)
 
-    def create_model(self, trial):
-        C = trial.suggest_float(&#39;C&#39;, 1e-6, 1e+2, log=True)
-        l1_ratio = trial.suggest_float(&#39;l1_ratio&#39;, 0, 1)
-
-        lg = LogisticRegression(penalty=self.penalty,
-                                C=C,
-                                class_weight=&#34;balanced&#34;,
-                                solver=self.kernel,
-                                max_iter=100,
-                                verbose=0,
-                                l1_ratio=l1_ratio)
+    def create_model(self, trial, default=False):
+        if default:
+            parms = {&#34;verbose&#34;: 0}
+        else:
+            parms = {
+                &#34;C&#34;: trial.suggest_float(&#39;C&#39;, 1e-6, 1e+2, log=True),
+                &#34;l1_ratio&#34;: trial.suggest_float(&#39;l1_ratio&#39;, 0, 1),
+                &#34;penalty&#34;: self.penalty,
+                &#34;class_weight&#34;: &#34;balanced&#34;,
+                &#34;solver&#34;: self.kernel,
+                &#34;max_iter&#34;: 100,
+                &#34;verbose&#34;: 0
+            }
+        lg = LogisticRegression(**parms)
         return lg
 
-    def evaluate(self, trial):
-        classifier_obj = self.create_model(trial)
-        score = cross_val_score(
-            classifier_obj,
-            self.x,
-            self.y,
-            n_jobs=-1,
-            cv=StratifiedKFold(n_splits=5,
-                               shuffle=True,
-                               random_state=self.seed_recorder[trial.number]),
-            scoring=self.metric)
-        score = score.mean()
-        return score
+    def summary(self):
+        &#34;&#34;&#34;
+        It is the way I found to cram a sklearn regression result into the statsmodel regresion.    
+        The only reason to do this is that statsmodel provides R-style summary.    
+        &#34;&#34;&#34;
+        sm_logit = Logit(self.y, self.x).fit(
+            disp=False,
+            start_params=self.best_model.coef_.flatten(),
+            maxiter=0,
+            warn_convergence=False)
+        print(sm_logit.summary())
 
 
 # RF
 class RandomForest_tuner(Basic_tuner):
+    &#34;&#34;&#34;
+    Tuning a random forest model.    
+    [sklearn.ensemble.RandomForestClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
+    &#34;&#34;&#34;
 
     def __init__(self,
-                 x,
-                 y,
                  using_oob=True,
                  n_try=50,
-                 cv=None,
-                 target=&#34;accuracy&#34;,
+                 target=&#34;matthews_corrcoef&#34;,
                  kernel_seed=None,
+                 valid_seed=None,
                  optuna_seed=71):
-        super().__init__(x,
-                         y,
-                         n_try=n_try,
-                         cv=cv,
+        &#34;&#34;&#34;
+
+        Args:
+            using_oob (bool, optional): Using out of bag score as validation. Defaults to True.
+            n_try (int, optional): Times to try. Defaults to 50.
+            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;neg_mean_squared_error&#34; (mcc score).    
+            kernel_seed (int): random seed for model kernel. 
+            valid_seed (int): random seed for cross validation
+            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+        &#34;&#34;&#34;
+        super().__init__(n_try=n_try,
                          target=target,
                          kernel_seed=kernel_seed,
+                         valid_seed=valid_seed,
                          optuna_seed=optuna_seed)
 
         self.using_oob = using_oob
 
-    def create_model(self, trial):
-        parms = {
-            &#34;n_estimators&#34;:
-            trial.suggest_int(&#39;n_estimators&#39;, 32, 1024, log=True),
-            &#34;max_depth&#34;:
-            trial.suggest_int(&#39;max_depth&#39;, 2, 32, log=True),
-            &#34;min_samples_split&#34;:
-            trial.suggest_int(&#39;min_samples_split&#39;, 2, 16, log=True),
-            &#34;min_samples_leaf&#34;:
-            trial.suggest_int(&#39;min_samples_leaf&#39;, 2, 16, log=True),
-            &#34;ccp_alpha&#34;:
-            trial.suggest_float(&#39;ccp_alpha&#39;, 1e-4, 1e-1, log=True),
-            &#34;max_samples&#34;:
-            trial.suggest_float(&#39;max_samples&#39;, 0.5, 1.0, log=True),
-            &#34;bootstrap&#34;:
-            True,
-            &#34;oob_score&#34;:
-            True,
-            &#34;n_jobs&#34;:
-            -1,
-            &#34;random_state&#34;:
-            self.seed_recorder[trial.number],
-            &#34;verbose&#34;:
-            0,
-            &#34;class_weight&#34;:
-            &#34;balanced_subsample&#34;
-        }
+    def create_model(self, trial, default=False):
+        if default:
+            parms = {
+                &#34;bootstrap&#34;: self.using_oob,
+                &#34;oob_score&#34;: self.using_oob,
+                &#34;n_jobs&#34;: -1,
+                &#34;random_state&#34;: self.kernel_seed_tape[trial.number],
+                &#34;verbose&#34;: 0,
+            }
+        else:
+            parms = {
+                &#34;n_estimators&#34;:
+                trial.suggest_int(&#39;n_estimators&#39;, 32, 1024, log=True),
+                &#34;max_depth&#34;:
+                trial.suggest_int(&#39;max_depth&#39;, 2, 16, log=True),
+                &#34;min_samples_split&#34;:
+                trial.suggest_int(&#39;min_samples_split&#39;, 2, 16, log=True),
+                &#34;min_samples_leaf&#34;:
+                trial.suggest_int(&#39;min_samples_leaf&#39;, 1, 16, log=True),
+                &#34;ccp_alpha&#34;:
+                trial.suggest_float(&#39;ccp_alpha&#39;, 1e-3, 1e-1, log=True),
+                &#34;max_samples&#34;:
+                trial.suggest_float(&#39;max_samples&#39;, 0.5, 0.95, log=True),
+                &#34;bootstrap&#34;:
+                self.using_oob,
+                &#34;oob_score&#34;:
+                self.using_oob,
+                &#34;n_jobs&#34;:
+                -1,
+                &#34;random_state&#34;:
+                self.kernel_seed_tape[trial.number],
+                &#34;verbose&#34;:
+                0,
+                &#34;class_weight&#34;:
+                &#34;balanced&#34;
+            }
 
-        rf = RandomForestClassifier(**parms).fit(self.x, self.y)
+        rf = RandomForestClassifier(**parms)
         return rf
 
-    def evaluate(self, trial):
-        classifier_obj = self.create_model(trial)
+    def evaluate(self, trial, default=False):
+        &#34;&#34;&#34;
+        RF needs oob and we have it.
+        
+        Args:
+            trial (optuna.trial.Trial): optuna trial in this call.
+            default (bool): To use default hyper parameter. This argument will be passed to creat_model
+        Returns :
+            float: The score.
+        &#34;&#34;&#34;
+        classifier_obj = self.create_model(trial, default)
 
         if self.using_oob:
             # oob predict
+            classifier_obj.fit(self.x, self.y)
             y_pred = classifier_obj.oob_decision_function_[:, 1]
 
             # oob score
@@ -168,68 +210,263 @@ class RandomForest_tuner(Basic_tuner):
                 classifier_obj,
                 self.x,
                 self.y,
-                n_jobs=-1,
                 cv=StratifiedKFold(
                     n_splits=5,
                     shuffle=True,
-                    random_state=self.seed_recorder[trial.number]),
+                    random_state=self.valid_seed_tape[trial.number]),
                 scoring=self.metric)
             score = score.mean()
         return score
 
 
 # SVM
-class SVC_tuner(Basic_tuner):
+class SVM_tuner(Basic_tuner):
+    &#34;&#34;&#34;
+    Tuning a support vector machine.    
+    [sklearn.svm.SVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html)
+    &#34;&#34;&#34;
 
     def __init__(self,
-                 x,
-                 y,
                  kernel=&#34;rbf&#34;,
-                 n_try=50,
-                 cv=None,
-                 target=&#34;accuracy&#34;,
+                 n_try=25,
+                 target=&#34;matthews_corrcoef&#34;,
                  kernel_seed=None,
+                 valid_seed=None,
                  optuna_seed=71):
-        super().__init__(x,
-                         y,
-                         n_try=n_try,
-                         cv=cv,
+        &#34;&#34;&#34;
+        Args:
+            kernel (str, optional): This will be passed to the attribute of SVC: &#34;kernel&#34;. Defaults to &#34;rbf&#34;.
+            n_try (int, optional): Times to try. Defaults to 50.
+            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;neg_mean_squared_error&#34; (mcc score).    
+            kernel_seed (int): random seed for model kernel. 
+            valid_seed (int): random seed for cross validation
+            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+        &#34;&#34;&#34;
+        super().__init__(n_try=n_try,
                          target=target,
                          kernel_seed=kernel_seed,
+                         valid_seed=valid_seed,
                          optuna_seed=optuna_seed)
-
         self.kernel = kernel  # rbf, linear, poly, sigmoid
 
-    def create_model(self, trial):
-        svc_c = trial.suggest_float(&#39;svc_c&#39;, 1e-6, 1e+6, log=True)
-        svm = SVC(C=svc_c,
-                  kernel=self.kernel,
-                  cache_size=1e+3,
-                  class_weight=&#34;balanced&#34;,
-                  gamma=&#34;auto&#34;,
-                  probability=True,
-                  random_state=self.seed_recorder[trial.number])
+    def create_model(self, trial, default=False):
+        if default:
+            parms = {
+                &#34;kernel&#34;: self.kernel,
+                &#34;random_state&#34;: self.kernel_seed_tape[trial.number],
+                &#34;probability&#34;: True
+            }
+        else:
+            # scaling penalty: https://scikit-learn.org/stable/auto_examples/svm/plot_svm_scale_c.html#sphx-glr-auto-examples-svm-plot-svm-scale-c-py
+            parms = {
+                &#34;C&#34;:
+                trial.suggest_float(&#39;C&#39;,
+                                    1e-4 * np.sqrt(self.n_sample),
+                                    1e+2 * np.sqrt(self.n_sample),
+                                    log=True),
+                &#34;kernel&#34;:
+                self.kernel,
+                &#34;class_weight&#34;:
+                &#34;balanced&#34;,
+                &#34;gamma&#34;:
+                &#34;auto&#34;,
+                &#34;probability&#34;:
+                True,
+                &#34;random_state&#34;:
+                self.kernel_seed_tape[trial.number]
+            }
+        svm = SVC(**parms)
         return svm
-
-    def evaluate(self, trial):
-        classifier_obj = self.create_model(trial)
-
-        score = cross_val_score(
-            classifier_obj,
-            self.x,
-            self.y,
-            n_jobs=-1,
-            cv=StratifiedKFold(n_splits=5,
-                               shuffle=True,
-                               random_state=self.seed_recorder[trial.number]),
-            scoring=self.metric)
-        score = score.mean()
-        return score
 
 
 # XGboost
+class XGBoost_tuner(Basic_tuner):
+    &#34;&#34;&#34;
+    Tuning a XGBoost classifier model.    
+    [xgboost.XGBClassifier](https://xgboost.readthedocs.io/en/stable/python/python_api.html)
+
+    ToDo:    
+        1. sample imbalance. (we have temporary solution)
+        2. early stop. 
+        3. efficiency (optuna.integration.XGBoostPruningCallback).
+
+    &#34;&#34;&#34;
+
+    def __init__(self,
+                 n_try=100,
+                 target=&#34;matthews_corrcoef&#34;,
+                 kernel_seed=None,
+                 valid_seed=None,
+                 optuna_seed=71):
+        &#34;&#34;&#34;
+
+        Args:
+            n_try (int, optional): Times to try. Defaults to 50.
+            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;neg_mean_squared_error&#34; (mcc score).    
+            kernel_seed (int): random seed for model kernel. 
+            valid_seed (int): random seed for cross validation
+            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+        
+        &#34;&#34;&#34;
+        super().__init__(n_try=n_try,
+                         target=target,
+                         kernel_seed=kernel_seed,
+                         valid_seed=valid_seed,
+                         optuna_seed=optuna_seed)
+
+    def create_model(self, trial, default=False):
+        if default:
+            parms = {
+                &#34;n_jobs&#34;: None,
+                &#34;random_state&#34;: self.kernel_seed_tape[trial.number],
+                &#34;verbosity&#34;: 0
+            }
+        else:
+            parms = {
+                &#34;n_estimators&#34;:
+                trial.suggest_int(&#39;n_estimators&#39;, 16, 256, log=True),
+                &#34;max_depth&#34;:
+                trial.suggest_int(&#39;max_depth&#39;, 2, 16, log=True),
+                &#34;gamma&#34;:
+                trial.suggest_float(&#39;gamma&#39;, 5e-2, 2e+1, log=True),
+                &#34;learning_rate&#34;:
+                trial.suggest_float(&#39;learning_rate&#39;, 5e-3, 5e-1, log=True),
+                &#34;subsample&#34;:
+                trial.suggest_float(&#39;subsample&#39;, 0.5, 0.95, log=True),
+                &#34;colsample_bytree&#34;:
+                trial.suggest_float(&#39;colsample_bytree&#39;, 0.7, 1, log=True),
+                &#34;min_child_weight&#34;:
+                trial.suggest_float(&#39;min_child_weight&#39;, 1e-2, 1e+2, log=True),
+                &#34;reg_lambda&#34;:
+                trial.suggest_float(&#39;reg_lambda&#39;, 1e-2, 1e+1, log=True),
+                &#34;n_jobs&#34;:
+                None,
+                &#34;random_state&#34;:
+                self.kernel_seed_tape[trial.number],
+                &#34;verbosity&#34;:
+                0,
+            }
+
+        xgb = XGBClassifier(**parms)
+        return xgb
+
+    def evaluate(self, trial, default=False):
+        &#34;&#34;&#34;
+        xgboost do not support class_weight.    
+        we use sample_weight as substitute.    
+
+        Args:
+            trial (optuna.trial.Trial): optuna trial in this call.
+            default (bool): To use default hyper parameter. This argument will be passed to creat_model
+        Returns :
+            float: The score.
+        &#34;&#34;&#34;
+        classifier_obj = self.create_model(trial, default)
+
+        cv = StratifiedKFold(n_splits=5,
+                             shuffle=True,
+                             random_state=self.valid_seed_tape[trial.number])
+
+        score = []
+        for i, (train_ind, test_ind) in enumerate(cv.split(self.x, self.y)):
+            x_train = self.x.iloc[train_ind]
+            y_train = self.y.iloc[train_ind]
+            x_test = self.x.iloc[test_ind]
+            y_test = self.y.iloc[test_ind]
+
+            classifier_obj.fit(x_train,
+                               y_train,
+                               sample_weight=compute_sample_weight(
+                                   class_weight=&#34;balanced&#34;, y=y_train))
+
+            score.append(self.metric(classifier_obj, x_test, y_test))
+        score = np.array(score).mean()
+        return score
+
+
 # lightGBM
-# catboost
+class LighGBM_tuner(Basic_tuner):
+    &#34;&#34;&#34;
+    Tuning a LighGBM classifier model.    
+    [lightgbm.LGBMClassifier](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html)     
+
+    ToDo:    
+        1. compare with optuna.integration.lightgbm.LightGBMTuner    
+    &#34;&#34;&#34;
+
+    def __init__(self,
+                 n_try=100,
+                 target=&#34;matthews_corrcoef&#34;,
+                 kernel_seed=None,
+                 valid_seed=None,
+                 optuna_seed=71):
+        &#34;&#34;&#34;
+
+        Args:
+            n_try (int, optional): Times to try. Defaults to 50.
+            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;neg_mean_squared_error&#34; (mcc score).    
+            kernel_seed (int): random seed for model kernel. 
+            valid_seed (int): random seed for cross validation
+            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+        
+        &#34;&#34;&#34;
+        super().__init__(n_try=n_try,
+                         target=target,
+                         kernel_seed=kernel_seed,
+                         valid_seed=valid_seed,
+                         optuna_seed=optuna_seed)
+
+    def create_model(self, trial, default=False):
+        if default:
+            parms = {
+                &#34;n_jobs&#34;: None,
+                &#34;random_state&#34;: self.kernel_seed_tape[trial.number],
+                &#34;verbosity&#34;: -1
+            }
+        else:
+            depth = trial.suggest_float(&#39;max_depth&#39;, 3, 16, log=True)
+            leaves = trial.suggest_float(&#39;num_leaves&#39;,
+                                         depth * 2 / 3,
+                                         depth,
+                                         log=True)
+            depth = int(np.rint(depth))
+            leaves = int(np.floor(np.power(2, leaves)))
+            parms = {
+                &#34;n_estimators&#34;:
+                trial.suggest_int(&#39;n_estimators&#39;, 16, 256, log=True),
+                &#34;max_depth&#34;:
+                depth,
+                &#34;num_leaves&#34;:
+                leaves,
+                &#34;learning_rate&#34;:
+                trial.suggest_float(&#39;learning_rate&#39;, 1e-2, 1, log=True),
+                &#34;subsample&#34;:
+                trial.suggest_float(&#39;subsample&#39;, 0.5, 0.95, log=True),
+                &#34;subsample_freq&#34;:
+                1,
+                &#34;colsample_bytree&#34;:
+                trial.suggest_float(&#39;colsample_bytree&#39;, 0.7, 1, log=True),
+                &#34;min_child_weight&#34;:
+                trial.suggest_float(&#39;min_child_weight&#39;, 1e-5, 1e-1, log=True),
+                &#34;min_child_samples&#34;:
+                trial.suggest_int(&#39;min_child_samples&#39;, 2, 32, log=True),
+                &#34;reg_lambda&#34;:
+                trial.suggest_float(&#39;reg_lambda&#39;, 5e-3, 1e+1, log=True),
+                &#34;n_jobs&#34;:
+                None,
+                &#34;class_weight&#34;:
+                &#34;balanced&#34;,
+                &#34;random_state&#34;:
+                self.kernel_seed_tape[trial.number],
+                &#34;verbosity&#34;:
+                -1,
+            }
+
+        lgbm = LGBMClassifier(**parms)
+        return lgbm
+
+
+# Todo
 # KNN
 # KNN-Graph spectrum</code></pre>
 </details>
@@ -243,83 +480,254 @@ class SVC_tuner(Basic_tuner):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="PineBioML.model.supervised.Classification.ElasticNet_tuner"><code class="flex name class">
-<span>class <span class="ident">ElasticNet_tuner</span></span>
-<span>(</span><span>x, y, kernel='saga', n_try=50, cv=None, target='accuracy', kernel_seed=None, optuna_seed=71)</span>
+<dt id="PineBioML.model.supervised.Classification.ElasticLogit_tuner"><code class="flex name class">
+<span>class <span class="ident">ElasticLogit_tuner</span></span>
+<span>(</span><span>kernel='saga', n_try=25, target='matthews_corrcoef', kernel_seed=None, valid_seed=None, optuna_seed=71)</span>
 </code></dt>
 <dd>
-<div class="desc"><p><a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression">sklearn logistic Regression</a>, reminds the choice of the algorithm depends on the penalty chosen and on (multinomial) multiclass support.</p>
-<p>To reduce the overfitting of optuna on validation set.</p>
+<div class="desc"><p>Tuning a elasic net logistic regression.
+<br>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression">sklearn.linear_model.LogisticRegression</a>, reminds the choice of the algorithm depends on the penalty chosen and on (multinomial) multiclass support.
+</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>x</code></strong></dt>
-<dd>data used to fit</dd>
-<dt><strong><code>y</code></strong></dt>
-<dd>label to fit</dd>
-</dl>
-<p>n_try(int): times to try.
-cv(sklearn.model_selection.KFold): A <a href="https://scikit-learn.org/stable/auto_examples/model_selection/plot_cv_indices.html">sklearn cross validation objects</a>
-target(str): It will pass to sklearn.metrics.get_scorer. Using sklearn.metrics.get_scorer_names() to list available metrics. Notice that
-kernel_seed(float): random seed for kernel.
-optuna_seed(float): random seed for optuna.</p></div>
+<dt><strong><code>kernel</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>It will be passed to "solver" of sklearn.linear_model.LogisticRegression . Defaults to "saga".
+</dd>
+<dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Times to try. Defaults to 25.
+</dd>
+<dt><strong><code>target</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "matthews_corrcoef" (mcc score).
+</dd>
+<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code></dt>
+<dd>random seed for model kernel. </dd>
+<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code></dt>
+<dd>random seed for cross validation</dd>
+<dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>random seed for optuna. Defaults to 71.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ElasticNet_tuner(Basic_tuner):
+<pre><code class="python">class ElasticLogit_tuner(Basic_tuner):
     &#34;&#34;&#34;
-    [sklearn logistic Regression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression), reminds the choice of the algorithm depends on the penalty chosen and on (multinomial) multiclass support.
+    Tuning a elasic net logistic regression.    
+    [sklearn.linear_model.LogisticRegression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression), reminds the choice of the algorithm depends on the penalty chosen and on (multinomial) multiclass support.    
     &#34;&#34;&#34;
 
     def __init__(self,
-                 x,
-                 y,
                  kernel=&#34;saga&#34;,
-                 n_try=50,
-                 cv=None,
-                 target=&#34;accuracy&#34;,
+                 n_try=25,
+                 target=&#34;matthews_corrcoef&#34;,
                  kernel_seed=None,
+                 valid_seed=None,
                  optuna_seed=71):
-        super().__init__(x,
-                         y,
-                         n_try=n_try,
-                         cv=cv,
+        &#34;&#34;&#34;
+        Args:
+            kernel (str, optional): It will be passed to &#34;solver&#34; of sklearn.linear_model.LogisticRegression . Defaults to &#34;saga&#34;.    
+            n_try (int, optional): Times to try. Defaults to 25.    
+            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;matthews_corrcoef&#34; (mcc score).    
+            kernel_seed (int): random seed for model kernel. 
+            valid_seed (int): random seed for cross validation
+            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+        &#34;&#34;&#34;
+        super().__init__(n_try=n_try,
                          target=target,
                          kernel_seed=kernel_seed,
+                         valid_seed=valid_seed,
                          optuna_seed=optuna_seed)
 
         # ‘saga’ fast convergence is only guaranteed on features with approximately the same scale. You should do a feature-wise (between sample) normalization before fitting.
         self.kernel = kernel  # sage, lbfgs
         self.penalty = &#34;elasticnet&#34;
-        print(&#34;Logistic Regression with: &#34;, self.penalty, &#34; penalty, &#34;,
-              self.kernel, &#34; solver.&#34;)
+        #print(&#34;Logistic Regression with: &#34;, self.penalty, &#34; penalty, &#34;, self.kernel, &#34; solver.&#34;)
 
-    def create_model(self, trial):
-        C = trial.suggest_float(&#39;C&#39;, 1e-6, 1e+2, log=True)
-        l1_ratio = trial.suggest_float(&#39;l1_ratio&#39;, 0, 1)
-
-        lg = LogisticRegression(penalty=self.penalty,
-                                C=C,
-                                class_weight=&#34;balanced&#34;,
-                                solver=self.kernel,
-                                max_iter=100,
-                                verbose=0,
-                                l1_ratio=l1_ratio)
+    def create_model(self, trial, default=False):
+        if default:
+            parms = {&#34;verbose&#34;: 0}
+        else:
+            parms = {
+                &#34;C&#34;: trial.suggest_float(&#39;C&#39;, 1e-6, 1e+2, log=True),
+                &#34;l1_ratio&#34;: trial.suggest_float(&#39;l1_ratio&#39;, 0, 1),
+                &#34;penalty&#34;: self.penalty,
+                &#34;class_weight&#34;: &#34;balanced&#34;,
+                &#34;solver&#34;: self.kernel,
+                &#34;max_iter&#34;: 100,
+                &#34;verbose&#34;: 0
+            }
+        lg = LogisticRegression(**parms)
         return lg
 
-    def evaluate(self, trial):
-        classifier_obj = self.create_model(trial)
-        score = cross_val_score(
-            classifier_obj,
-            self.x,
-            self.y,
-            n_jobs=-1,
-            cv=StratifiedKFold(n_splits=5,
-                               shuffle=True,
-                               random_state=self.seed_recorder[trial.number]),
-            scoring=self.metric)
-        score = score.mean()
-        return score</code></pre>
+    def summary(self):
+        &#34;&#34;&#34;
+        It is the way I found to cram a sklearn regression result into the statsmodel regresion.    
+        The only reason to do this is that statsmodel provides R-style summary.    
+        &#34;&#34;&#34;
+        sm_logit = Logit(self.y, self.x).fit(
+            disp=False,
+            start_params=self.best_model.coef_.flatten(),
+            maxiter=0,
+            warn_convergence=False)
+        print(sm_logit.summary())</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="PineBioML.model.supervised.Classification.ElasticLogit_tuner.summary"><code class="name flex">
+<span>def <span class="ident">summary</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>It is the way I found to cram a sklearn regression result into the statsmodel regresion.
+<br>
+The only reason to do this is that statsmodel provides R-style summary.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def summary(self):
+    &#34;&#34;&#34;
+    It is the way I found to cram a sklearn regression result into the statsmodel regresion.    
+    The only reason to do this is that statsmodel provides R-style summary.    
+    &#34;&#34;&#34;
+    sm_logit = Logit(self.y, self.x).fit(
+        disp=False,
+        start_params=self.best_model.coef_.flatten(),
+        maxiter=0,
+        warn_convergence=False)
+    print(sm_logit.summary())</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></b></code>:
+<ul class="hlist">
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.create_model" href="index.html#PineBioML.model.supervised.Basic_tuner.create_model">create_model</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict_prob" href="index.html#PineBioML.model.supervised.Basic_tuner.predict_prob">predict_prob</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="PineBioML.model.supervised.Classification.LighGBM_tuner"><code class="flex name class">
+<span>class <span class="ident">LighGBM_tuner</span></span>
+<span>(</span><span>n_try=100, target='matthews_corrcoef', kernel_seed=None, valid_seed=None, optuna_seed=71)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Tuning a LighGBM classifier model.
+<br>
+<a href="https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html">lightgbm.LGBMClassifier</a>
+</p>
+<p>ToDo:
+<br>
+1. compare with optuna.integration.lightgbm.LightGBMTuner
+</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Times to try. Defaults to 50.</dd>
+<dt><strong><code>target</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "neg_mean_squared_error" (mcc score).
+</dd>
+<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code></dt>
+<dd>random seed for model kernel. </dd>
+<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code></dt>
+<dd>random seed for cross validation</dd>
+<dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>random seed for optuna. Defaults to 71.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LighGBM_tuner(Basic_tuner):
+    &#34;&#34;&#34;
+    Tuning a LighGBM classifier model.    
+    [lightgbm.LGBMClassifier](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html)     
+
+    ToDo:    
+        1. compare with optuna.integration.lightgbm.LightGBMTuner    
+    &#34;&#34;&#34;
+
+    def __init__(self,
+                 n_try=100,
+                 target=&#34;matthews_corrcoef&#34;,
+                 kernel_seed=None,
+                 valid_seed=None,
+                 optuna_seed=71):
+        &#34;&#34;&#34;
+
+        Args:
+            n_try (int, optional): Times to try. Defaults to 50.
+            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;neg_mean_squared_error&#34; (mcc score).    
+            kernel_seed (int): random seed for model kernel. 
+            valid_seed (int): random seed for cross validation
+            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+        
+        &#34;&#34;&#34;
+        super().__init__(n_try=n_try,
+                         target=target,
+                         kernel_seed=kernel_seed,
+                         valid_seed=valid_seed,
+                         optuna_seed=optuna_seed)
+
+    def create_model(self, trial, default=False):
+        if default:
+            parms = {
+                &#34;n_jobs&#34;: None,
+                &#34;random_state&#34;: self.kernel_seed_tape[trial.number],
+                &#34;verbosity&#34;: -1
+            }
+        else:
+            depth = trial.suggest_float(&#39;max_depth&#39;, 3, 16, log=True)
+            leaves = trial.suggest_float(&#39;num_leaves&#39;,
+                                         depth * 2 / 3,
+                                         depth,
+                                         log=True)
+            depth = int(np.rint(depth))
+            leaves = int(np.floor(np.power(2, leaves)))
+            parms = {
+                &#34;n_estimators&#34;:
+                trial.suggest_int(&#39;n_estimators&#39;, 16, 256, log=True),
+                &#34;max_depth&#34;:
+                depth,
+                &#34;num_leaves&#34;:
+                leaves,
+                &#34;learning_rate&#34;:
+                trial.suggest_float(&#39;learning_rate&#39;, 1e-2, 1, log=True),
+                &#34;subsample&#34;:
+                trial.suggest_float(&#39;subsample&#39;, 0.5, 0.95, log=True),
+                &#34;subsample_freq&#34;:
+                1,
+                &#34;colsample_bytree&#34;:
+                trial.suggest_float(&#39;colsample_bytree&#39;, 0.7, 1, log=True),
+                &#34;min_child_weight&#34;:
+                trial.suggest_float(&#39;min_child_weight&#39;, 1e-5, 1e-1, log=True),
+                &#34;min_child_samples&#34;:
+                trial.suggest_int(&#39;min_child_samples&#39;, 2, 32, log=True),
+                &#34;reg_lambda&#34;:
+                trial.suggest_float(&#39;reg_lambda&#39;, 5e-3, 1e+1, log=True),
+                &#34;n_jobs&#34;:
+                None,
+                &#34;class_weight&#34;:
+                &#34;balanced&#34;,
+                &#34;random_state&#34;:
+                self.kernel_seed_tape[trial.number],
+                &#34;verbosity&#34;:
+                -1,
+            }
+
+        lgbm = LGBMClassifier(**parms)
+        return lgbm</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -332,6 +740,9 @@ optuna_seed(float): random seed for optuna.</p></div>
 <ul class="hlist">
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.create_model" href="index.html#PineBioML.model.supervised.Basic_tuner.create_model">create_model</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict_prob" href="index.html#PineBioML.model.supervised.Basic_tuner.predict_prob">predict_prob</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
 </ul>
 </li>
@@ -339,85 +750,118 @@ optuna_seed(float): random seed for optuna.</p></div>
 </dd>
 <dt id="PineBioML.model.supervised.Classification.RandomForest_tuner"><code class="flex name class">
 <span>class <span class="ident">RandomForest_tuner</span></span>
-<span>(</span><span>x, y, using_oob=True, n_try=50, cv=None, target='accuracy', kernel_seed=None, optuna_seed=71)</span>
+<span>(</span><span>using_oob=True, n_try=50, target='matthews_corrcoef', kernel_seed=None, valid_seed=None, optuna_seed=71)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p>
-<p>To reduce the overfitting of optuna on validation set.</p>
+<div class="desc"><p>Tuning a random forest model.
+<br>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html">sklearn.ensemble.RandomForestClassifier</a></p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>x</code></strong></dt>
-<dd>data used to fit</dd>
-<dt><strong><code>y</code></strong></dt>
-<dd>label to fit</dd>
-</dl>
-<p>n_try(int): times to try.
-cv(sklearn.model_selection.KFold): A <a href="https://scikit-learn.org/stable/auto_examples/model_selection/plot_cv_indices.html">sklearn cross validation objects</a>
-target(str): It will pass to sklearn.metrics.get_scorer. Using sklearn.metrics.get_scorer_names() to list available metrics. Notice that
-kernel_seed(float): random seed for kernel.
-optuna_seed(float): random seed for optuna.</p></div>
+<dt><strong><code>using_oob</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Using out of bag score as validation. Defaults to True.</dd>
+<dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Times to try. Defaults to 50.</dd>
+<dt><strong><code>target</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "neg_mean_squared_error" (mcc score).
+</dd>
+<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code></dt>
+<dd>random seed for model kernel. </dd>
+<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code></dt>
+<dd>random seed for cross validation</dd>
+<dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>random seed for optuna. Defaults to 71.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class RandomForest_tuner(Basic_tuner):
+    &#34;&#34;&#34;
+    Tuning a random forest model.    
+    [sklearn.ensemble.RandomForestClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
+    &#34;&#34;&#34;
 
     def __init__(self,
-                 x,
-                 y,
                  using_oob=True,
                  n_try=50,
-                 cv=None,
-                 target=&#34;accuracy&#34;,
+                 target=&#34;matthews_corrcoef&#34;,
                  kernel_seed=None,
+                 valid_seed=None,
                  optuna_seed=71):
-        super().__init__(x,
-                         y,
-                         n_try=n_try,
-                         cv=cv,
+        &#34;&#34;&#34;
+
+        Args:
+            using_oob (bool, optional): Using out of bag score as validation. Defaults to True.
+            n_try (int, optional): Times to try. Defaults to 50.
+            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;neg_mean_squared_error&#34; (mcc score).    
+            kernel_seed (int): random seed for model kernel. 
+            valid_seed (int): random seed for cross validation
+            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+        &#34;&#34;&#34;
+        super().__init__(n_try=n_try,
                          target=target,
                          kernel_seed=kernel_seed,
+                         valid_seed=valid_seed,
                          optuna_seed=optuna_seed)
 
         self.using_oob = using_oob
 
-    def create_model(self, trial):
-        parms = {
-            &#34;n_estimators&#34;:
-            trial.suggest_int(&#39;n_estimators&#39;, 32, 1024, log=True),
-            &#34;max_depth&#34;:
-            trial.suggest_int(&#39;max_depth&#39;, 2, 32, log=True),
-            &#34;min_samples_split&#34;:
-            trial.suggest_int(&#39;min_samples_split&#39;, 2, 16, log=True),
-            &#34;min_samples_leaf&#34;:
-            trial.suggest_int(&#39;min_samples_leaf&#39;, 2, 16, log=True),
-            &#34;ccp_alpha&#34;:
-            trial.suggest_float(&#39;ccp_alpha&#39;, 1e-4, 1e-1, log=True),
-            &#34;max_samples&#34;:
-            trial.suggest_float(&#39;max_samples&#39;, 0.5, 1.0, log=True),
-            &#34;bootstrap&#34;:
-            True,
-            &#34;oob_score&#34;:
-            True,
-            &#34;n_jobs&#34;:
-            -1,
-            &#34;random_state&#34;:
-            self.seed_recorder[trial.number],
-            &#34;verbose&#34;:
-            0,
-            &#34;class_weight&#34;:
-            &#34;balanced_subsample&#34;
-        }
+    def create_model(self, trial, default=False):
+        if default:
+            parms = {
+                &#34;bootstrap&#34;: self.using_oob,
+                &#34;oob_score&#34;: self.using_oob,
+                &#34;n_jobs&#34;: -1,
+                &#34;random_state&#34;: self.kernel_seed_tape[trial.number],
+                &#34;verbose&#34;: 0,
+            }
+        else:
+            parms = {
+                &#34;n_estimators&#34;:
+                trial.suggest_int(&#39;n_estimators&#39;, 32, 1024, log=True),
+                &#34;max_depth&#34;:
+                trial.suggest_int(&#39;max_depth&#39;, 2, 16, log=True),
+                &#34;min_samples_split&#34;:
+                trial.suggest_int(&#39;min_samples_split&#39;, 2, 16, log=True),
+                &#34;min_samples_leaf&#34;:
+                trial.suggest_int(&#39;min_samples_leaf&#39;, 1, 16, log=True),
+                &#34;ccp_alpha&#34;:
+                trial.suggest_float(&#39;ccp_alpha&#39;, 1e-3, 1e-1, log=True),
+                &#34;max_samples&#34;:
+                trial.suggest_float(&#39;max_samples&#39;, 0.5, 0.95, log=True),
+                &#34;bootstrap&#34;:
+                self.using_oob,
+                &#34;oob_score&#34;:
+                self.using_oob,
+                &#34;n_jobs&#34;:
+                -1,
+                &#34;random_state&#34;:
+                self.kernel_seed_tape[trial.number],
+                &#34;verbose&#34;:
+                0,
+                &#34;class_weight&#34;:
+                &#34;balanced&#34;
+            }
 
-        rf = RandomForestClassifier(**parms).fit(self.x, self.y)
+        rf = RandomForestClassifier(**parms)
         return rf
 
-    def evaluate(self, trial):
-        classifier_obj = self.create_model(trial)
+    def evaluate(self, trial, default=False):
+        &#34;&#34;&#34;
+        RF needs oob and we have it.
+        
+        Args:
+            trial (optuna.trial.Trial): optuna trial in this call.
+            default (bool): To use default hyper parameter. This argument will be passed to creat_model
+        Returns :
+            float: The score.
+        &#34;&#34;&#34;
+        classifier_obj = self.create_model(trial, default)
 
         if self.using_oob:
             # oob predict
+            classifier_obj.fit(self.x, self.y)
             y_pred = classifier_obj.oob_decision_function_[:, 1]
 
             # oob score
@@ -433,11 +877,10 @@ optuna_seed(float): random seed for optuna.</p></div>
                 classifier_obj,
                 self.x,
                 self.y,
-                n_jobs=-1,
                 cv=StratifiedKFold(
                     n_splits=5,
                     shuffle=True,
-                    random_state=self.seed_recorder[trial.number]),
+                    random_state=self.valid_seed_tape[trial.number]),
                 scoring=self.metric)
             score = score.mean()
         return score</code></pre>
@@ -447,87 +890,164 @@ optuna_seed(float): random seed for optuna.</p></div>
 <li><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></li>
 <li>abc.ABC</li>
 </ul>
+<h3>Methods</h3>
+<dl>
+<dt id="PineBioML.model.supervised.Classification.RandomForest_tuner.evaluate"><code class="name flex">
+<span>def <span class="ident">evaluate</span></span>(<span>self, trial, default=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>RF needs oob and we have it.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>trial</code></strong> :&ensp;<code>optuna.trial.Trial</code></dt>
+<dd>optuna trial in this call.</dd>
+<dt><strong><code>default</code></strong> :&ensp;<code>bool</code></dt>
+<dd>To use default hyper parameter. This argument will be passed to creat_model</dd>
+</dl>
+<p>Returns :
+float: The score.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def evaluate(self, trial, default=False):
+    &#34;&#34;&#34;
+    RF needs oob and we have it.
+    
+    Args:
+        trial (optuna.trial.Trial): optuna trial in this call.
+        default (bool): To use default hyper parameter. This argument will be passed to creat_model
+    Returns :
+        float: The score.
+    &#34;&#34;&#34;
+    classifier_obj = self.create_model(trial, default)
+
+    if self.using_oob:
+        # oob predict
+        classifier_obj.fit(self.x, self.y)
+        y_pred = classifier_obj.oob_decision_function_[:, 1]
+
+        # oob score
+        if not self.eval_prob:
+            # !!! some metrics (such as accuracy and F1) require discrete predictions.
+            # !!! If the score function raise an error about y_pred should not be float,
+            # !!! then please add the name of your metric(target) into Basic_tuner&#39;s &#34;discrete_target&#34; in ./__init__.py.
+            y_pred = y_pred &gt; 0.5
+        score = self.metric._score_func(self.y, y_pred)
+    else:
+        # cv score
+        score = cross_val_score(
+            classifier_obj,
+            self.x,
+            self.y,
+            cv=StratifiedKFold(
+                n_splits=5,
+                shuffle=True,
+                random_state=self.valid_seed_tape[trial.number]),
+            scoring=self.metric)
+        score = score.mean()
+    return score</code></pre>
+</details>
+</dd>
+</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></b></code>:
 <ul class="hlist">
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.create_model" href="index.html#PineBioML.model.supervised.Basic_tuner.create_model">create_model</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict_prob" href="index.html#PineBioML.model.supervised.Basic_tuner.predict_prob">predict_prob</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
-<dt id="PineBioML.model.supervised.Classification.SVC_tuner"><code class="flex name class">
-<span>class <span class="ident">SVC_tuner</span></span>
-<span>(</span><span>x, y, kernel='rbf', n_try=50, cv=None, target='accuracy', kernel_seed=None, optuna_seed=71)</span>
+<dt id="PineBioML.model.supervised.Classification.SVM_tuner"><code class="flex name class">
+<span>class <span class="ident">SVM_tuner</span></span>
+<span>(</span><span>kernel='rbf', n_try=25, target='matthews_corrcoef', kernel_seed=None, valid_seed=None, optuna_seed=71)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p>
-<p>To reduce the overfitting of optuna on validation set.</p>
+<div class="desc"><p>Tuning a support vector machine.
+<br>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html">sklearn.svm.SVC</a></p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>x</code></strong></dt>
-<dd>data used to fit</dd>
-<dt><strong><code>y</code></strong></dt>
-<dd>label to fit</dd>
-</dl>
-<p>n_try(int): times to try.
-cv(sklearn.model_selection.KFold): A <a href="https://scikit-learn.org/stable/auto_examples/model_selection/plot_cv_indices.html">sklearn cross validation objects</a>
-target(str): It will pass to sklearn.metrics.get_scorer. Using sklearn.metrics.get_scorer_names() to list available metrics. Notice that
-kernel_seed(float): random seed for kernel.
-optuna_seed(float): random seed for optuna.</p></div>
+<dt><strong><code>kernel</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>This will be passed to the attribute of SVC: "kernel". Defaults to "rbf".</dd>
+<dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Times to try. Defaults to 50.</dd>
+<dt><strong><code>target</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "neg_mean_squared_error" (mcc score).
+</dd>
+<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code></dt>
+<dd>random seed for model kernel. </dd>
+<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code></dt>
+<dd>random seed for cross validation</dd>
+<dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>random seed for optuna. Defaults to 71.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class SVC_tuner(Basic_tuner):
+<pre><code class="python">class SVM_tuner(Basic_tuner):
+    &#34;&#34;&#34;
+    Tuning a support vector machine.    
+    [sklearn.svm.SVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html)
+    &#34;&#34;&#34;
 
     def __init__(self,
-                 x,
-                 y,
                  kernel=&#34;rbf&#34;,
-                 n_try=50,
-                 cv=None,
-                 target=&#34;accuracy&#34;,
+                 n_try=25,
+                 target=&#34;matthews_corrcoef&#34;,
                  kernel_seed=None,
+                 valid_seed=None,
                  optuna_seed=71):
-        super().__init__(x,
-                         y,
-                         n_try=n_try,
-                         cv=cv,
+        &#34;&#34;&#34;
+        Args:
+            kernel (str, optional): This will be passed to the attribute of SVC: &#34;kernel&#34;. Defaults to &#34;rbf&#34;.
+            n_try (int, optional): Times to try. Defaults to 50.
+            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;neg_mean_squared_error&#34; (mcc score).    
+            kernel_seed (int): random seed for model kernel. 
+            valid_seed (int): random seed for cross validation
+            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+        &#34;&#34;&#34;
+        super().__init__(n_try=n_try,
                          target=target,
                          kernel_seed=kernel_seed,
+                         valid_seed=valid_seed,
                          optuna_seed=optuna_seed)
-
         self.kernel = kernel  # rbf, linear, poly, sigmoid
 
-    def create_model(self, trial):
-        svc_c = trial.suggest_float(&#39;svc_c&#39;, 1e-6, 1e+6, log=True)
-        svm = SVC(C=svc_c,
-                  kernel=self.kernel,
-                  cache_size=1e+3,
-                  class_weight=&#34;balanced&#34;,
-                  gamma=&#34;auto&#34;,
-                  probability=True,
-                  random_state=self.seed_recorder[trial.number])
-        return svm
-
-    def evaluate(self, trial):
-        classifier_obj = self.create_model(trial)
-
-        score = cross_val_score(
-            classifier_obj,
-            self.x,
-            self.y,
-            n_jobs=-1,
-            cv=StratifiedKFold(n_splits=5,
-                               shuffle=True,
-                               random_state=self.seed_recorder[trial.number]),
-            scoring=self.metric)
-        score = score.mean()
-        return score</code></pre>
+    def create_model(self, trial, default=False):
+        if default:
+            parms = {
+                &#34;kernel&#34;: self.kernel,
+                &#34;random_state&#34;: self.kernel_seed_tape[trial.number],
+                &#34;probability&#34;: True
+            }
+        else:
+            # scaling penalty: https://scikit-learn.org/stable/auto_examples/svm/plot_svm_scale_c.html#sphx-glr-auto-examples-svm-plot-svm-scale-c-py
+            parms = {
+                &#34;C&#34;:
+                trial.suggest_float(&#39;C&#39;,
+                                    1e-4 * np.sqrt(self.n_sample),
+                                    1e+2 * np.sqrt(self.n_sample),
+                                    log=True),
+                &#34;kernel&#34;:
+                self.kernel,
+                &#34;class_weight&#34;:
+                &#34;balanced&#34;,
+                &#34;gamma&#34;:
+                &#34;auto&#34;,
+                &#34;probability&#34;:
+                True,
+                &#34;random_state&#34;:
+                self.kernel_seed_tape[trial.number]
+            }
+        svm = SVC(**parms)
+        return svm</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -540,6 +1060,219 @@ optuna_seed(float): random seed for optuna.</p></div>
 <ul class="hlist">
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.create_model" href="index.html#PineBioML.model.supervised.Basic_tuner.create_model">create_model</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict_prob" href="index.html#PineBioML.model.supervised.Basic_tuner.predict_prob">predict_prob</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="PineBioML.model.supervised.Classification.XGBoost_tuner"><code class="flex name class">
+<span>class <span class="ident">XGBoost_tuner</span></span>
+<span>(</span><span>n_try=100, target='matthews_corrcoef', kernel_seed=None, valid_seed=None, optuna_seed=71)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Tuning a XGBoost classifier model.
+<br>
+<a href="https://xgboost.readthedocs.io/en/stable/python/python_api.html">xgboost.XGBClassifier</a></p>
+<p>ToDo:
+<br>
+1. sample imbalance. (we have temporary solution)
+2. early stop.
+3. efficiency (optuna.integration.XGBoostPruningCallback).</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Times to try. Defaults to 50.</dd>
+<dt><strong><code>target</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "neg_mean_squared_error" (mcc score).
+</dd>
+<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code></dt>
+<dd>random seed for model kernel. </dd>
+<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code></dt>
+<dd>random seed for cross validation</dd>
+<dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>random seed for optuna. Defaults to 71.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class XGBoost_tuner(Basic_tuner):
+    &#34;&#34;&#34;
+    Tuning a XGBoost classifier model.    
+    [xgboost.XGBClassifier](https://xgboost.readthedocs.io/en/stable/python/python_api.html)
+
+    ToDo:    
+        1. sample imbalance. (we have temporary solution)
+        2. early stop. 
+        3. efficiency (optuna.integration.XGBoostPruningCallback).
+
+    &#34;&#34;&#34;
+
+    def __init__(self,
+                 n_try=100,
+                 target=&#34;matthews_corrcoef&#34;,
+                 kernel_seed=None,
+                 valid_seed=None,
+                 optuna_seed=71):
+        &#34;&#34;&#34;
+
+        Args:
+            n_try (int, optional): Times to try. Defaults to 50.
+            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;neg_mean_squared_error&#34; (mcc score).    
+            kernel_seed (int): random seed for model kernel. 
+            valid_seed (int): random seed for cross validation
+            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+        
+        &#34;&#34;&#34;
+        super().__init__(n_try=n_try,
+                         target=target,
+                         kernel_seed=kernel_seed,
+                         valid_seed=valid_seed,
+                         optuna_seed=optuna_seed)
+
+    def create_model(self, trial, default=False):
+        if default:
+            parms = {
+                &#34;n_jobs&#34;: None,
+                &#34;random_state&#34;: self.kernel_seed_tape[trial.number],
+                &#34;verbosity&#34;: 0
+            }
+        else:
+            parms = {
+                &#34;n_estimators&#34;:
+                trial.suggest_int(&#39;n_estimators&#39;, 16, 256, log=True),
+                &#34;max_depth&#34;:
+                trial.suggest_int(&#39;max_depth&#39;, 2, 16, log=True),
+                &#34;gamma&#34;:
+                trial.suggest_float(&#39;gamma&#39;, 5e-2, 2e+1, log=True),
+                &#34;learning_rate&#34;:
+                trial.suggest_float(&#39;learning_rate&#39;, 5e-3, 5e-1, log=True),
+                &#34;subsample&#34;:
+                trial.suggest_float(&#39;subsample&#39;, 0.5, 0.95, log=True),
+                &#34;colsample_bytree&#34;:
+                trial.suggest_float(&#39;colsample_bytree&#39;, 0.7, 1, log=True),
+                &#34;min_child_weight&#34;:
+                trial.suggest_float(&#39;min_child_weight&#39;, 1e-2, 1e+2, log=True),
+                &#34;reg_lambda&#34;:
+                trial.suggest_float(&#39;reg_lambda&#39;, 1e-2, 1e+1, log=True),
+                &#34;n_jobs&#34;:
+                None,
+                &#34;random_state&#34;:
+                self.kernel_seed_tape[trial.number],
+                &#34;verbosity&#34;:
+                0,
+            }
+
+        xgb = XGBClassifier(**parms)
+        return xgb
+
+    def evaluate(self, trial, default=False):
+        &#34;&#34;&#34;
+        xgboost do not support class_weight.    
+        we use sample_weight as substitute.    
+
+        Args:
+            trial (optuna.trial.Trial): optuna trial in this call.
+            default (bool): To use default hyper parameter. This argument will be passed to creat_model
+        Returns :
+            float: The score.
+        &#34;&#34;&#34;
+        classifier_obj = self.create_model(trial, default)
+
+        cv = StratifiedKFold(n_splits=5,
+                             shuffle=True,
+                             random_state=self.valid_seed_tape[trial.number])
+
+        score = []
+        for i, (train_ind, test_ind) in enumerate(cv.split(self.x, self.y)):
+            x_train = self.x.iloc[train_ind]
+            y_train = self.y.iloc[train_ind]
+            x_test = self.x.iloc[test_ind]
+            y_test = self.y.iloc[test_ind]
+
+            classifier_obj.fit(x_train,
+                               y_train,
+                               sample_weight=compute_sample_weight(
+                                   class_weight=&#34;balanced&#34;, y=y_train))
+
+            score.append(self.metric(classifier_obj, x_test, y_test))
+        score = np.array(score).mean()
+        return score</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="PineBioML.model.supervised.Classification.XGBoost_tuner.evaluate"><code class="name flex">
+<span>def <span class="ident">evaluate</span></span>(<span>self, trial, default=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>xgboost do not support class_weight.
+<br>
+we use sample_weight as substitute.
+</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>trial</code></strong> :&ensp;<code>optuna.trial.Trial</code></dt>
+<dd>optuna trial in this call.</dd>
+<dt><strong><code>default</code></strong> :&ensp;<code>bool</code></dt>
+<dd>To use default hyper parameter. This argument will be passed to creat_model</dd>
+</dl>
+<p>Returns :
+float: The score.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def evaluate(self, trial, default=False):
+    &#34;&#34;&#34;
+    xgboost do not support class_weight.    
+    we use sample_weight as substitute.    
+
+    Args:
+        trial (optuna.trial.Trial): optuna trial in this call.
+        default (bool): To use default hyper parameter. This argument will be passed to creat_model
+    Returns :
+        float: The score.
+    &#34;&#34;&#34;
+    classifier_obj = self.create_model(trial, default)
+
+    cv = StratifiedKFold(n_splits=5,
+                         shuffle=True,
+                         random_state=self.valid_seed_tape[trial.number])
+
+    score = []
+    for i, (train_ind, test_ind) in enumerate(cv.split(self.x, self.y)):
+        x_train = self.x.iloc[train_ind]
+        y_train = self.y.iloc[train_ind]
+        x_test = self.x.iloc[test_ind]
+        y_test = self.y.iloc[test_ind]
+
+        classifier_obj.fit(x_train,
+                           y_train,
+                           sample_weight=compute_sample_weight(
+                               class_weight=&#34;balanced&#34;, y=y_train))
+
+        score.append(self.metric(classifier_obj, x_test, y_test))
+    score = np.array(score).mean()
+    return score</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></b></code>:
+<ul class="hlist">
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.create_model" href="index.html#PineBioML.model.supervised.Basic_tuner.create_model">create_model</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict_prob" href="index.html#PineBioML.model.supervised.Basic_tuner.predict_prob">predict_prob</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
 </ul>
 </li>
@@ -562,13 +1295,28 @@ optuna_seed(float): random seed for optuna.</p></div>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="PineBioML.model.supervised.Classification.ElasticNet_tuner" href="#PineBioML.model.supervised.Classification.ElasticNet_tuner">ElasticNet_tuner</a></code></h4>
+<h4><code><a title="PineBioML.model.supervised.Classification.ElasticLogit_tuner" href="#PineBioML.model.supervised.Classification.ElasticLogit_tuner">ElasticLogit_tuner</a></code></h4>
+<ul class="">
+<li><code><a title="PineBioML.model.supervised.Classification.ElasticLogit_tuner.summary" href="#PineBioML.model.supervised.Classification.ElasticLogit_tuner.summary">summary</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="PineBioML.model.supervised.Classification.LighGBM_tuner" href="#PineBioML.model.supervised.Classification.LighGBM_tuner">LighGBM_tuner</a></code></h4>
 </li>
 <li>
 <h4><code><a title="PineBioML.model.supervised.Classification.RandomForest_tuner" href="#PineBioML.model.supervised.Classification.RandomForest_tuner">RandomForest_tuner</a></code></h4>
+<ul class="">
+<li><code><a title="PineBioML.model.supervised.Classification.RandomForest_tuner.evaluate" href="#PineBioML.model.supervised.Classification.RandomForest_tuner.evaluate">evaluate</a></code></li>
+</ul>
 </li>
 <li>
-<h4><code><a title="PineBioML.model.supervised.Classification.SVC_tuner" href="#PineBioML.model.supervised.Classification.SVC_tuner">SVC_tuner</a></code></h4>
+<h4><code><a title="PineBioML.model.supervised.Classification.SVM_tuner" href="#PineBioML.model.supervised.Classification.SVM_tuner">SVM_tuner</a></code></h4>
+</li>
+<li>
+<h4><code><a title="PineBioML.model.supervised.Classification.XGBoost_tuner" href="#PineBioML.model.supervised.Classification.XGBoost_tuner">XGBoost_tuner</a></code></h4>
+<ul class="">
+<li><code><a title="PineBioML.model.supervised.Classification.XGBoost_tuner.evaluate" href="#PineBioML.model.supervised.Classification.XGBoost_tuner.evaluate">evaluate</a></code></li>
+</ul>
 </li>
 </ul>
 </li>

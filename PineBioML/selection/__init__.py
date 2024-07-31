@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+from sklearn.utils.class_weight import compute_sample_weight
 
 
 def sample_weight(y):
@@ -14,11 +15,12 @@ def sample_weight(y):
     Returns:
         pandas.Serise or 1D array: sample weights
     """
-    p = y.mean()
-    q = 1 - p
-    sp = 1 / p / 2
-    sq = 1 / q / 2
-    return y * sp + (1 - y) * sq
+    #p = y.mean()
+    #q = 1 - p
+    #sp = 1 / p / 2
+    #sq = 1 / q / 2
+    #return y * sp + (1 - y) * sq
+    return compute_sample_weight(class_weight="balanced", y=y)
 
 
 class SelectionPipeline:
