@@ -32,6 +32,7 @@ from abc import ABC, abstractmethod
 from sklearn.model_selection import StratifiedKFold
 from optuna.samplers import TPESampler
 from numpy.random import RandomState, randint
+from pandas import Series, DataFrame
 
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
@@ -72,6 +73,13 @@ class Basic_tuner(ABC):
         else:
             self.optuna_seed = randint(16384)
 
+        # The tape for cross validation random seed along optuna trial.
+        self.valid_seed_tape = RandomState(self.valid_seed).randint(low=0,
+                                                                    high=16384,
+                                                                    size=n_try)
+        self.kernel_seed_tape = RandomState(self.kernel_seed).randint(
+            low=0, high=16384, size=n_try)
+
         # If the tuning target is not in discrete_target, the kernel will not be required to return in prob which is costy fro some method like svm.
         self.discrete_target = [&#34;accuracy&#34;, &#34;f1&#34;, &#34;matthews_corrcoef&#34;]
         self.eval_prob = not target in self.discrete_target
@@ -81,13 +89,6 @@ class Basic_tuner(ABC):
         # Make the sampler behave in a deterministic way.
         sampler = TPESampler(seed=optuna_seed)
         self.study = optuna.create_study(direction=&#34;maximize&#34;, sampler=sampler)
-
-        # The tape for cross validation random seed along optuna trial.
-        self.valid_seed_tape = RandomState(self.valid_seed).randint(low=0,
-                                                                    high=16384,
-                                                                    size=n_try)
-        self.kernel_seed_tape = RandomState(self.kernel_seed).randint(
-            low=0, high=16384, size=n_try)
 
         self.optuna_model = None
         self.default_model = None
@@ -132,7 +133,11 @@ class Basic_tuner(ABC):
 
             classifier_obj.fit(x_train, y_train)
 
-            score.append(self.metric(classifier_obj, x_test, y_test))
+            test_score = self.metric(classifier_obj, x_test, y_test)
+            train_score = self.metric(classifier_obj, x_train, y_train)
+            score.append(test_score + 0.2 * (test_score - train_score))
+
+            #score.append(test_score)
         score = sum(score) / self.n_cv
         return score
 
@@ -166,8 +171,8 @@ class Basic_tuner(ABC):
                                             default=True)
         self.default_model = self.create_model(self.study.best_trial,
                                                default=True)
-        print(&#34;    default performance: {:.3f}  |  best performance: {:.3f}&#34;.
-              format(default_performance, self.study.best_trial.value))
+        #print(&#34;    default performance: {:.3f}  |  best performance: {:.3f}&#34;.
+        #      format(default_performance, self.study.best_trial.value))
         if default_performance &gt; self.study.best_trial.value:
             # default better
             print(&#34;    default is better.&#34;)
@@ -189,11 +194,15 @@ class Basic_tuner(ABC):
             x (pandas.DataFrame or 2D-array): feature to extract information from.
             y (pandas.Series or 1D-array): ground true.
         &#34;&#34;&#34;
+        self.label_name = y.name
+
         # tune the model.
         self.tune(x, y)
 
         # fit the model.
         self.best_model.fit(x, y)
+
+        return self.best_model
 
     def predict(self, x):
         &#34;&#34;&#34;
@@ -206,9 +215,13 @@ class Basic_tuner(ABC):
             1D-array: prediction
         &#34;&#34;&#34;
         # using the model.
-        return self.best_model.predict(x)
+        y_pred = Series(self.best_model.predict(x),
+                        index=x.index,
+                        name=self.label_name)
 
-    def predict_prob(self, x):
+        return y_pred
+
+    def predict_proba(self, x):
         &#34;&#34;&#34;
         The sklearn.base.BaseEstimator predict_prob api.
 
@@ -218,7 +231,7 @@ class Basic_tuner(ABC):
         Returns:
             1D-array: prediction in prob
         &#34;&#34;&#34;
-        return self.best_model.predict_prob(x)</code></pre>
+        return self.best_model.predict_proba(x)</code></pre>
 </details>
 </section>
 <section>
@@ -390,6 +403,13 @@ We first using valid_seed to randomly initialize a tape of integers and it will 
         else:
             self.optuna_seed = randint(16384)
 
+        # The tape for cross validation random seed along optuna trial.
+        self.valid_seed_tape = RandomState(self.valid_seed).randint(low=0,
+                                                                    high=16384,
+                                                                    size=n_try)
+        self.kernel_seed_tape = RandomState(self.kernel_seed).randint(
+            low=0, high=16384, size=n_try)
+
         # If the tuning target is not in discrete_target, the kernel will not be required to return in prob which is costy fro some method like svm.
         self.discrete_target = [&#34;accuracy&#34;, &#34;f1&#34;, &#34;matthews_corrcoef&#34;]
         self.eval_prob = not target in self.discrete_target
@@ -399,13 +419,6 @@ We first using valid_seed to randomly initialize a tape of integers and it will 
         # Make the sampler behave in a deterministic way.
         sampler = TPESampler(seed=optuna_seed)
         self.study = optuna.create_study(direction=&#34;maximize&#34;, sampler=sampler)
-
-        # The tape for cross validation random seed along optuna trial.
-        self.valid_seed_tape = RandomState(self.valid_seed).randint(low=0,
-                                                                    high=16384,
-                                                                    size=n_try)
-        self.kernel_seed_tape = RandomState(self.kernel_seed).randint(
-            low=0, high=16384, size=n_try)
 
         self.optuna_model = None
         self.default_model = None
@@ -450,7 +463,11 @@ We first using valid_seed to randomly initialize a tape of integers and it will 
 
             classifier_obj.fit(x_train, y_train)
 
-            score.append(self.metric(classifier_obj, x_test, y_test))
+            test_score = self.metric(classifier_obj, x_test, y_test)
+            train_score = self.metric(classifier_obj, x_train, y_train)
+            score.append(test_score + 0.2 * (test_score - train_score))
+
+            #score.append(test_score)
         score = sum(score) / self.n_cv
         return score
 
@@ -484,8 +501,8 @@ We first using valid_seed to randomly initialize a tape of integers and it will 
                                             default=True)
         self.default_model = self.create_model(self.study.best_trial,
                                                default=True)
-        print(&#34;    default performance: {:.3f}  |  best performance: {:.3f}&#34;.
-              format(default_performance, self.study.best_trial.value))
+        #print(&#34;    default performance: {:.3f}  |  best performance: {:.3f}&#34;.
+        #      format(default_performance, self.study.best_trial.value))
         if default_performance &gt; self.study.best_trial.value:
             # default better
             print(&#34;    default is better.&#34;)
@@ -507,11 +524,15 @@ We first using valid_seed to randomly initialize a tape of integers and it will 
             x (pandas.DataFrame or 2D-array): feature to extract information from.
             y (pandas.Series or 1D-array): ground true.
         &#34;&#34;&#34;
+        self.label_name = y.name
+
         # tune the model.
         self.tune(x, y)
 
         # fit the model.
         self.best_model.fit(x, y)
+
+        return self.best_model
 
     def predict(self, x):
         &#34;&#34;&#34;
@@ -524,9 +545,13 @@ We first using valid_seed to randomly initialize a tape of integers and it will 
             1D-array: prediction
         &#34;&#34;&#34;
         # using the model.
-        return self.best_model.predict(x)
+        y_pred = Series(self.best_model.predict(x),
+                        index=x.index,
+                        name=self.label_name)
 
-    def predict_prob(self, x):
+        return y_pred
+
+    def predict_proba(self, x):
         &#34;&#34;&#34;
         The sklearn.base.BaseEstimator predict_prob api.
 
@@ -536,7 +561,7 @@ We first using valid_seed to randomly initialize a tape of integers and it will 
         Returns:
             1D-array: prediction in prob
         &#34;&#34;&#34;
-        return self.best_model.predict_prob(x)</code></pre>
+        return self.best_model.predict_proba(x)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -633,7 +658,11 @@ float: The score.</p></div>
 
         classifier_obj.fit(x_train, y_train)
 
-        score.append(self.metric(classifier_obj, x_test, y_test))
+        test_score = self.metric(classifier_obj, x_test, y_test)
+        train_score = self.metric(classifier_obj, x_train, y_train)
+        score.append(test_score + 0.2 * (test_score - train_score))
+
+        #score.append(test_score)
     score = sum(score) / self.n_cv
     return score</code></pre>
 </details>
@@ -662,11 +691,15 @@ float: The score.</p></div>
         x (pandas.DataFrame or 2D-array): feature to extract information from.
         y (pandas.Series or 1D-array): ground true.
     &#34;&#34;&#34;
+    self.label_name = y.name
+
     # tune the model.
     self.tune(x, y)
 
     # fit the model.
-    self.best_model.fit(x, y)</code></pre>
+    self.best_model.fit(x, y)
+
+    return self.best_model</code></pre>
 </details>
 </dd>
 <dt id="PineBioML.model.supervised.Basic_tuner.predict"><code class="name flex">
@@ -696,11 +729,15 @@ float: The score.</p></div>
         1D-array: prediction
     &#34;&#34;&#34;
     # using the model.
-    return self.best_model.predict(x)</code></pre>
+    y_pred = Series(self.best_model.predict(x),
+                    index=x.index,
+                    name=self.label_name)
+
+    return y_pred</code></pre>
 </details>
 </dd>
-<dt id="PineBioML.model.supervised.Basic_tuner.predict_prob"><code class="name flex">
-<span>def <span class="ident">predict_prob</span></span>(<span>self, x)</span>
+<dt id="PineBioML.model.supervised.Basic_tuner.predict_proba"><code class="name flex">
+<span>def <span class="ident">predict_proba</span></span>(<span>self, x)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>The sklearn.base.BaseEstimator predict_prob api.</p>
@@ -715,7 +752,7 @@ float: The score.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def predict_prob(self, x):
+<pre><code class="python">def predict_proba(self, x):
     &#34;&#34;&#34;
     The sklearn.base.BaseEstimator predict_prob api.
 
@@ -725,7 +762,7 @@ float: The score.</p></div>
     Returns:
         1D-array: prediction in prob
     &#34;&#34;&#34;
-    return self.best_model.predict_prob(x)</code></pre>
+    return self.best_model.predict_proba(x)</code></pre>
 </details>
 </dd>
 <dt id="PineBioML.model.supervised.Basic_tuner.tune"><code class="name flex">
@@ -776,8 +813,8 @@ sklearn.base.BaseEstimator: A sklearn style model object which has the best hype
                                         default=True)
     self.default_model = self.create_model(self.study.best_trial,
                                            default=True)
-    print(&#34;    default performance: {:.3f}  |  best performance: {:.3f}&#34;.
-          format(default_performance, self.study.best_trial.value))
+    #print(&#34;    default performance: {:.3f}  |  best performance: {:.3f}&#34;.
+    #      format(default_performance, self.study.best_trial.value))
     if default_performance &gt; self.study.best_trial.value:
         # default better
         print(&#34;    default is better.&#34;)
@@ -829,7 +866,7 @@ sklearn.base.BaseEstimator: A sklearn style model object which has the best hype
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.evaluate" href="#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.fit" href="#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.predict" href="#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict_prob" href="#PineBioML.model.supervised.Basic_tuner.predict_prob">predict_prob</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict_proba" href="#PineBioML.model.supervised.Basic_tuner.predict_proba">predict_proba</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.tune" href="#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
 </ul>
 </li>

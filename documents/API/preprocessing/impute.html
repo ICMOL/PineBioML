@@ -63,7 +63,7 @@ class imputer():
         self.normalizer = Normalizer(center=center, scale=scale)
         self.fitted = False
 
-    def fit(self, x, y=None):
+    def fit(self, x, y=None, sample_weight=None):
         &#34;&#34;&#34;
         Fit x.
     
@@ -80,14 +80,14 @@ class imputer():
 
         # normalize
         self.normalizer.fit(x, y)
-        x, y = self.normalizer.transform(x, y)
+        x = self.normalizer.transform(x)
 
         # call the kernel
         self.kernel.fit(x)
         self.fitted = True
         return self
 
-    def transform(self, x, y=None):
+    def transform(self, x):
         &#34;&#34;&#34;
         Transform x
 
@@ -107,7 +107,7 @@ class imputer():
         idx = x.index
 
         # normalize
-        x, y = self.normalizer.transform(x, y)
+        x = self.normalizer.transform(x)
 
         # call the kernel
         x = self.kernel.transform(x)
@@ -116,10 +116,10 @@ class imputer():
         x = pd.DataFrame(x, columns=columns, index=idx)
 
         # inverse normalize
-        x, y = self.normalizer.inverse_transform(x, y)
-        return x, y
+        x = self.normalizer.inverse_transform(x)
+        return x
 
-    def fit_transform(self, x, y=None):
+    def fit_transform(self, x, y=None, sample_weight=None):
         &#34;&#34;&#34;
         A functional stack of fit and transform.
 
@@ -131,8 +131,8 @@ class imputer():
             pandas.DataFrame or a 2D array: imputed x
         &#34;&#34;&#34;
         self.fit(x, y)
-        x, y = self.transform(x, y)
-        return x, y
+        x = self.transform(x)
+        return x
 
 
 class knn_imputer(imputer):
@@ -245,7 +245,7 @@ class simple_imputer(imputer):
         self.normalizer = Normalizer(center=center, scale=scale)
         self.fitted = False
 
-    def fit(self, x, y=None):
+    def fit(self, x, y=None, sample_weight=None):
         &#34;&#34;&#34;
         Fit x.
     
@@ -262,14 +262,14 @@ class simple_imputer(imputer):
 
         # normalize
         self.normalizer.fit(x, y)
-        x, y = self.normalizer.transform(x, y)
+        x = self.normalizer.transform(x)
 
         # call the kernel
         self.kernel.fit(x)
         self.fitted = True
         return self
 
-    def transform(self, x, y=None):
+    def transform(self, x):
         &#34;&#34;&#34;
         Transform x
 
@@ -289,7 +289,7 @@ class simple_imputer(imputer):
         idx = x.index
 
         # normalize
-        x, y = self.normalizer.transform(x, y)
+        x = self.normalizer.transform(x)
 
         # call the kernel
         x = self.kernel.transform(x)
@@ -298,10 +298,10 @@ class simple_imputer(imputer):
         x = pd.DataFrame(x, columns=columns, index=idx)
 
         # inverse normalize
-        x, y = self.normalizer.inverse_transform(x, y)
-        return x, y
+        x = self.normalizer.inverse_transform(x)
+        return x
 
-    def fit_transform(self, x, y=None):
+    def fit_transform(self, x, y=None, sample_weight=None):
         &#34;&#34;&#34;
         A functional stack of fit and transform.
 
@@ -313,8 +313,8 @@ class simple_imputer(imputer):
             pandas.DataFrame or a 2D array: imputed x
         &#34;&#34;&#34;
         self.fit(x, y)
-        x, y = self.transform(x, y)
-        return x, y</code></pre>
+        x = self.transform(x)
+        return x</code></pre>
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
@@ -324,7 +324,7 @@ class simple_imputer(imputer):
 <h3>Methods</h3>
 <dl>
 <dt id="PineBioML.preprocessing.impute.imputer.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, x, y=None)</span>
+<span>def <span class="ident">fit</span></span>(<span>self, x, y=None, sample_weight=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Fit x.</p>
@@ -344,7 +344,7 @@ class simple_imputer(imputer):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def fit(self, x, y=None):
+<pre><code class="python">def fit(self, x, y=None, sample_weight=None):
     &#34;&#34;&#34;
     Fit x.
 
@@ -361,7 +361,7 @@ class simple_imputer(imputer):
 
     # normalize
     self.normalizer.fit(x, y)
-    x, y = self.normalizer.transform(x, y)
+    x = self.normalizer.transform(x)
 
     # call the kernel
     self.kernel.fit(x)
@@ -370,7 +370,7 @@ class simple_imputer(imputer):
 </details>
 </dd>
 <dt id="PineBioML.preprocessing.impute.imputer.fit_transform"><code class="name flex">
-<span>def <span class="ident">fit_transform</span></span>(<span>self, x, y=None)</span>
+<span>def <span class="ident">fit_transform</span></span>(<span>self, x, y=None, sample_weight=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A functional stack of fit and transform.</p>
@@ -390,7 +390,7 @@ class simple_imputer(imputer):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def fit_transform(self, x, y=None):
+<pre><code class="python">def fit_transform(self, x, y=None, sample_weight=None):
     &#34;&#34;&#34;
     A functional stack of fit and transform.
 
@@ -402,12 +402,12 @@ class simple_imputer(imputer):
         pandas.DataFrame or a 2D array: imputed x
     &#34;&#34;&#34;
     self.fit(x, y)
-    x, y = self.transform(x, y)
-    return x, y</code></pre>
+    x = self.transform(x)
+    return x</code></pre>
 </details>
 </dd>
 <dt id="PineBioML.preprocessing.impute.imputer.transform"><code class="name flex">
-<span>def <span class="ident">transform</span></span>(<span>self, x, y=None)</span>
+<span>def <span class="ident">transform</span></span>(<span>self, x)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Transform x</p>
@@ -427,7 +427,7 @@ class simple_imputer(imputer):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def transform(self, x, y=None):
+<pre><code class="python">def transform(self, x):
     &#34;&#34;&#34;
     Transform x
 
@@ -447,7 +447,7 @@ class simple_imputer(imputer):
     idx = x.index
 
     # normalize
-    x, y = self.normalizer.transform(x, y)
+    x = self.normalizer.transform(x)
 
     # call the kernel
     x = self.kernel.transform(x)
@@ -456,8 +456,8 @@ class simple_imputer(imputer):
     x = pd.DataFrame(x, columns=columns, index=idx)
 
     # inverse normalize
-    x, y = self.normalizer.inverse_transform(x, y)
-    return x, y</code></pre>
+    x = self.normalizer.inverse_transform(x)
+    return x</code></pre>
 </details>
 </dd>
 </dl>

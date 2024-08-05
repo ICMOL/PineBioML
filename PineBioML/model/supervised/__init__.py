@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from sklearn.model_selection import StratifiedKFold
 from optuna.samplers import TPESampler
 from numpy.random import RandomState, randint
+from pandas import Series, DataFrame
 
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
@@ -44,6 +45,13 @@ class Basic_tuner(ABC):
         else:
             self.optuna_seed = randint(16384)
 
+        # The tape for cross validation random seed along optuna trial.
+        self.valid_seed_tape = RandomState(self.valid_seed).randint(low=0,
+                                                                    high=16384,
+                                                                    size=n_try)
+        self.kernel_seed_tape = RandomState(self.kernel_seed).randint(
+            low=0, high=16384, size=n_try)
+
         # If the tuning target is not in discrete_target, the kernel will not be required to return in prob which is costy fro some method like svm.
         self.discrete_target = ["accuracy", "f1", "matthews_corrcoef"]
         self.eval_prob = not target in self.discrete_target
@@ -53,13 +61,6 @@ class Basic_tuner(ABC):
         # Make the sampler behave in a deterministic way.
         sampler = TPESampler(seed=optuna_seed)
         self.study = optuna.create_study(direction="maximize", sampler=sampler)
-
-        # The tape for cross validation random seed along optuna trial.
-        self.valid_seed_tape = RandomState(self.valid_seed).randint(low=0,
-                                                                    high=16384,
-                                                                    size=n_try)
-        self.kernel_seed_tape = RandomState(self.kernel_seed).randint(
-            low=0, high=16384, size=n_try)
 
         self.optuna_model = None
         self.default_model = None
@@ -104,7 +105,11 @@ class Basic_tuner(ABC):
 
             classifier_obj.fit(x_train, y_train)
 
-            score.append(self.metric(classifier_obj, x_test, y_test))
+            test_score = self.metric(classifier_obj, x_test, y_test)
+            train_score = self.metric(classifier_obj, x_train, y_train)
+            score.append(test_score + 0.2 * (test_score - train_score))
+
+            #score.append(test_score)
         score = sum(score) / self.n_cv
         return score
 
@@ -138,8 +143,8 @@ class Basic_tuner(ABC):
                                             default=True)
         self.default_model = self.create_model(self.study.best_trial,
                                                default=True)
-        print("    default performance: {:.3f}  |  best performance: {:.3f}".
-              format(default_performance, self.study.best_trial.value))
+        #print("    default performance: {:.3f}  |  best performance: {:.3f}".
+        #      format(default_performance, self.study.best_trial.value))
         if default_performance > self.study.best_trial.value:
             # default better
             print("    default is better.")
@@ -161,11 +166,15 @@ class Basic_tuner(ABC):
             x (pandas.DataFrame or 2D-array): feature to extract information from.
             y (pandas.Series or 1D-array): ground true.
         """
+        self.label_name = y.name
+
         # tune the model.
         self.tune(x, y)
 
         # fit the model.
         self.best_model.fit(x, y)
+
+        return self.best_model
 
     def predict(self, x):
         """
@@ -178,9 +187,13 @@ class Basic_tuner(ABC):
             1D-array: prediction
         """
         # using the model.
-        return self.best_model.predict(x)
+        y_pred = Series(self.best_model.predict(x),
+                        index=x.index,
+                        name=self.label_name)
 
-    def predict_prob(self, x):
+        return y_pred
+
+    def predict_proba(self, x):
         """
         The sklearn.base.BaseEstimator predict_prob api.
 
@@ -190,4 +203,4 @@ class Basic_tuner(ABC):
         Returns:
             1D-array: prediction in prob
         """
-        return self.best_model.predict_prob(x)
+        return self.best_model.predict_proba(x)

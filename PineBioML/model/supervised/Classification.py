@@ -53,7 +53,12 @@ class ElasticLogit_tuner(Basic_tuner):
 
     def create_model(self, trial, default=False):
         if default:
-            parms = {"verbose": 0}
+            parms = {
+                "verbose": 0,
+                "l1_ratio": 0.5,
+                "penalty": self.penalty,
+                "solver": self.kernel
+            }
         else:
             parms = {
                 "C": trial.suggest_float('C', 1e-6, 1e+2, log=True),
@@ -61,8 +66,7 @@ class ElasticLogit_tuner(Basic_tuner):
                 "penalty": self.penalty,
                 "class_weight": "balanced",
                 "solver": self.kernel,
-                "max_iter": 100,
-                "verbose": 0
+                "verbose": 0,
             }
         lg = LogisticRegression(**parms)
         return lg
@@ -118,7 +122,7 @@ class RandomForest_tuner(Basic_tuner):
                 "bootstrap": self.using_oob,
                 "oob_score": self.using_oob,
                 "n_jobs": -1,
-                "random_state": self.kernel_seed_tape[trial.number],
+                "random_state": self.kernel_seed,
                 "verbose": 0,
             }
         else:
@@ -225,7 +229,7 @@ class SVM_tuner(Basic_tuner):
         if default:
             parms = {
                 "kernel": self.kernel,
-                "random_state": self.kernel_seed_tape[trial.number],
+                "random_state": self.kernel_seed,
                 "probability": True
             }
         else:
@@ -258,9 +262,9 @@ class XGBoost_tuner(Basic_tuner):
     [xgboost.XGBClassifier](https://xgboost.readthedocs.io/en/stable/python/python_api.html)
 
     ToDo:    
-        1. sample imbalance. (we have temporary solution)
-        2. early stop. 
-        3. efficiency (optuna.integration.XGBoostPruningCallback).
+        1. sample imbalance. (we have temporary solution)    
+        2. early stop.    
+        3. efficiency (optuna.integration.XGBoostPruningCallback).    
 
     """
 
@@ -290,7 +294,7 @@ class XGBoost_tuner(Basic_tuner):
         if default:
             parms = {
                 "n_jobs": None,
-                "random_state": self.kernel_seed_tape[trial.number],
+                "random_state": self.kernel_seed,
                 "verbosity": 0
             }
         else:
@@ -306,7 +310,7 @@ class XGBoost_tuner(Basic_tuner):
                 "subsample":
                 trial.suggest_float('subsample', 0.5, 0.95, log=True),
                 "colsample_bytree":
-                trial.suggest_float('colsample_bytree', 0.7, 1, log=True),
+                trial.suggest_float('colsample_bytree', 0.8, 1),
                 "min_child_weight":
                 trial.suggest_float('min_child_weight', 1e-2, 1e+2, log=True),
                 "reg_lambda":
@@ -392,7 +396,7 @@ class LighGBM_tuner(Basic_tuner):
         if default:
             parms = {
                 "n_jobs": None,
-                "random_state": self.kernel_seed_tape[trial.number],
+                "random_state": self.kernel_seed,
                 "verbosity": -1
             }
         else:

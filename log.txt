@@ -1,3 +1,36 @@
+2024/8/5 0.7.0
+    description:
+        1. sklearn pipeline support
+            a. some api changes: select, imputer
+        2. Normalizer reconstructed
+        3. Adding example:
+            a. example_PineLine: the example of using sklearn pipeline.
+            b. example_UsingExistingModel: the example of using existing models.
+        4. Optuna tuning target changes 
+            from: score
+            to: test_score + 0.2 * (test_score - train_score)
+        5. document update.
+    bug:
+        1. bagging:
+             - contradicts to log domain in selection method (the negative output of pca)
+             - the variance of feature will change during bagging (variance matters)
+        2. Lasso logistic regression in grid search need to to modified. In temporary using binary search.
+        3. Issue about installation of pandas lacking of Microsoft Visual C++ 14.0:
+            https://learn.microsoft.com/zh-tw/cpp/windows/latest-supported-vc-redist?view=msvc-170
+    On Going:
+        1. Testing and Deploy (Done)
+        2. A reliable tutorial. (including mac)
+        3. One click everything
+    ToDo:
+        1. report and diagnose
+        2. Document reference
+        3. using pretty, beautiful, good-looking, precise packages:
+            a. pca
+            b. The only OPLS da reliable(compare to others), alive, python implement 
+               https://github.com/Omicometrics/pypls?tab=readme-ov-file 
+        n. add parameter dict(json or yaml-like)
+        n. interactive interface or GUI (maybe nicegui/ plotly)
+
 2024/7/31 0.6.4
     description:
         1. tuner structure adjustment:

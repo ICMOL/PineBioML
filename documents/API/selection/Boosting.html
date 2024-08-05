@@ -42,12 +42,12 @@ class XGboost_selection(SelectionPipeline):
     Warning: If data is too easy, boosting methods is difficult to give score to all features.
     &#34;&#34;&#34;
 
-    def __init__(self, unbalanced=True):
+    def __init__(self, k, unbalanced=True):
         &#34;&#34;&#34;
         Args:
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
         &#34;&#34;&#34;
-        super().__init__()
+        super().__init__(k=k)
         self.unbalanced = unbalanced
 
         self.kernel = xgb.XGBClassifier(random_state=142, subsample=0.7)
@@ -83,12 +83,12 @@ class Lightgbm_selection(SelectionPipeline):
     Warning: If data is too easy, boosting methods is difficult to give score to all features.
     &#34;&#34;&#34;
 
-    def __init__(self, unbalanced=True):
+    def __init__(self, k, unbalanced=True):
         &#34;&#34;&#34;
         Args:
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
         &#34;&#34;&#34;
-        super().__init__()
+        super().__init__(k=k)
         self.unbalanced = unbalanced
 
         self.kernel = lgbm.LGBMClassifier(learning_rate=0.01,
@@ -127,14 +127,14 @@ class AdaBoost_selection(SelectionPipeline):
     Warning: If data is too easy, boosting methods is difficult to give score to all features.
     &#34;&#34;&#34;
 
-    def __init__(self, unbalanced=True, n_iter=128, learning_rate=0.01):
+    def __init__(self, k, unbalanced=True, n_iter=128, learning_rate=0.01):
         &#34;&#34;&#34;
         Args:
             n_iter (int, optional): Number of trees also number of iteration to boost. Defaults to 64.
             learning_rate (float, optional): boosting learning rate. Defaults to 0.01.
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
         &#34;&#34;&#34;
-        super().__init__()
+        super().__init__(k=k)
         self.unbalanced = unbalanced
         self.kernel = AdaBoostClassifier(
             n_estimators=n_iter,
@@ -177,7 +177,7 @@ class AdaBoost_selection(SelectionPipeline):
 <dl>
 <dt id="PineBioML.selection.Boosting.AdaBoost_selection"><code class="flex name class">
 <span>class <span class="ident">AdaBoost_selection</span></span>
-<span>(</span><span>unbalanced=True, n_iter=128, learning_rate=0.01)</span>
+<span>(</span><span>k, unbalanced=True, n_iter=128, learning_rate=0.01)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Using AdaBoost to scoring (gini impurity / entropy) features.</p>
@@ -202,14 +202,14 @@ class AdaBoost_selection(SelectionPipeline):
     Warning: If data is too easy, boosting methods is difficult to give score to all features.
     &#34;&#34;&#34;
 
-    def __init__(self, unbalanced=True, n_iter=128, learning_rate=0.01):
+    def __init__(self, k, unbalanced=True, n_iter=128, learning_rate=0.01):
         &#34;&#34;&#34;
         Args:
             n_iter (int, optional): Number of trees also number of iteration to boost. Defaults to 64.
             learning_rate (float, optional): boosting learning rate. Defaults to 0.01.
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
         &#34;&#34;&#34;
-        super().__init__()
+        super().__init__(k=k)
         self.unbalanced = unbalanced
         self.kernel = AdaBoostClassifier(
             n_estimators=n_iter,
@@ -300,13 +300,14 @@ class AdaBoost_selection(SelectionPipeline):
 <li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Select" href="index.html#PineBioML.selection.SelectionPipeline.Select">Select</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.fit" href="index.html#PineBioML.selection.SelectionPipeline.fit">fit</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
 <dt id="PineBioML.selection.Boosting.Lightgbm_selection"><code class="flex name class">
 <span>class <span class="ident">Lightgbm_selection</span></span>
-<span>(</span><span>unbalanced=True)</span>
+<span>(</span><span>k, unbalanced=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Using Lightgbm to scoring (gini impurity / entropy) features. </p>
@@ -327,12 +328,12 @@ class AdaBoost_selection(SelectionPipeline):
     Warning: If data is too easy, boosting methods is difficult to give score to all features.
     &#34;&#34;&#34;
 
-    def __init__(self, unbalanced=True):
+    def __init__(self, k, unbalanced=True):
         &#34;&#34;&#34;
         Args:
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
         &#34;&#34;&#34;
-        super().__init__()
+        super().__init__(k=k)
         self.unbalanced = unbalanced
 
         self.kernel = lgbm.LGBMClassifier(learning_rate=0.01,
@@ -423,13 +424,14 @@ class AdaBoost_selection(SelectionPipeline):
 <li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Select" href="index.html#PineBioML.selection.SelectionPipeline.Select">Select</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.fit" href="index.html#PineBioML.selection.SelectionPipeline.fit">fit</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
 <dt id="PineBioML.selection.Boosting.XGboost_selection"><code class="flex name class">
 <span>class <span class="ident">XGboost_selection</span></span>
-<span>(</span><span>unbalanced=True)</span>
+<span>(</span><span>k, unbalanced=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Using XGboost to scoring (gini impurity / entropy) features.</p>
@@ -450,12 +452,12 @@ class AdaBoost_selection(SelectionPipeline):
     Warning: If data is too easy, boosting methods is difficult to give score to all features.
     &#34;&#34;&#34;
 
-    def __init__(self, unbalanced=True):
+    def __init__(self, k, unbalanced=True):
         &#34;&#34;&#34;
         Args:
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
         &#34;&#34;&#34;
-        super().__init__()
+        super().__init__(k=k)
         self.unbalanced = unbalanced
 
         self.kernel = xgb.XGBClassifier(random_state=142, subsample=0.7)
@@ -543,6 +545,7 @@ class AdaBoost_selection(SelectionPipeline):
 <li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Select" href="index.html#PineBioML.selection.SelectionPipeline.Select">Select</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.fit" href="index.html#PineBioML.selection.SelectionPipeline.fit">fit</a></code></li>
 </ul>
 </li>
 </ul>

@@ -26,37 +26,43 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Normalizer:
+<pre><code class="python">import sklearn.preprocessing as skprpr
+from pandas import DataFrame
+
+
+class Normalizer():
     &#34;&#34;&#34; 
-    A preprocessing class for selection methods.
-
-    Defaults to standarization. For input X, it will sequantially do :    
-        1. If center then X = X - mean(axis = 0)    
-        2. If scale then X = X / X.std(axis = 0)    
-        3. If global_scale then X = X / X.std(axis = [0, 1])    
-
-    SVM-based and Lasso-based methods are sensitive to the the scale of input (in numerical and in result).    
-
-    To do:
-        The support of box-cox transform and power transform.
+    A wrapper of sklearn normalizers. This will conserve pandas features.    
+    method be one of [&#34;StandardScaler&#34;, &#34;RobustScaler&#34;, &#34;MinMaxScaler&#34;, &#34;Normalizer&#34;, &#34;PowerTransformer&#34;]    
+    let x with shape [n, d] where n is the sample size, d is the number of features.    
+        StandardScaler(x) = (x - x.mean(n)) / x.std(n)    
+        RobustScaler(x) = (x - x.median(n)) / (x.quartile3(n) - x.quartile1(n))    
+        MinMaxScaler(x) = (x - x.min(n)) / (x.max(n) - x.min(n))    
+        Normalizer(x) = x / x.norm(d)
+        PowerTransformer(x) = yeo-johnson transform(x)
     &#34;&#34;&#34;
 
-    def __init__(self, center=True, scale=True, global_scale=False, axis=0):
+    def __init__(self, center=True, scale=True, method=&#34;RobustScaler&#34;):
         &#34;&#34;&#34;
         Args:
-            center (bool, optional): Whether to centralize in selection preprocessing. For input X, if ture then X = X- X.mean(axis = 0)    
-            scale (bool, optional): Whether to scale after centralized. For input X, if ture then X = X / X.std(axis = 0). scale will overlap the effects of global_scale.
-            global_scale (bool, optional): Whether to scale data in global. For input X, if ture then X = X / X.std(axis = [0, 1]). One of scale or global_scale sould be True, or lasso will raise an numerical error. 
-
+            center (bool, optional): Whether to centralize data. Default to True.
+            scale (bool, optional): Whether to scaling data after centralized. Default to True.
+            method (str, optional): the way to normalize data. Be one of [&#34;StandardScaler&#34;, &#34;RobustScaler&#34;, &#34;MinMaxScaler&#34;, &#34;Normalizer&#34;, &#34;PowerTransformer&#34;]
         &#34;&#34;&#34;
-        self.axis = axis
-        self.center = center
-        self.mean = 0
-        self.scale = scale
-        self.norm = 1
-        self.global_scale = global_scale
-        self.global_norm = 1
-        self.fitted = False
+
+        kernels = {
+            &#34;StandardScaler&#34;:
+            skprpr.StandardScaler(with_mean=center, with_std=scale),
+            &#34;RobustScaler&#34;:
+            skprpr.RobustScaler(with_centering=center, with_scaling=scale),
+            &#34;MinMaxScaler&#34;:
+            skprpr.MinMaxScaler(),
+            &#34;Normalizer&#34;:
+            skprpr.Normalizer(),
+            &#34;PowerTransformer&#34;:
+            skprpr.PowerTransformer()
+        }
+        self.kernel = kernels[method]
 
     def fit(self, x, y=None):
         &#34;&#34;&#34;
@@ -69,29 +75,12 @@
         Returns:
             Normalizer: self after fitting.
         &#34;&#34;&#34;
-        if self.axis:
-            x = x.T
 
-        if self.center:
-            self.mean = x.mean()
-            #print(&#34;mean: &#34;, self.mean)
-            x = x - self.mean
-        if self.scale:
-            self.norm = x.std()
-            #print(&#34;std: &#34;, self.norm)
+        self.kernel.fit(x, y)
 
-            x = x / self.norm
-        if self.global_scale:
-            self.global_norm = x.values.std()
-            #print(&#34;global std: &#34;, self.global_norm)
-            x = x / self.global_norm
-
-        if self.axis:
-            x = x.T
-        self.fitted = True
         return self
 
-    def transform(self, x, y=None):
+    def transform(self, x):
         &#34;&#34;&#34;
         Transform input x. Only activates after &#34;fit&#34; was called.
 
@@ -103,22 +92,11 @@
             pandas.DataFrame or a 2D array: Normalized x.
             pandas.Series or a 1D array: Same as input y.
         &#34;&#34;&#34;
-        if not self.fitted:
-            print(&#34;WARNING: please call fit before calling transform&#34;)
-        #if self.log_transform:
-        #   x = np.log(x)
-        if self.axis:
-            x = x.T
-        if self.center:
-            x = x - self.mean
-        if self.scale:
-            x = x / self.norm
-        if self.global_scale:
-            x = x / self.global_norm
-        if self.axis:
-            x = x.T
-        x_normalized = x
-        return x_normalized, y
+        x_normalized = DataFrame(self.kernel.transform(x),
+                                 index=x.index,
+                                 columns=x.columns)
+
+        return x_normalized
 
     def fit_transform(self, x, y=None):
         &#34;&#34;&#34;
@@ -132,10 +110,10 @@
             pandas.DataFrame or a 2D array: Normalized x.
         &#34;&#34;&#34;
         self.fit(x, y)
-        x_normalized = self.transform(x, y)
+        x_normalized = self.transform(x)
         return x_normalized
 
-    def inverse_transform(self, x, y=None):
+    def inverse_transform(self, x):
         &#34;&#34;&#34;
         The inverse transform of normalize.
 
@@ -146,17 +124,12 @@
         Returns:
             pandas.DataFrame or a 2D array: x in original scale.
         &#34;&#34;&#34;
-        if self.axis:
-            x = x.T
-        if self.global_scale:
-            x = x * self.global_norm
-        if self.scale:
-            x = x * self.norm
-        if self.center:
-            x = x + self.mean
-        if self.axis:
-            x = x.T
-        return x, y</code></pre>
+
+        x_original = DataFrame(self.kernel.inverse_transform(x),
+                               index=x.index,
+                               columns=x.columns)
+
+        return x_original</code></pre>
 </details>
 </section>
 <section>
@@ -189,67 +162,69 @@
 <dl>
 <dt id="PineBioML.preprocessing.Normalizer"><code class="flex name class">
 <span>class <span class="ident">Normalizer</span></span>
-<span>(</span><span>center=True, scale=True, global_scale=False, axis=0)</span>
+<span>(</span><span>center=True, scale=True, method='RobustScaler')</span>
 </code></dt>
 <dd>
-<div class="desc"><p>A preprocessing class for selection methods.</p>
-<p>Defaults to standarization. For input X, it will sequantially do :
+<div class="desc"><p>A wrapper of sklearn normalizers. This will conserve pandas features.
 <br>
-1. If center then X = X - mean(axis = 0)
+method be one of ["StandardScaler", "RobustScaler", "MinMaxScaler", "Normalizer", "PowerTransformer"]
 <br>
-2. If scale then X = X / X.std(axis = 0)
+let x with shape [n, d] where n is the sample size, d is the number of features.
 <br>
-3. If global_scale then X = X / X.std(axis = [0, 1])
-</p>
-<p>SVM-based and Lasso-based methods are sensitive to the the scale of input (in numerical and in result).
-</p>
-<p>To do:
-The support of box-cox transform and power transform.</p>
+StandardScaler(x) = (x - x.mean(n)) / x.std(n)
+<br>
+RobustScaler(x) = (x - x.median(n)) / (x.quartile3(n) - x.quartile1(n))
+<br>
+MinMaxScaler(x) = (x - x.min(n)) / (x.max(n) - x.min(n))
+<br>
+Normalizer(x) = x / x.norm(d)
+PowerTransformer(x) = yeo-johnson transform(x)</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>center</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Whether to centralize in selection preprocessing. For input X, if ture then X = X- X.mean(axis = 0)
-</dd>
+<dd>Whether to centralize data. Default to True.</dd>
 <dt><strong><code>scale</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Whether to scale after centralized. For input X, if ture then X = X / X.std(axis = 0). scale will overlap the effects of global_scale.</dd>
-<dt><strong><code>global_scale</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Whether to scale data in global. For input X, if ture then X = X / X.std(axis = [0, 1]). One of scale or global_scale sould be True, or lasso will raise an numerical error.</dd>
+<dd>Whether to scaling data after centralized. Default to True.</dd>
+<dt><strong><code>method</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>the way to normalize data. Be one of ["StandardScaler", "RobustScaler", "MinMaxScaler", "Normalizer", "PowerTransformer"]</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Normalizer:
+<pre><code class="python">class Normalizer():
     &#34;&#34;&#34; 
-    A preprocessing class for selection methods.
-
-    Defaults to standarization. For input X, it will sequantially do :    
-        1. If center then X = X - mean(axis = 0)    
-        2. If scale then X = X / X.std(axis = 0)    
-        3. If global_scale then X = X / X.std(axis = [0, 1])    
-
-    SVM-based and Lasso-based methods are sensitive to the the scale of input (in numerical and in result).    
-
-    To do:
-        The support of box-cox transform and power transform.
+    A wrapper of sklearn normalizers. This will conserve pandas features.    
+    method be one of [&#34;StandardScaler&#34;, &#34;RobustScaler&#34;, &#34;MinMaxScaler&#34;, &#34;Normalizer&#34;, &#34;PowerTransformer&#34;]    
+    let x with shape [n, d] where n is the sample size, d is the number of features.    
+        StandardScaler(x) = (x - x.mean(n)) / x.std(n)    
+        RobustScaler(x) = (x - x.median(n)) / (x.quartile3(n) - x.quartile1(n))    
+        MinMaxScaler(x) = (x - x.min(n)) / (x.max(n) - x.min(n))    
+        Normalizer(x) = x / x.norm(d)
+        PowerTransformer(x) = yeo-johnson transform(x)
     &#34;&#34;&#34;
 
-    def __init__(self, center=True, scale=True, global_scale=False, axis=0):
+    def __init__(self, center=True, scale=True, method=&#34;RobustScaler&#34;):
         &#34;&#34;&#34;
         Args:
-            center (bool, optional): Whether to centralize in selection preprocessing. For input X, if ture then X = X- X.mean(axis = 0)    
-            scale (bool, optional): Whether to scale after centralized. For input X, if ture then X = X / X.std(axis = 0). scale will overlap the effects of global_scale.
-            global_scale (bool, optional): Whether to scale data in global. For input X, if ture then X = X / X.std(axis = [0, 1]). One of scale or global_scale sould be True, or lasso will raise an numerical error. 
-
+            center (bool, optional): Whether to centralize data. Default to True.
+            scale (bool, optional): Whether to scaling data after centralized. Default to True.
+            method (str, optional): the way to normalize data. Be one of [&#34;StandardScaler&#34;, &#34;RobustScaler&#34;, &#34;MinMaxScaler&#34;, &#34;Normalizer&#34;, &#34;PowerTransformer&#34;]
         &#34;&#34;&#34;
-        self.axis = axis
-        self.center = center
-        self.mean = 0
-        self.scale = scale
-        self.norm = 1
-        self.global_scale = global_scale
-        self.global_norm = 1
-        self.fitted = False
+
+        kernels = {
+            &#34;StandardScaler&#34;:
+            skprpr.StandardScaler(with_mean=center, with_std=scale),
+            &#34;RobustScaler&#34;:
+            skprpr.RobustScaler(with_centering=center, with_scaling=scale),
+            &#34;MinMaxScaler&#34;:
+            skprpr.MinMaxScaler(),
+            &#34;Normalizer&#34;:
+            skprpr.Normalizer(),
+            &#34;PowerTransformer&#34;:
+            skprpr.PowerTransformer()
+        }
+        self.kernel = kernels[method]
 
     def fit(self, x, y=None):
         &#34;&#34;&#34;
@@ -262,29 +237,12 @@ The support of box-cox transform and power transform.</p>
         Returns:
             Normalizer: self after fitting.
         &#34;&#34;&#34;
-        if self.axis:
-            x = x.T
 
-        if self.center:
-            self.mean = x.mean()
-            #print(&#34;mean: &#34;, self.mean)
-            x = x - self.mean
-        if self.scale:
-            self.norm = x.std()
-            #print(&#34;std: &#34;, self.norm)
+        self.kernel.fit(x, y)
 
-            x = x / self.norm
-        if self.global_scale:
-            self.global_norm = x.values.std()
-            #print(&#34;global std: &#34;, self.global_norm)
-            x = x / self.global_norm
-
-        if self.axis:
-            x = x.T
-        self.fitted = True
         return self
 
-    def transform(self, x, y=None):
+    def transform(self, x):
         &#34;&#34;&#34;
         Transform input x. Only activates after &#34;fit&#34; was called.
 
@@ -296,22 +254,11 @@ The support of box-cox transform and power transform.</p>
             pandas.DataFrame or a 2D array: Normalized x.
             pandas.Series or a 1D array: Same as input y.
         &#34;&#34;&#34;
-        if not self.fitted:
-            print(&#34;WARNING: please call fit before calling transform&#34;)
-        #if self.log_transform:
-        #   x = np.log(x)
-        if self.axis:
-            x = x.T
-        if self.center:
-            x = x - self.mean
-        if self.scale:
-            x = x / self.norm
-        if self.global_scale:
-            x = x / self.global_norm
-        if self.axis:
-            x = x.T
-        x_normalized = x
-        return x_normalized, y
+        x_normalized = DataFrame(self.kernel.transform(x),
+                                 index=x.index,
+                                 columns=x.columns)
+
+        return x_normalized
 
     def fit_transform(self, x, y=None):
         &#34;&#34;&#34;
@@ -325,10 +272,10 @@ The support of box-cox transform and power transform.</p>
             pandas.DataFrame or a 2D array: Normalized x.
         &#34;&#34;&#34;
         self.fit(x, y)
-        x_normalized = self.transform(x, y)
+        x_normalized = self.transform(x)
         return x_normalized
 
-    def inverse_transform(self, x, y=None):
+    def inverse_transform(self, x):
         &#34;&#34;&#34;
         The inverse transform of normalize.
 
@@ -339,17 +286,12 @@ The support of box-cox transform and power transform.</p>
         Returns:
             pandas.DataFrame or a 2D array: x in original scale.
         &#34;&#34;&#34;
-        if self.axis:
-            x = x.T
-        if self.global_scale:
-            x = x * self.global_norm
-        if self.scale:
-            x = x * self.norm
-        if self.center:
-            x = x + self.mean
-        if self.axis:
-            x = x.T
-        return x, y</code></pre>
+
+        x_original = DataFrame(self.kernel.inverse_transform(x),
+                               index=x.index,
+                               columns=x.columns)
+
+        return x_original</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -388,26 +330,9 @@ The support of box-cox transform and power transform.</p>
     Returns:
         Normalizer: self after fitting.
     &#34;&#34;&#34;
-    if self.axis:
-        x = x.T
 
-    if self.center:
-        self.mean = x.mean()
-        #print(&#34;mean: &#34;, self.mean)
-        x = x - self.mean
-    if self.scale:
-        self.norm = x.std()
-        #print(&#34;std: &#34;, self.norm)
+    self.kernel.fit(x, y)
 
-        x = x / self.norm
-    if self.global_scale:
-        self.global_norm = x.values.std()
-        #print(&#34;global std: &#34;, self.global_norm)
-        x = x / self.global_norm
-
-    if self.axis:
-        x = x.T
-    self.fitted = True
     return self</code></pre>
 </details>
 </dd>
@@ -444,12 +369,12 @@ The support of box-cox transform and power transform.</p>
         pandas.DataFrame or a 2D array: Normalized x.
     &#34;&#34;&#34;
     self.fit(x, y)
-    x_normalized = self.transform(x, y)
+    x_normalized = self.transform(x)
     return x_normalized</code></pre>
 </details>
 </dd>
 <dt id="PineBioML.preprocessing.Normalizer.inverse_transform"><code class="name flex">
-<span>def <span class="ident">inverse_transform</span></span>(<span>self, x, y=None)</span>
+<span>def <span class="ident">inverse_transform</span></span>(<span>self, x)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>The inverse transform of normalize.</p>
@@ -469,7 +394,7 @@ The support of box-cox transform and power transform.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def inverse_transform(self, x, y=None):
+<pre><code class="python">def inverse_transform(self, x):
     &#34;&#34;&#34;
     The inverse transform of normalize.
 
@@ -480,21 +405,16 @@ The support of box-cox transform and power transform.</p>
     Returns:
         pandas.DataFrame or a 2D array: x in original scale.
     &#34;&#34;&#34;
-    if self.axis:
-        x = x.T
-    if self.global_scale:
-        x = x * self.global_norm
-    if self.scale:
-        x = x * self.norm
-    if self.center:
-        x = x + self.mean
-    if self.axis:
-        x = x.T
-    return x, y</code></pre>
+
+    x_original = DataFrame(self.kernel.inverse_transform(x),
+                           index=x.index,
+                           columns=x.columns)
+
+    return x_original</code></pre>
 </details>
 </dd>
 <dt id="PineBioML.preprocessing.Normalizer.transform"><code class="name flex">
-<span>def <span class="ident">transform</span></span>(<span>self, x, y=None)</span>
+<span>def <span class="ident">transform</span></span>(<span>self, x)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Transform input x. Only activates after "fit" was called.</p>
@@ -518,7 +438,7 @@ The support of box-cox transform and power transform.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def transform(self, x, y=None):
+<pre><code class="python">def transform(self, x):
     &#34;&#34;&#34;
     Transform input x. Only activates after &#34;fit&#34; was called.
 
@@ -530,22 +450,11 @@ The support of box-cox transform and power transform.</p>
         pandas.DataFrame or a 2D array: Normalized x.
         pandas.Series or a 1D array: Same as input y.
     &#34;&#34;&#34;
-    if not self.fitted:
-        print(&#34;WARNING: please call fit before calling transform&#34;)
-    #if self.log_transform:
-    #   x = np.log(x)
-    if self.axis:
-        x = x.T
-    if self.center:
-        x = x - self.mean
-    if self.scale:
-        x = x / self.norm
-    if self.global_scale:
-        x = x / self.global_norm
-    if self.axis:
-        x = x.T
-    x_normalized = x
-    return x_normalized, y</code></pre>
+    x_normalized = DataFrame(self.kernel.transform(x),
+                             index=x.index,
+                             columns=x.columns)
+
+    return x_normalized</code></pre>
 </details>
 </dd>
 </dl>

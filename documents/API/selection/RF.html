@@ -43,14 +43,14 @@ class RF_selection(SelectionPipeline):
 
     &#34;&#34;&#34;
 
-    def __init__(self, trees=1024, unbalanced=True, strategy=&#34;gini&#34;):
+    def __init__(self, k, trees=1024, unbalanced=True, strategy=&#34;gini&#34;):
         &#34;&#34;&#34;
         Args:
             trees (int, optional): Number of trees. Defaults to 1024*16.
             strategy (str, optional): Scoring strategy, one of {&#34;gini&#34;, &#34;entropy&#34;}. Defaults to &#34;gini&#34;.
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to True.
         &#34;&#34;&#34;
-        super().__init__()
+        super().__init__(k=k)
         self.strategy = strategy
         if unbalanced:
             class_weight = &#34;balanced&#34;
@@ -220,6 +220,7 @@ class pcRF_selection(SelectionPipeline):
 
     def __init__(
         self,
+        k,
         trees=512,
         unbalanced=True,
         strategy=&#34;permutation&#34;,
@@ -233,7 +234,7 @@ class pcRF_selection(SelectionPipeline):
             factorize_method (str, optional): One of {&#34;PCA&#34;}. Method to reduce dimension.  Defaults to &#34;PCA&#34;.
                     
         &#34;&#34;&#34;
-        super().__init__()
+        super().__init__(k=k)
         # remove colinearity
         #        if factorize_method == &#34;NMF&#34;:
         #           self.fatorizer = NMF()
@@ -282,7 +283,7 @@ class pcRF_selection(SelectionPipeline):
 
         return score
 
-    def Select(self, x, y, k):
+    def Select(self, x, y):
         &#34;&#34;&#34;
         x-&gt;PCA-&gt;RF + oob +permutation importance -&gt; inverse PCA -&gt; feature importance
 
@@ -329,7 +330,7 @@ class pcRF_selection(SelectionPipeline):
             index=columns,
             name=self.name).sort_values(ascending=False)
 
-        selected_score = self.choose(self.scores, k)
+        selected_score = self.choose(self.scores)
         return selected_score</code></pre>
 </details>
 </section>
@@ -344,7 +345,7 @@ class pcRF_selection(SelectionPipeline):
 <dl>
 <dt id="PineBioML.selection.RF.RF_selection"><code class="flex name class">
 <span>class <span class="ident">RF_selection</span></span>
-<span>(</span><span>trees=1024, unbalanced=True, strategy='gini')</span>
+<span>(</span><span>k, trees=1024, unbalanced=True, strategy='gini')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Using random forest to scoring (gini impurity / entropy) features.</p>
@@ -367,14 +368,14 @@ class pcRF_selection(SelectionPipeline):
 
     &#34;&#34;&#34;
 
-    def __init__(self, trees=1024, unbalanced=True, strategy=&#34;gini&#34;):
+    def __init__(self, k, trees=1024, unbalanced=True, strategy=&#34;gini&#34;):
         &#34;&#34;&#34;
         Args:
             trees (int, optional): Number of trees. Defaults to 1024*16.
             strategy (str, optional): Scoring strategy, one of {&#34;gini&#34;, &#34;entropy&#34;}. Defaults to &#34;gini&#34;.
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to True.
         &#34;&#34;&#34;
-        super().__init__()
+        super().__init__(k=k)
         self.strategy = strategy
         if unbalanced:
             class_weight = &#34;balanced&#34;
@@ -463,6 +464,7 @@ class pcRF_selection(SelectionPipeline):
 <li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Select" href="index.html#PineBioML.selection.SelectionPipeline.Select">Select</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.fit" href="index.html#PineBioML.selection.SelectionPipeline.fit">fit</a></code></li>
 </ul>
 </li>
 </ul>
@@ -797,7 +799,7 @@ Now is only for classification.</p></div>
 </dd>
 <dt id="PineBioML.selection.RF.pcRF_selection"><code class="flex name class">
 <span>class <span class="ident">pcRF_selection</span></span>
-<span>(</span><span>trees=512, unbalanced=True, strategy='permutation', factorize_method='PCA')</span>
+<span>(</span><span>k, trees=512, unbalanced=True, strategy='permutation', factorize_method='PCA')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Expiriment method. PCA-&gt;RF-&gt;importance-&gt;inverse_PCA</p>
@@ -824,6 +826,7 @@ Defaults to "PCA".</dd>
 
     def __init__(
         self,
+        k,
         trees=512,
         unbalanced=True,
         strategy=&#34;permutation&#34;,
@@ -837,7 +840,7 @@ Defaults to "PCA".</dd>
             factorize_method (str, optional): One of {&#34;PCA&#34;}. Method to reduce dimension.  Defaults to &#34;PCA&#34;.
                     
         &#34;&#34;&#34;
-        super().__init__()
+        super().__init__(k=k)
         # remove colinearity
         #        if factorize_method == &#34;NMF&#34;:
         #           self.fatorizer = NMF()
@@ -886,7 +889,7 @@ Defaults to "PCA".</dd>
 
         return score
 
-    def Select(self, x, y, k):
+    def Select(self, x, y):
         &#34;&#34;&#34;
         x-&gt;PCA-&gt;RF + oob +permutation importance -&gt; inverse PCA -&gt; feature importance
 
@@ -933,7 +936,7 @@ Defaults to "PCA".</dd>
             index=columns,
             name=self.name).sort_values(ascending=False)
 
-        selected_score = self.choose(self.scores, k)
+        selected_score = self.choose(self.scores)
         return selected_score</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -997,7 +1000,7 @@ Defaults to "PCA".</dd>
 </details>
 </dd>
 <dt id="PineBioML.selection.RF.pcRF_selection.Select"><code class="name flex">
-<span>def <span class="ident">Select</span></span>(<span>self, x, y, k)</span>
+<span>def <span class="ident">Select</span></span>(<span>self, x, y)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>x-&gt;PCA-&gt;RF + oob +permutation importance -&gt; inverse PCA -&gt; feature importance</p>
@@ -1019,7 +1022,7 @@ Defaults to "PCA".</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def Select(self, x, y, k):
+<pre><code class="python">def Select(self, x, y):
     &#34;&#34;&#34;
     x-&gt;PCA-&gt;RF + oob +permutation importance -&gt; inverse PCA -&gt; feature importance
 
@@ -1066,7 +1069,7 @@ Defaults to "PCA".</dd>
         index=columns,
         name=self.name).sort_values(ascending=False)
 
-    selected_score = self.choose(self.scores, k)
+    selected_score = self.choose(self.scores)
     return selected_score</code></pre>
 </details>
 </dd>
@@ -1079,6 +1082,7 @@ Defaults to "PCA".</dd>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Diagnose" href="index.html#PineBioML.selection.SelectionPipeline.Diagnose">Diagnose</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.fit" href="index.html#PineBioML.selection.SelectionPipeline.fit">fit</a></code></li>
 </ul>
 </li>
 </ul>

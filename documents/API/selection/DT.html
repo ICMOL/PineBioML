@@ -39,14 +39,14 @@ class DT_selection(SelectionPipeline):
     Using Decision stump (a single Decision tree) to scoring features.
     &#34;&#34;&#34;
 
-    def __init__(self, bins=10, q=0.05, strategy=&#34;c45&#34;):
+    def __init__(self, k, bins=10, q=0.05, strategy=&#34;c45&#34;):
         &#34;&#34;&#34;
         Args:
             bins (int, optional): Bins to esimate data distribution entropy. Defaults to 10.
             q (float, optional): Clip data values out of [q, 1-q] percentile to reduce the affect of outliers while estimate entropy. Defaults to 0.05.
             strategy (str, optional): One of {&#34;id3&#34;, &#34;c45&#34;}. The strategy to build decision tree. Defaults to &#34;c45&#34;.
         &#34;&#34;&#34;
-        super().__init__()
+        super().__init__(k=k)
         self.bins = bins - 1
         self.q = q
         self.strategy = strategy
@@ -123,7 +123,7 @@ class DT_selection(SelectionPipeline):
 <dl>
 <dt id="PineBioML.selection.DT.DT_selection"><code class="flex name class">
 <span>class <span class="ident">DT_selection</span></span>
-<span>(</span><span>bins=10, q=0.05, strategy='c45')</span>
+<span>(</span><span>k, bins=10, q=0.05, strategy='c45')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A child class of SelectionPipeline .</p>
@@ -148,14 +148,14 @@ class DT_selection(SelectionPipeline):
     Using Decision stump (a single Decision tree) to scoring features.
     &#34;&#34;&#34;
 
-    def __init__(self, bins=10, q=0.05, strategy=&#34;c45&#34;):
+    def __init__(self, k, bins=10, q=0.05, strategy=&#34;c45&#34;):
         &#34;&#34;&#34;
         Args:
             bins (int, optional): Bins to esimate data distribution entropy. Defaults to 10.
             q (float, optional): Clip data values out of [q, 1-q] percentile to reduce the affect of outliers while estimate entropy. Defaults to 0.05.
             strategy (str, optional): One of {&#34;id3&#34;, &#34;c45&#34;}. The strategy to build decision tree. Defaults to &#34;c45&#34;.
         &#34;&#34;&#34;
-        super().__init__()
+        super().__init__(k=k)
         self.bins = bins - 1
         self.q = q
         self.strategy = strategy
@@ -337,6 +337,7 @@ class DT_selection(SelectionPipeline):
 <li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Select" href="index.html#PineBioML.selection.SelectionPipeline.Select">Select</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.fit" href="index.html#PineBioML.selection.SelectionPipeline.fit">fit</a></code></li>
 </ul>
 </li>
 </ul>
