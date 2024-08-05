@@ -30,12 +30,14 @@ class SelectionPipeline:
 
     """
 
-    def __init__(self):
+    def __init__(self, k=None):
         """
         Initialize the selection pipeline.
 
         Args:
+            k (int or None): select top k important feature. k = -1 means selecting all, k = None means selecting the feature that have standarized score > 1. Default = None
         """
+        self.k = k
         self.name = "base"
         self.scores = None
         self.selected_score = None
@@ -54,7 +56,7 @@ class SelectionPipeline:
         self.scores = x.max().sort_values(ascending=False)  # top is better
         return self.scores.copy()
 
-    def Choose(self, scores, k):
+    def Choose(self, scores):
         """
         Choosing features according to scores.
 
@@ -65,14 +67,18 @@ class SelectionPipeline:
         Returns:
             pandas.Series or pandas.DataFrame: The score for k selected features. May less than k.
         """
-        self.selected_score = scores.head(k)
+        self.selected_score = scores.head(self.k)
         self.selected_score = self.selected_score[self.selected_score != 0]
 
         return self.selected_score.copy()
 
-    def Select(self, x, y, k):
+    def Select(self, x, y):
         """
-        A functional stack of: Scoring -> Choosing
+        A functional stack of: Scoring -> Choosing    
+        if k == None, choose k such that:    
+            z-scores = (scores - scores.mean())/scores.std()    
+            k = # (z-scores > 1)
+            
 
         Args:
             x (pandas.DataFrame or a 2D array): The data to extract information.
@@ -84,8 +90,33 @@ class SelectionPipeline:
         """
         # x should be a pd dataframe or a numpy array without missing value
         scores = self.Scoring(x, y)
-        selected_score = self.Choose(scores, k)
+        if self.k:
+            # k not None
+            selected_score = self.Choose(scores)
+        else:
+            # k is None
+            z_scores = (scores - scores.mean()) / (scores.std() + 1e-4)
+            selected_score = scores[z_scores > 1.]
+
         return selected_score
+
+    def fit(self, x, y):
+        """
+        sklearn api
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to extract information.
+            y (pandas.Series or a 1D array): The target label for methods.
+        """
+        self.Select(x, y)
+        return self
+
+    def transform(self, x):
+        return x[self.selected_score.index]
+
+    def fit_transform(self, x, y):
+        self.fit(x, y)
+        return self.transform(x)
 
     def Plotting(self):
         """

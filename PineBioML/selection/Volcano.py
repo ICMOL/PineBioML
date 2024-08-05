@@ -12,6 +12,7 @@ class Volcano_selection(SelectionPipeline):
     """
 
     def __init__(self,
+                 k,
                  strategy="fold",
                  p_threshold=0.05,
                  fc_threshold=2,
@@ -26,7 +27,7 @@ class Volcano_selection(SelectionPipeline):
             log_domain (bool, optional): Whether input data is in log_domain. Defaults to False.
             absolute (bool, optional): If true, then take absolute value on score while strategy == "p". Defaults to True.
         """
-        super().__init__()
+        super().__init__(k=k)
         self.strategy = strategy
         self.fc_threshold = fc_threshold
         self.p_threshold = p_threshold
@@ -93,7 +94,7 @@ class Volcano_selection(SelectionPipeline):
             index=log_fold.index)
         return self.scores.copy()
 
-    def Choose(self, scores, k):
+    def Choose(self, scores):
         """
         Choosing the features which has score higher than threshold in assigned strategy.
 
@@ -118,12 +119,13 @@ class Volcano_selection(SelectionPipeline):
 
         # choose top k logged p-value
         if self.strategy == "fold":
-            selected = np.abs(log_fold).loc[significant].sort_values().tail(k)
+            selected = np.abs(log_fold).loc[significant].sort_values().tail(
+                self.k)
             selected_score = pd.Series(log_p.loc[selected.index],
                                        index=selected.index,
                                        name=self.name)
         elif self.strategy == "p":
-            selected = log_p.loc[significant].sort_values().tail(k)
+            selected = log_p.loc[significant].sort_values().tail(self.k)
             if self.absolute:
                 selected_score = pd.Series(
                     np.abs(log_fold.loc[selected.index]),

@@ -14,29 +14,29 @@ class selector(SelectionPipeline):
     
     """
 
-    def __init__(self, RF_trees=1024):
+    def __init__(self, k=-1, RF_trees=1024):
         """
 
         Args:
 
         """
         self.kernels = {
-            "c45": DT_selection(strategy="c45"),
-            "RF_gini": RF_selection(strategy="gini", trees=RF_trees),
+            "c45": DT_selection(k=k, strategy="c45"),
+            "RF_gini": RF_selection(k=k, strategy="gini", trees=RF_trees),
             #"RF_entropy": RF_selection(strategy = "entropy"),
             #"pcRF_permutation": pcRF_selection(),
             #"pcRF_entropy": pcRF_selection(strategy = "entropy"),
             #"pcRF_permute": pcRF_selection(strategy = "permutation"),
-            "AdaBoost": AdaBoost_selection(),
+            "AdaBoost": AdaBoost_selection(k=k),
             #"Lasso": Lasso_selection(center=center),
-            "Lasso_Bisection": Lasso_bisection_selection(),
-            "multi_Lasso": multi_Lasso_selection(),
-            "SVM": SVM_selection(),
-            "XGboost": XGboost_selection(),
-            "Lightgbm": Lightgbm_selection()
+            "Lasso_Bisection": Lasso_bisection_selection(k=k),
+            "multi_Lasso": multi_Lasso_selection(k=k),
+            "SVM": SVM_selection(k=k),
+            "XGboost": XGboost_selection(k=k),
+            "Lightgbm": Lightgbm_selection(k=k)
         }
 
-    def Select(self, x, y, k):
+    def Select(self, x, y):
         """
         Calling all the methods in kernel sequancially.
 
@@ -51,13 +51,38 @@ class selector(SelectionPipeline):
         results = []
         for method in self.kernels:
             print("Using ", method, " to select.")
-            results.append(self.kernels[method].Select(x.copy(), y, k))
+            results.append(self.kernels[method].Select(x.copy(), y))
             print(method, " is done.\n")
 
         name = pd.concat([pd.Series(i.index, name=i.name) for i in results],
                          axis=1)
         importance = pd.concat(results, axis=1)
+        self.selected_score = importance
         return name, importance
+
+    def fit(self, x, y):
+        """
+        sklearn api
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to extract information.
+            y (pandas.Series or a 1D array): The target label for methods.
+        """
+        name, importance = self.Select(x, y)
+
+        return self
+
+    def transform(self, x):
+        z_scores = (self.selected_score - self.selected_score.mean()) / (
+            self.selected_score.std() + 1e-4)
+        z_scores = z_scores.mean(axis=1)
+        z_scores = z_scores[z_scores > 1.]
+
+        return x[z_scores.index]
+
+    def fit_transform(self, x, y):
+        self.fit(x, y)
+        return self.transform(x)
 
     def plotting(self):
         for method in self.kernels:

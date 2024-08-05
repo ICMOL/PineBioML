@@ -42,8 +42,8 @@ class SVM_selection(SelectionPipeline):
 
     &#34;&#34;&#34;
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, k):
+        super().__init__(k=k)
         self.kernel = LinearSVC(dual=&#34;auto&#34;,
                                 class_weight=&#34;balanced&#34;,
                                 random_state=142)
@@ -107,13 +107,18 @@ class multi_SVM_selection(SelectionPipeline):
 <dl>
 <dt id="PineBioML.selection.SVM.SVM_selection"><code class="flex name class">
 <span>class <span class="ident">SVM_selection</span></span>
+<span>(</span><span>k)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Using the support vector of linear support vector classifier as scoring method.</p>
 <p>SVM_selection is scale sensitive in result.</p>
 <p>&lt;<Feature Ranking Using Linear SVM>&gt; section 3.2</p>
 <p>Initialize the selection pipeline.</p>
-<p>Args:</p></div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>k</code></strong> :&ensp;<code>int</code> or <code>None</code></dt>
+<dd>select top k important feature. k = -1 means selecting all, k = None means selecting the feature that have standarized score &gt; 1. Default = None</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -128,8 +133,8 @@ class multi_SVM_selection(SelectionPipeline):
 
     &#34;&#34;&#34;
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, k):
+        super().__init__(k=k)
         self.kernel = LinearSVC(dual=&#34;auto&#34;,
                                 class_weight=&#34;balanced&#34;,
                                 random_state=142)
@@ -211,6 +216,7 @@ class multi_SVM_selection(SelectionPipeline):
 <li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Select" href="index.html#PineBioML.selection.SelectionPipeline.Select">Select</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.fit" href="index.html#PineBioML.selection.SelectionPipeline.fit">fit</a></code></li>
 </ul>
 </li>
 </ul>

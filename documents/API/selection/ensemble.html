@@ -42,29 +42,29 @@ class selector(SelectionPipeline):
     
     &#34;&#34;&#34;
 
-    def __init__(self, RF_trees=1024):
+    def __init__(self, k=-1, RF_trees=1024):
         &#34;&#34;&#34;
 
         Args:
 
         &#34;&#34;&#34;
         self.kernels = {
-            &#34;c45&#34;: DT_selection(strategy=&#34;c45&#34;),
-            &#34;RF_gini&#34;: RF_selection(strategy=&#34;gini&#34;, trees=RF_trees),
+            &#34;c45&#34;: DT_selection(k=k, strategy=&#34;c45&#34;),
+            &#34;RF_gini&#34;: RF_selection(k=k, strategy=&#34;gini&#34;, trees=RF_trees),
             #&#34;RF_entropy&#34;: RF_selection(strategy = &#34;entropy&#34;),
             #&#34;pcRF_permutation&#34;: pcRF_selection(),
             #&#34;pcRF_entropy&#34;: pcRF_selection(strategy = &#34;entropy&#34;),
             #&#34;pcRF_permute&#34;: pcRF_selection(strategy = &#34;permutation&#34;),
-            &#34;AdaBoost&#34;: AdaBoost_selection(),
+            &#34;AdaBoost&#34;: AdaBoost_selection(k=k),
             #&#34;Lasso&#34;: Lasso_selection(center=center),
-            &#34;Lasso_Bisection&#34;: Lasso_bisection_selection(),
-            &#34;multi_Lasso&#34;: multi_Lasso_selection(),
-            &#34;SVM&#34;: SVM_selection(),
-            &#34;XGboost&#34;: XGboost_selection(),
-            &#34;Lightgbm&#34;: Lightgbm_selection()
+            &#34;Lasso_Bisection&#34;: Lasso_bisection_selection(k=k),
+            &#34;multi_Lasso&#34;: multi_Lasso_selection(k=k),
+            &#34;SVM&#34;: SVM_selection(k=k),
+            &#34;XGboost&#34;: XGboost_selection(k=k),
+            &#34;Lightgbm&#34;: Lightgbm_selection(k=k)
         }
 
-    def Select(self, x, y, k):
+    def Select(self, x, y):
         &#34;&#34;&#34;
         Calling all the methods in kernel sequancially.
 
@@ -79,13 +79,38 @@ class selector(SelectionPipeline):
         results = []
         for method in self.kernels:
             print(&#34;Using &#34;, method, &#34; to select.&#34;)
-            results.append(self.kernels[method].Select(x.copy(), y, k))
+            results.append(self.kernels[method].Select(x.copy(), y))
             print(method, &#34; is done.\n&#34;)
 
         name = pd.concat([pd.Series(i.index, name=i.name) for i in results],
                          axis=1)
         importance = pd.concat(results, axis=1)
+        self.selected_score = importance
         return name, importance
+
+    def fit(self, x, y):
+        &#34;&#34;&#34;
+        sklearn api
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to extract information.
+            y (pandas.Series or a 1D array): The target label for methods.
+        &#34;&#34;&#34;
+        name, importance = self.Select(x, y)
+
+        return self
+
+    def transform(self, x):
+        z_scores = (self.selected_score - self.selected_score.mean()) / (
+            self.selected_score.std() + 1e-4)
+        z_scores = z_scores.mean(axis=1)
+        z_scores = z_scores[z_scores &gt; 1.]
+
+        return x[z_scores.index]
+
+    def fit_transform(self, x, y):
+        self.fit(x, y)
+        return self.transform(x)
 
     def plotting(self):
         for method in self.kernels:
@@ -103,7 +128,7 @@ class selector(SelectionPipeline):
 <dl>
 <dt id="PineBioML.selection.ensemble.selector"><code class="flex name class">
 <span>class <span class="ident">selector</span></span>
-<span>(</span><span>RF_trees=1024)</span>
+<span>(</span><span>k=-1, RF_trees=1024)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A functional stack of diffirent methods.</p>
@@ -118,29 +143,29 @@ class selector(SelectionPipeline):
     
     &#34;&#34;&#34;
 
-    def __init__(self, RF_trees=1024):
+    def __init__(self, k=-1, RF_trees=1024):
         &#34;&#34;&#34;
 
         Args:
 
         &#34;&#34;&#34;
         self.kernels = {
-            &#34;c45&#34;: DT_selection(strategy=&#34;c45&#34;),
-            &#34;RF_gini&#34;: RF_selection(strategy=&#34;gini&#34;, trees=RF_trees),
+            &#34;c45&#34;: DT_selection(k=k, strategy=&#34;c45&#34;),
+            &#34;RF_gini&#34;: RF_selection(k=k, strategy=&#34;gini&#34;, trees=RF_trees),
             #&#34;RF_entropy&#34;: RF_selection(strategy = &#34;entropy&#34;),
             #&#34;pcRF_permutation&#34;: pcRF_selection(),
             #&#34;pcRF_entropy&#34;: pcRF_selection(strategy = &#34;entropy&#34;),
             #&#34;pcRF_permute&#34;: pcRF_selection(strategy = &#34;permutation&#34;),
-            &#34;AdaBoost&#34;: AdaBoost_selection(),
+            &#34;AdaBoost&#34;: AdaBoost_selection(k=k),
             #&#34;Lasso&#34;: Lasso_selection(center=center),
-            &#34;Lasso_Bisection&#34;: Lasso_bisection_selection(),
-            &#34;multi_Lasso&#34;: multi_Lasso_selection(),
-            &#34;SVM&#34;: SVM_selection(),
-            &#34;XGboost&#34;: XGboost_selection(),
-            &#34;Lightgbm&#34;: Lightgbm_selection()
+            &#34;Lasso_Bisection&#34;: Lasso_bisection_selection(k=k),
+            &#34;multi_Lasso&#34;: multi_Lasso_selection(k=k),
+            &#34;SVM&#34;: SVM_selection(k=k),
+            &#34;XGboost&#34;: XGboost_selection(k=k),
+            &#34;Lightgbm&#34;: Lightgbm_selection(k=k)
         }
 
-    def Select(self, x, y, k):
+    def Select(self, x, y):
         &#34;&#34;&#34;
         Calling all the methods in kernel sequancially.
 
@@ -155,13 +180,38 @@ class selector(SelectionPipeline):
         results = []
         for method in self.kernels:
             print(&#34;Using &#34;, method, &#34; to select.&#34;)
-            results.append(self.kernels[method].Select(x.copy(), y, k))
+            results.append(self.kernels[method].Select(x.copy(), y))
             print(method, &#34; is done.\n&#34;)
 
         name = pd.concat([pd.Series(i.index, name=i.name) for i in results],
                          axis=1)
         importance = pd.concat(results, axis=1)
+        self.selected_score = importance
         return name, importance
+
+    def fit(self, x, y):
+        &#34;&#34;&#34;
+        sklearn api
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to extract information.
+            y (pandas.Series or a 1D array): The target label for methods.
+        &#34;&#34;&#34;
+        name, importance = self.Select(x, y)
+
+        return self
+
+    def transform(self, x):
+        z_scores = (self.selected_score - self.selected_score.mean()) / (
+            self.selected_score.std() + 1e-4)
+        z_scores = z_scores.mean(axis=1)
+        z_scores = z_scores[z_scores &gt; 1.]
+
+        return x[z_scores.index]
+
+    def fit_transform(self, x, y):
+        self.fit(x, y)
+        return self.transform(x)
 
     def plotting(self):
         for method in self.kernels:
@@ -174,7 +224,7 @@ class selector(SelectionPipeline):
 <h3>Methods</h3>
 <dl>
 <dt id="PineBioML.selection.ensemble.selector.Select"><code class="name flex">
-<span>def <span class="ident">Select</span></span>(<span>self, x, y, k)</span>
+<span>def <span class="ident">Select</span></span>(<span>self, x, y)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Calling all the methods in kernel sequancially.</p>
@@ -196,7 +246,7 @@ class selector(SelectionPipeline):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def Select(self, x, y, k):
+<pre><code class="python">def Select(self, x, y):
     &#34;&#34;&#34;
     Calling all the methods in kernel sequancially.
 
@@ -211,13 +261,28 @@ class selector(SelectionPipeline):
     results = []
     for method in self.kernels:
         print(&#34;Using &#34;, method, &#34; to select.&#34;)
-        results.append(self.kernels[method].Select(x.copy(), y, k))
+        results.append(self.kernels[method].Select(x.copy(), y))
         print(method, &#34; is done.\n&#34;)
 
     name = pd.concat([pd.Series(i.index, name=i.name) for i in results],
                      axis=1)
     importance = pd.concat(results, axis=1)
+    self.selected_score = importance
     return name, importance</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.selection.ensemble.selector.fit_transform"><code class="name flex">
+<span>def <span class="ident">fit_transform</span></span>(<span>self, x, y)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit_transform(self, x, y):
+    self.fit(x, y)
+    return self.transform(x)</code></pre>
 </details>
 </dd>
 <dt id="PineBioML.selection.ensemble.selector.plotting"><code class="name flex">
@@ -234,6 +299,24 @@ class selector(SelectionPipeline):
         self.kernels[method].plotting()</code></pre>
 </details>
 </dd>
+<dt id="PineBioML.selection.ensemble.selector.transform"><code class="name flex">
+<span>def <span class="ident">transform</span></span>(<span>self, x)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def transform(self, x):
+    z_scores = (self.selected_score - self.selected_score.mean()) / (
+        self.selected_score.std() + 1e-4)
+    z_scores = z_scores.mean(axis=1)
+    z_scores = z_scores[z_scores &gt; 1.]
+
+    return x[z_scores.index]</code></pre>
+</details>
+</dd>
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
@@ -244,6 +327,7 @@ class selector(SelectionPipeline):
 <li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Scoring" href="index.html#PineBioML.selection.SelectionPipeline.Scoring">Scoring</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.fit" href="index.html#PineBioML.selection.SelectionPipeline.fit">fit</a></code></li>
 </ul>
 </li>
 </ul>
@@ -268,7 +352,9 @@ class selector(SelectionPipeline):
 <h4><code><a title="PineBioML.selection.ensemble.selector" href="#PineBioML.selection.ensemble.selector">selector</a></code></h4>
 <ul class="">
 <li><code><a title="PineBioML.selection.ensemble.selector.Select" href="#PineBioML.selection.ensemble.selector.Select">Select</a></code></li>
+<li><code><a title="PineBioML.selection.ensemble.selector.fit_transform" href="#PineBioML.selection.ensemble.selector.fit_transform">fit_transform</a></code></li>
 <li><code><a title="PineBioML.selection.ensemble.selector.plotting" href="#PineBioML.selection.ensemble.selector.plotting">plotting</a></code></li>
+<li><code><a title="PineBioML.selection.ensemble.selector.transform" href="#PineBioML.selection.ensemble.selector.transform">transform</a></code></li>
 </ul>
 </li>
 </ul>

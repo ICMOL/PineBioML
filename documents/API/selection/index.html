@@ -58,12 +58,14 @@ class SelectionPipeline:
 
     &#34;&#34;&#34;
 
-    def __init__(self):
+    def __init__(self, k=None):
         &#34;&#34;&#34;
         Initialize the selection pipeline.
 
         Args:
+            k (int or None): select top k important feature. k = -1 means selecting all, k = None means selecting the feature that have standarized score &gt; 1. Default = None
         &#34;&#34;&#34;
+        self.k = k
         self.name = &#34;base&#34;
         self.scores = None
         self.selected_score = None
@@ -82,7 +84,7 @@ class SelectionPipeline:
         self.scores = x.max().sort_values(ascending=False)  # top is better
         return self.scores.copy()
 
-    def Choose(self, scores, k):
+    def Choose(self, scores):
         &#34;&#34;&#34;
         Choosing features according to scores.
 
@@ -93,14 +95,18 @@ class SelectionPipeline:
         Returns:
             pandas.Series or pandas.DataFrame: The score for k selected features. May less than k.
         &#34;&#34;&#34;
-        self.selected_score = scores.head(k)
+        self.selected_score = scores.head(self.k)
         self.selected_score = self.selected_score[self.selected_score != 0]
 
         return self.selected_score.copy()
 
-    def Select(self, x, y, k):
+    def Select(self, x, y):
         &#34;&#34;&#34;
-        A functional stack of: Scoring -&gt; Choosing
+        A functional stack of: Scoring -&gt; Choosing    
+        if k == None, choose k such that:    
+            z-scores = (scores - scores.mean())/scores.std()    
+            k = # (z-scores &gt; 1)
+            
 
         Args:
             x (pandas.DataFrame or a 2D array): The data to extract information.
@@ -112,8 +118,33 @@ class SelectionPipeline:
         &#34;&#34;&#34;
         # x should be a pd dataframe or a numpy array without missing value
         scores = self.Scoring(x, y)
-        selected_score = self.Choose(scores, k)
+        if self.k:
+            # k not None
+            selected_score = self.Choose(scores)
+        else:
+            # k is None
+            z_scores = (scores - scores.mean()) / (scores.std() + 1e-4)
+            selected_score = scores[z_scores &gt; 1.]
+
         return selected_score
+
+    def fit(self, x, y):
+        &#34;&#34;&#34;
+        sklearn api
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to extract information.
+            y (pandas.Series or a 1D array): The target label for methods.
+        &#34;&#34;&#34;
+        self.Select(x, y)
+        return self
+
+    def transform(self, x):
+        return x[self.selected_score.index]
+
+    def fit_transform(self, x, y):
+        self.fit(x, y)
+        return self.transform(x)
 
     def Plotting(self):
         &#34;&#34;&#34;
@@ -222,12 +253,17 @@ class SelectionPipeline:
 <dl>
 <dt id="PineBioML.selection.SelectionPipeline"><code class="flex name class">
 <span>class <span class="ident">SelectionPipeline</span></span>
+<span>(</span><span>k=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>The basic pipeline for selection methods. It includes 2 parts: Scoring and Choosing.
 The detail methods is to be determinded.</p>
 <p>Initialize the selection pipeline.</p>
-<p>Args:</p></div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>k</code></strong> :&ensp;<code>int</code> or <code>None</code></dt>
+<dd>select top k important feature. k = -1 means selecting all, k = None means selecting the feature that have standarized score &gt; 1. Default = None</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -239,12 +275,14 @@ The detail methods is to be determinded.</p>
 
     &#34;&#34;&#34;
 
-    def __init__(self):
+    def __init__(self, k=None):
         &#34;&#34;&#34;
         Initialize the selection pipeline.
 
         Args:
+            k (int or None): select top k important feature. k = -1 means selecting all, k = None means selecting the feature that have standarized score &gt; 1. Default = None
         &#34;&#34;&#34;
+        self.k = k
         self.name = &#34;base&#34;
         self.scores = None
         self.selected_score = None
@@ -263,7 +301,7 @@ The detail methods is to be determinded.</p>
         self.scores = x.max().sort_values(ascending=False)  # top is better
         return self.scores.copy()
 
-    def Choose(self, scores, k):
+    def Choose(self, scores):
         &#34;&#34;&#34;
         Choosing features according to scores.
 
@@ -274,14 +312,18 @@ The detail methods is to be determinded.</p>
         Returns:
             pandas.Series or pandas.DataFrame: The score for k selected features. May less than k.
         &#34;&#34;&#34;
-        self.selected_score = scores.head(k)
+        self.selected_score = scores.head(self.k)
         self.selected_score = self.selected_score[self.selected_score != 0]
 
         return self.selected_score.copy()
 
-    def Select(self, x, y, k):
+    def Select(self, x, y):
         &#34;&#34;&#34;
-        A functional stack of: Scoring -&gt; Choosing
+        A functional stack of: Scoring -&gt; Choosing    
+        if k == None, choose k such that:    
+            z-scores = (scores - scores.mean())/scores.std()    
+            k = # (z-scores &gt; 1)
+            
 
         Args:
             x (pandas.DataFrame or a 2D array): The data to extract information.
@@ -293,8 +335,33 @@ The detail methods is to be determinded.</p>
         &#34;&#34;&#34;
         # x should be a pd dataframe or a numpy array without missing value
         scores = self.Scoring(x, y)
-        selected_score = self.Choose(scores, k)
+        if self.k:
+            # k not None
+            selected_score = self.Choose(scores)
+        else:
+            # k is None
+            z_scores = (scores - scores.mean()) / (scores.std() + 1e-4)
+            selected_score = scores[z_scores &gt; 1.]
+
         return selected_score
+
+    def fit(self, x, y):
+        &#34;&#34;&#34;
+        sklearn api
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to extract information.
+            y (pandas.Series or a 1D array): The target label for methods.
+        &#34;&#34;&#34;
+        self.Select(x, y)
+        return self
+
+    def transform(self, x):
+        return x[self.selected_score.index]
+
+    def fit_transform(self, x, y):
+        self.fit(x, y)
+        return self.transform(x)
 
     def Plotting(self):
         &#34;&#34;&#34;
@@ -338,7 +405,7 @@ The detail methods is to be determinded.</p>
 <h3>Methods</h3>
 <dl>
 <dt id="PineBioML.selection.SelectionPipeline.Choose"><code class="name flex">
-<span>def <span class="ident">Choose</span></span>(<span>self, scores, k)</span>
+<span>def <span class="ident">Choose</span></span>(<span>self, scores)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Choosing features according to scores.</p>
@@ -358,7 +425,7 @@ The detail methods is to be determinded.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def Choose(self, scores, k):
+<pre><code class="python">def Choose(self, scores):
     &#34;&#34;&#34;
     Choosing features according to scores.
 
@@ -369,7 +436,7 @@ The detail methods is to be determinded.</p>
     Returns:
         pandas.Series or pandas.DataFrame: The score for k selected features. May less than k.
     &#34;&#34;&#34;
-    self.selected_score = scores.head(k)
+    self.selected_score = scores.head(self.k)
     self.selected_score = self.selected_score[self.selected_score != 0]
 
     return self.selected_score.copy()</code></pre>
@@ -466,10 +533,16 @@ The detail methods is to be determinded.</p>
 </details>
 </dd>
 <dt id="PineBioML.selection.SelectionPipeline.Select"><code class="name flex">
-<span>def <span class="ident">Select</span></span>(<span>self, x, y, k)</span>
+<span>def <span class="ident">Select</span></span>(<span>self, x, y)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>A functional stack of: Scoring -&gt; Choosing</p>
+<div class="desc"><p>A functional stack of: Scoring -&gt; Choosing
+<br>
+if k == None, choose k such that:
+<br>
+z-scores = (scores - scores.mean())/scores.std()
+<br>
+k = # (z-scores &gt; 1)</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
@@ -488,9 +561,13 @@ The detail methods is to be determinded.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def Select(self, x, y, k):
+<pre><code class="python">def Select(self, x, y):
     &#34;&#34;&#34;
-    A functional stack of: Scoring -&gt; Choosing
+    A functional stack of: Scoring -&gt; Choosing    
+    if k == None, choose k such that:    
+        z-scores = (scores - scores.mean())/scores.std()    
+        k = # (z-scores &gt; 1)
+        
 
     Args:
         x (pandas.DataFrame or a 2D array): The data to extract information.
@@ -502,8 +579,70 @@ The detail methods is to be determinded.</p>
     &#34;&#34;&#34;
     # x should be a pd dataframe or a numpy array without missing value
     scores = self.Scoring(x, y)
-    selected_score = self.Choose(scores, k)
+    if self.k:
+        # k not None
+        selected_score = self.Choose(scores)
+    else:
+        # k is None
+        z_scores = (scores - scores.mean()) / (scores.std() + 1e-4)
+        selected_score = scores[z_scores &gt; 1.]
+
     return selected_score</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.selection.SelectionPipeline.fit"><code class="name flex">
+<span>def <span class="ident">fit</span></span>(<span>self, x, y)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>sklearn api</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
+<dd>The data to extract information.</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
+<dd>The target label for methods.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit(self, x, y):
+    &#34;&#34;&#34;
+    sklearn api
+
+    Args:
+        x (pandas.DataFrame or a 2D array): The data to extract information.
+        y (pandas.Series or a 1D array): The target label for methods.
+    &#34;&#34;&#34;
+    self.Select(x, y)
+    return self</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.selection.SelectionPipeline.fit_transform"><code class="name flex">
+<span>def <span class="ident">fit_transform</span></span>(<span>self, x, y)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit_transform(self, x, y):
+    self.fit(x, y)
+    return self.transform(x)</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.selection.SelectionPipeline.transform"><code class="name flex">
+<span>def <span class="ident">transform</span></span>(<span>self, x)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def transform(self, x):
+    return x[self.selected_score.index]</code></pre>
 </details>
 </dd>
 </dl>
@@ -549,6 +688,9 @@ The detail methods is to be determinded.</p>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Scoring" href="#PineBioML.selection.SelectionPipeline.Scoring">Scoring</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Select" href="#PineBioML.selection.SelectionPipeline.Select">Select</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.fit" href="#PineBioML.selection.SelectionPipeline.fit">fit</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.fit_transform" href="#PineBioML.selection.SelectionPipeline.fit_transform">fit_transform</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.transform" href="#PineBioML.selection.SelectionPipeline.transform">transform</a></code></li>
 </ul>
 </li>
 </ul>

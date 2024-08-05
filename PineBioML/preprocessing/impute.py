@@ -35,7 +35,7 @@ class imputer():
         self.normalizer = Normalizer(center=center, scale=scale)
         self.fitted = False
 
-    def fit(self, x, y=None):
+    def fit(self, x, y=None, sample_weight=None):
         """
         Fit x.
     
@@ -52,14 +52,14 @@ class imputer():
 
         # normalize
         self.normalizer.fit(x, y)
-        x, y = self.normalizer.transform(x, y)
+        x = self.normalizer.transform(x)
 
         # call the kernel
         self.kernel.fit(x)
         self.fitted = True
         return self
 
-    def transform(self, x, y=None):
+    def transform(self, x):
         """
         Transform x
 
@@ -79,7 +79,7 @@ class imputer():
         idx = x.index
 
         # normalize
-        x, y = self.normalizer.transform(x, y)
+        x = self.normalizer.transform(x)
 
         # call the kernel
         x = self.kernel.transform(x)
@@ -88,10 +88,10 @@ class imputer():
         x = pd.DataFrame(x, columns=columns, index=idx)
 
         # inverse normalize
-        x, y = self.normalizer.inverse_transform(x, y)
-        return x, y
+        x = self.normalizer.inverse_transform(x)
+        return x
 
-    def fit_transform(self, x, y=None):
+    def fit_transform(self, x, y=None, sample_weight=None):
         """
         A functional stack of fit and transform.
 
@@ -103,8 +103,8 @@ class imputer():
             pandas.DataFrame or a 2D array: imputed x
         """
         self.fit(x, y)
-        x, y = self.transform(x, y)
-        return x, y
+        x = self.transform(x)
+        return x
 
 
 class knn_imputer(imputer):

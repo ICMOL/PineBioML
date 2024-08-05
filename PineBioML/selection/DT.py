@@ -11,14 +11,14 @@ class DT_selection(SelectionPipeline):
     Using Decision stump (a single Decision tree) to scoring features.
     """
 
-    def __init__(self, bins=10, q=0.05, strategy="c45"):
+    def __init__(self, k, bins=10, q=0.05, strategy="c45"):
         """
         Args:
             bins (int, optional): Bins to esimate data distribution entropy. Defaults to 10.
             q (float, optional): Clip data values out of [q, 1-q] percentile to reduce the affect of outliers while estimate entropy. Defaults to 0.05.
             strategy (str, optional): One of {"id3", "c45"}. The strategy to build decision tree. Defaults to "c45".
         """
-        super().__init__()
+        super().__init__(k=k)
         self.bins = bins - 1
         self.q = q
         self.strategy = strategy

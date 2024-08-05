@@ -45,13 +45,13 @@ class Lasso_selection(SelectionPipeline):
 
     &#34;&#34;&#34;
 
-    def __init__(self, unbalanced=True, objective=&#34;Regression&#34;):
+    def __init__(self, k, unbalanced=True, objective=&#34;Regression&#34;):
         &#34;&#34;&#34;
         Args:
             unbalanced (bool, optional): False to imply class weight to samples. Defaults to True.
             objective (str, optional): one of {&#34;Regression&#34;, &#34;BinaryClassification&#34;}
         &#34;&#34;&#34;
-        super().__init__()
+        super().__init__(k=k)
 
         # parameters
         self.objective = objective
@@ -156,13 +156,13 @@ class Lasso_bisection_selection(SelectionPipeline):
 
     &#34;&#34;&#34;
 
-    def __init__(self, unbalanced=True, objective=&#34;regression&#34;):
+    def __init__(self, k, unbalanced=True, objective=&#34;regression&#34;):
         &#34;&#34;&#34;
         Args:
             unbalanced (bool, optional): False to imply class weight to samples. Defaults to True.
             objective (str, optional): one of {&#34;Regression&#34;, &#34;BinaryClassification&#34;}
         &#34;&#34;&#34;
-        super().__init__()
+        super().__init__(k=k)
         self.upper_init = 1e+3
         self.lower_init = 1e-3
         self.objective = objective
@@ -184,7 +184,7 @@ class Lasso_bisection_selection(SelectionPipeline):
                                       random_state=142,
                                       class_weight=&#34;balanced&#34;)
 
-    def Select(self, x, y, k):
+    def Select(self, x, y):
         &#34;&#34;&#34;
         Using Lasso (L1 penalty) regression as scoring method.  More specifically, L1 penalty will force feature weights to be zeros. 
         As the coefficient of penalty increases, more and more weights of features got killed and the important feature will remain.
@@ -238,7 +238,7 @@ class Lasso_bisection_selection(SelectionPipeline):
         #print(lower, lower_alive)
 
         counter = 0
-        while not lower_alive == k:
+        while not lower_alive == self.k:
             alpha = (upper + lower) / 2
             lassoes.append(self.create_kernel(C=alpha))
             lassoes[-1].fit(X_train, y_train, weights)
@@ -248,7 +248,7 @@ class Lasso_bisection_selection(SelectionPipeline):
             alive = (lassoes[-1].coef_ != 0).sum()
             #print(alive, alpha)
 
-            if alive &gt;= k:
+            if alive &gt;= self.k:
                 lower = alpha
                 lower_alive = alive
             else:
@@ -264,7 +264,7 @@ class Lasso_bisection_selection(SelectionPipeline):
         self.scores = pd.Series(np.abs(coef[-1]).flatten(),
                                 index=x.columns,
                                 name=self.name).sort_values(ascending=False)
-        self.selected_score = self.scores.head(k)
+        self.selected_score = self.scores.head(self.k)
         return self.selected_score
 
 
@@ -274,23 +274,22 @@ class multi_Lasso_selection(SelectionPipeline):
     That leads to diffirent behavior between select k features in a time and select k//n features in n times.
     &#34;&#34;&#34;
 
-    def __init__(self, objective=&#34;regression&#34;):
+    def __init__(self, k, objective=&#34;regression&#34;):
         &#34;&#34;&#34;
         Args:
             objective (str, optional): one of {&#34;Regression&#34;, &#34;BinaryClassification&#34;}
         &#34;&#34;&#34;
-        super().__init__()
+        super().__init__(k=k)
         self.name = &#34;multi_Lasso&#34;
         self.objective = objective
 
-    def Select(self, x, y, k, n=5):
+    def Select(self, x, y, n=5):
         &#34;&#34;&#34;
         Select k//n features for n times, and then concatenate the results.
 
         Args:
             x (pandas.DataFrame or a 2D array): The data to extract information.
             y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-            k (int): Number of feature to select. The result may less than k
             n (int, optional): Number of batch which splits k to select. Defaults to 10.
 
         Returns:
@@ -298,14 +297,15 @@ class multi_Lasso_selection(SelectionPipeline):
             
         &#34;&#34;&#34;
         result = []
-        if k == -1:
-            k = x.shape[0]
-        batch_size = k // n + 1
+        if self.k == -1:
+            self.k = x.shape[0]
+        batch_size = self.k // n + 1
 
         for i in range(n):
             result.append(
-                Lasso_bisection_selection(objective=self.objective).Select(
-                    x, y, k=batch_size))
+                Lasso_bisection_selection(k=batch_size,
+                                          objective=self.objective).Select(
+                                              x, y))
             x = x.drop(result[-1].index, axis=1)
             if x.shape[1] == 0:
                 break
@@ -313,7 +313,7 @@ class multi_Lasso_selection(SelectionPipeline):
         result = result - result.min()
         result.name = self.name
 
-        self.selected_score = result.sort_values(ascending=False).head(k)
+        self.selected_score = result.sort_values(ascending=False).head(self.k)
         return self.selected_score.copy()</code></pre>
 </details>
 </section>
@@ -328,7 +328,7 @@ class multi_Lasso_selection(SelectionPipeline):
 <dl>
 <dt id="PineBioML.selection.Lasso.Lasso_bisection_selection"><code class="flex name class">
 <span>class <span class="ident">Lasso_bisection_selection</span></span>
-<span>(</span><span>unbalanced=True, objective='regression')</span>
+<span>(</span><span>k, unbalanced=True, objective='regression')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Using Lasso (L1 penalty) regression as scoring method.
@@ -358,13 +358,13 @@ As the coefficient of penalty increases, more and more weights of features got k
 
     &#34;&#34;&#34;
 
-    def __init__(self, unbalanced=True, objective=&#34;regression&#34;):
+    def __init__(self, k, unbalanced=True, objective=&#34;regression&#34;):
         &#34;&#34;&#34;
         Args:
             unbalanced (bool, optional): False to imply class weight to samples. Defaults to True.
             objective (str, optional): one of {&#34;Regression&#34;, &#34;BinaryClassification&#34;}
         &#34;&#34;&#34;
-        super().__init__()
+        super().__init__(k=k)
         self.upper_init = 1e+3
         self.lower_init = 1e-3
         self.objective = objective
@@ -386,7 +386,7 @@ As the coefficient of penalty increases, more and more weights of features got k
                                       random_state=142,
                                       class_weight=&#34;balanced&#34;)
 
-    def Select(self, x, y, k):
+    def Select(self, x, y):
         &#34;&#34;&#34;
         Using Lasso (L1 penalty) regression as scoring method.  More specifically, L1 penalty will force feature weights to be zeros. 
         As the coefficient of penalty increases, more and more weights of features got killed and the important feature will remain.
@@ -440,7 +440,7 @@ As the coefficient of penalty increases, more and more weights of features got k
         #print(lower, lower_alive)
 
         counter = 0
-        while not lower_alive == k:
+        while not lower_alive == self.k:
             alpha = (upper + lower) / 2
             lassoes.append(self.create_kernel(C=alpha))
             lassoes[-1].fit(X_train, y_train, weights)
@@ -450,7 +450,7 @@ As the coefficient of penalty increases, more and more weights of features got k
             alive = (lassoes[-1].coef_ != 0).sum()
             #print(alive, alpha)
 
-            if alive &gt;= k:
+            if alive &gt;= self.k:
                 lower = alpha
                 lower_alive = alive
             else:
@@ -466,7 +466,7 @@ As the coefficient of penalty increases, more and more weights of features got k
         self.scores = pd.Series(np.abs(coef[-1]).flatten(),
                                 index=x.columns,
                                 name=self.name).sort_values(ascending=False)
-        self.selected_score = self.scores.head(k)
+        self.selected_score = self.scores.head(self.k)
         return self.selected_score</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -476,7 +476,7 @@ As the coefficient of penalty increases, more and more weights of features got k
 <h3>Methods</h3>
 <dl>
 <dt id="PineBioML.selection.Lasso.Lasso_bisection_selection.Select"><code class="name flex">
-<span>def <span class="ident">Select</span></span>(<span>self, x, y, k)</span>
+<span>def <span class="ident">Select</span></span>(<span>self, x, y)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Using Lasso (L1 penalty) regression as scoring method.
@@ -501,7 +501,7 @@ As the coefficient of penalty increases, more and more weights of features got k
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def Select(self, x, y, k):
+<pre><code class="python">def Select(self, x, y):
     &#34;&#34;&#34;
     Using Lasso (L1 penalty) regression as scoring method.  More specifically, L1 penalty will force feature weights to be zeros. 
     As the coefficient of penalty increases, more and more weights of features got killed and the important feature will remain.
@@ -555,7 +555,7 @@ As the coefficient of penalty increases, more and more weights of features got k
     #print(lower, lower_alive)
 
     counter = 0
-    while not lower_alive == k:
+    while not lower_alive == self.k:
         alpha = (upper + lower) / 2
         lassoes.append(self.create_kernel(C=alpha))
         lassoes[-1].fit(X_train, y_train, weights)
@@ -565,7 +565,7 @@ As the coefficient of penalty increases, more and more weights of features got k
         alive = (lassoes[-1].coef_ != 0).sum()
         #print(alive, alpha)
 
-        if alive &gt;= k:
+        if alive &gt;= self.k:
             lower = alpha
             lower_alive = alive
         else:
@@ -581,7 +581,7 @@ As the coefficient of penalty increases, more and more weights of features got k
     self.scores = pd.Series(np.abs(coef[-1]).flatten(),
                             index=x.columns,
                             name=self.name).sort_values(ascending=False)
-    self.selected_score = self.scores.head(k)
+    self.selected_score = self.scores.head(self.k)
     return self.selected_score</code></pre>
 </details>
 </dd>
@@ -615,13 +615,14 @@ As the coefficient of penalty increases, more and more weights of features got k
 <li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Scoring" href="index.html#PineBioML.selection.SelectionPipeline.Scoring">Scoring</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.fit" href="index.html#PineBioML.selection.SelectionPipeline.fit">fit</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
 <dt id="PineBioML.selection.Lasso.Lasso_selection"><code class="flex name class">
 <span>class <span class="ident">Lasso_selection</span></span>
-<span>(</span><span>unbalanced=True, objective='Regression')</span>
+<span>(</span><span>k, unbalanced=True, objective='Regression')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Using Lasso (L1 penalty) regression as scoring method.
@@ -651,13 +652,13 @@ As the coefficient of penalty increases, more and more weights of features got k
 
     &#34;&#34;&#34;
 
-    def __init__(self, unbalanced=True, objective=&#34;Regression&#34;):
+    def __init__(self, k, unbalanced=True, objective=&#34;Regression&#34;):
         &#34;&#34;&#34;
         Args:
             unbalanced (bool, optional): False to imply class weight to samples. Defaults to True.
             objective (str, optional): one of {&#34;Regression&#34;, &#34;BinaryClassification&#34;}
         &#34;&#34;&#34;
-        super().__init__()
+        super().__init__(k=k)
 
         # parameters
         self.objective = objective
@@ -888,13 +889,14 @@ kfold validation performance threshold.</p></div>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Select" href="index.html#PineBioML.selection.SelectionPipeline.Select">Select</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.fit" href="index.html#PineBioML.selection.SelectionPipeline.fit">fit</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
 <dt id="PineBioML.selection.Lasso.multi_Lasso_selection"><code class="flex name class">
 <span>class <span class="ident">multi_Lasso_selection</span></span>
-<span>(</span><span>objective='regression')</span>
+<span>(</span><span>k, objective='regression')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A stack of Lasso_bisection_selection. Because of collinearity, if there are a batch of featres with high corelation, only one of them will remain.
@@ -914,23 +916,22 @@ That leads to diffirent behavior between select k features in a time and select 
     That leads to diffirent behavior between select k features in a time and select k//n features in n times.
     &#34;&#34;&#34;
 
-    def __init__(self, objective=&#34;regression&#34;):
+    def __init__(self, k, objective=&#34;regression&#34;):
         &#34;&#34;&#34;
         Args:
             objective (str, optional): one of {&#34;Regression&#34;, &#34;BinaryClassification&#34;}
         &#34;&#34;&#34;
-        super().__init__()
+        super().__init__(k=k)
         self.name = &#34;multi_Lasso&#34;
         self.objective = objective
 
-    def Select(self, x, y, k, n=5):
+    def Select(self, x, y, n=5):
         &#34;&#34;&#34;
         Select k//n features for n times, and then concatenate the results.
 
         Args:
             x (pandas.DataFrame or a 2D array): The data to extract information.
             y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-            k (int): Number of feature to select. The result may less than k
             n (int, optional): Number of batch which splits k to select. Defaults to 10.
 
         Returns:
@@ -938,14 +939,15 @@ That leads to diffirent behavior between select k features in a time and select 
             
         &#34;&#34;&#34;
         result = []
-        if k == -1:
-            k = x.shape[0]
-        batch_size = k // n + 1
+        if self.k == -1:
+            self.k = x.shape[0]
+        batch_size = self.k // n + 1
 
         for i in range(n):
             result.append(
-                Lasso_bisection_selection(objective=self.objective).Select(
-                    x, y, k=batch_size))
+                Lasso_bisection_selection(k=batch_size,
+                                          objective=self.objective).Select(
+                                              x, y))
             x = x.drop(result[-1].index, axis=1)
             if x.shape[1] == 0:
                 break
@@ -953,7 +955,7 @@ That leads to diffirent behavior between select k features in a time and select 
         result = result - result.min()
         result.name = self.name
 
-        self.selected_score = result.sort_values(ascending=False).head(k)
+        self.selected_score = result.sort_values(ascending=False).head(self.k)
         return self.selected_score.copy()</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -963,7 +965,7 @@ That leads to diffirent behavior between select k features in a time and select 
 <h3>Methods</h3>
 <dl>
 <dt id="PineBioML.selection.Lasso.multi_Lasso_selection.Select"><code class="name flex">
-<span>def <span class="ident">Select</span></span>(<span>self, x, y, k, n=5)</span>
+<span>def <span class="ident">Select</span></span>(<span>self, x, y, n=5)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Select k//n features for n times, and then concatenate the results.</p>
@@ -973,8 +975,6 @@ That leads to diffirent behavior between select k features in a time and select 
 <dd>The data to extract information.</dd>
 <dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
 <dd>The target label for methods. Defaults to None.</dd>
-<dt><strong><code>k</code></strong> :&ensp;<code>int</code></dt>
-<dd>Number of feature to select. The result may less than k</dd>
 <dt><strong><code>n</code></strong> :&ensp;<code>int</code>, optional</dt>
 <dd>Number of batch which splits k to select. Defaults to 10.</dd>
 </dl>
@@ -987,14 +987,13 @@ That leads to diffirent behavior between select k features in a time and select 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def Select(self, x, y, k, n=5):
+<pre><code class="python">def Select(self, x, y, n=5):
     &#34;&#34;&#34;
     Select k//n features for n times, and then concatenate the results.
 
     Args:
         x (pandas.DataFrame or a 2D array): The data to extract information.
         y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-        k (int): Number of feature to select. The result may less than k
         n (int, optional): Number of batch which splits k to select. Defaults to 10.
 
     Returns:
@@ -1002,14 +1001,15 @@ That leads to diffirent behavior between select k features in a time and select 
         
     &#34;&#34;&#34;
     result = []
-    if k == -1:
-        k = x.shape[0]
-    batch_size = k // n + 1
+    if self.k == -1:
+        self.k = x.shape[0]
+    batch_size = self.k // n + 1
 
     for i in range(n):
         result.append(
-            Lasso_bisection_selection(objective=self.objective).Select(
-                x, y, k=batch_size))
+            Lasso_bisection_selection(k=batch_size,
+                                      objective=self.objective).Select(
+                                          x, y))
         x = x.drop(result[-1].index, axis=1)
         if x.shape[1] == 0:
             break
@@ -1017,7 +1017,7 @@ That leads to diffirent behavior between select k features in a time and select 
     result = result - result.min()
     result.name = self.name
 
-    self.selected_score = result.sort_values(ascending=False).head(k)
+    self.selected_score = result.sort_values(ascending=False).head(self.k)
     return self.selected_score.copy()</code></pre>
 </details>
 </dd>
@@ -1031,6 +1031,7 @@ That leads to diffirent behavior between select k features in a time and select 
 <li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Scoring" href="index.html#PineBioML.selection.SelectionPipeline.Scoring">Scoring</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.fit" href="index.html#PineBioML.selection.SelectionPipeline.fit">fit</a></code></li>
 </ul>
 </li>
 </ul>

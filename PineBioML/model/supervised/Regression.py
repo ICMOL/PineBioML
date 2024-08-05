@@ -110,7 +110,7 @@ class RandomForest_tuner(Basic_tuner):
                 "bootstrap": self.using_oob,
                 "oob_score": self.using_oob,
                 "n_jobs": -1,
-                "random_state": self.seed_tape[trial.number],
+                "random_state": self.kernel_seed,
                 "verbose": 0,
             }
         else:
@@ -134,7 +134,7 @@ class RandomForest_tuner(Basic_tuner):
                 "n_jobs":
                 -1,
                 "random_state":
-                self.seed_tape[trial.number],
+                self.kernel_seed_tape[trial.number],
                 "verbose":
                 0,
             }
@@ -158,9 +158,10 @@ class RandomForest_tuner(Basic_tuner):
                 classifier_obj,
                 self.x,
                 self.y,
-                cv=StratifiedKFold(n_splits=5,
-                                   shuffle=True,
-                                   random_state=self.seed_tape[trial.number]),
+                cv=StratifiedKFold(
+                    n_splits=5,
+                    shuffle=True,
+                    random_state=self.valid_seed_tape[trial.number]),
                 scoring=self.metric)
             score = score.mean()
         return score
@@ -200,7 +201,7 @@ class SVM_tuner(Basic_tuner):
         if default:
             parms = {
                 "kernel": self.kernel,
-                "random_state": self.seed_tape[trial.number],
+                "random_state": self.kernel_seed,
             }
         else:
             # scaling penalty: https://scikit-learn.org/stable/auto_examples/svm/plot_svm_scale_c.html#sphx-glr-auto-examples-svm-plot-svm-scale-c-py
@@ -215,7 +216,7 @@ class SVM_tuner(Basic_tuner):
                 "gamma":
                 "auto",
                 "random_state":
-                self.seed_tape[trial.number]
+                self.kernel_seed_tape[trial.number]
             }
         svm = SVR(**parms)
         return svm
@@ -260,7 +261,7 @@ class XGBoost_tuner(Basic_tuner):
         if default:
             parms = {
                 "n_jobs": None,
-                "random_state": self.seed_tape[trial.number],
+                "random_state": self.kernel_seed,
                 "verbosity": 0
             }
         else:
@@ -276,7 +277,7 @@ class XGBoost_tuner(Basic_tuner):
                 "subsample":
                 trial.suggest_float('subsample', 0.5, 0.95, log=True),
                 "colsample_bytree":
-                trial.suggest_float('colsample_bytree', 0.7, 1, log=True),
+                trial.suggest_float('colsample_bytree', 0.8, 1),
                 "min_child_weight":
                 trial.suggest_float('min_child_weight', 1e-2, 1e+2, log=True),
                 "reg_lambda":
@@ -284,7 +285,7 @@ class XGBoost_tuner(Basic_tuner):
                 "n_jobs":
                 None,
                 "random_state":
-                self.seed_tape[trial.number],
+                self.kernel_seed_tape[trial.number],
                 "verbosity":
                 0,
             }
@@ -329,7 +330,7 @@ class LighGBM_tuner(Basic_tuner):
         if default:
             parms = {
                 "n_jobs": None,
-                "random_state": self.seed_tape[trial.number],
+                "random_state": self.kernel_seed,
                 "verbosity": -1
             }
         else:
@@ -364,7 +365,7 @@ class LighGBM_tuner(Basic_tuner):
                 "n_jobs":
                 None,
                 "random_state":
-                self.seed_tape[trial.number],
+                self.kernel_seed_tape[trial.number],
                 "verbosity":
                 -1,
             }

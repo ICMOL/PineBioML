@@ -14,8 +14,8 @@ class SVM_selection(SelectionPipeline):
 
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, k):
+        super().__init__(k=k)
         self.kernel = LinearSVC(dual="auto",
                                 class_weight="balanced",
                                 random_state=142)

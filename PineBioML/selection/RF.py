@@ -15,14 +15,14 @@ class RF_selection(SelectionPipeline):
 
     """
 
-    def __init__(self, trees=1024, unbalanced=True, strategy="gini"):
+    def __init__(self, k, trees=1024, unbalanced=True, strategy="gini"):
         """
         Args:
             trees (int, optional): Number of trees. Defaults to 1024*16.
             strategy (str, optional): Scoring strategy, one of {"gini", "entropy"}. Defaults to "gini".
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to True.
         """
-        super().__init__()
+        super().__init__(k=k)
         self.strategy = strategy
         if unbalanced:
             class_weight = "balanced"
@@ -192,6 +192,7 @@ class pcRF_selection(SelectionPipeline):
 
     def __init__(
         self,
+        k,
         trees=512,
         unbalanced=True,
         strategy="permutation",
@@ -205,7 +206,7 @@ class pcRF_selection(SelectionPipeline):
             factorize_method (str, optional): One of {"PCA"}. Method to reduce dimension.  Defaults to "PCA".
                     
         """
-        super().__init__()
+        super().__init__(k=k)
         # remove colinearity
         #        if factorize_method == "NMF":
         #           self.fatorizer = NMF()
@@ -254,7 +255,7 @@ class pcRF_selection(SelectionPipeline):
 
         return score
 
-    def Select(self, x, y, k):
+    def Select(self, x, y):
         """
         x->PCA->RF + oob +permutation importance -> inverse PCA -> feature importance
 
@@ -301,5 +302,5 @@ class pcRF_selection(SelectionPipeline):
             index=columns,
             name=self.name).sort_values(ascending=False)
 
-        selected_score = self.choose(self.scores, k)
+        selected_score = self.choose(self.scores)
         return selected_score

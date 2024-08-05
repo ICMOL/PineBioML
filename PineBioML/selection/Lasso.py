@@ -17,13 +17,13 @@ class Lasso_selection(SelectionPipeline):
 
     """
 
-    def __init__(self, unbalanced=True, objective="Regression"):
+    def __init__(self, k, unbalanced=True, objective="Regression"):
         """
         Args:
             unbalanced (bool, optional): False to imply class weight to samples. Defaults to True.
             objective (str, optional): one of {"Regression", "BinaryClassification"}
         """
-        super().__init__()
+        super().__init__(k=k)
 
         # parameters
         self.objective = objective
@@ -128,13 +128,13 @@ class Lasso_bisection_selection(SelectionPipeline):
 
     """
 
-    def __init__(self, unbalanced=True, objective="regression"):
+    def __init__(self, k, unbalanced=True, objective="regression"):
         """
         Args:
             unbalanced (bool, optional): False to imply class weight to samples. Defaults to True.
             objective (str, optional): one of {"Regression", "BinaryClassification"}
         """
-        super().__init__()
+        super().__init__(k=k)
         self.upper_init = 1e+3
         self.lower_init = 1e-3
         self.objective = objective
@@ -156,7 +156,7 @@ class Lasso_bisection_selection(SelectionPipeline):
                                       random_state=142,
                                       class_weight="balanced")
 
-    def Select(self, x, y, k):
+    def Select(self, x, y):
         """
         Using Lasso (L1 penalty) regression as scoring method.  More specifically, L1 penalty will force feature weights to be zeros. 
         As the coefficient of penalty increases, more and more weights of features got killed and the important feature will remain.
@@ -210,7 +210,7 @@ class Lasso_bisection_selection(SelectionPipeline):
         #print(lower, lower_alive)
 
         counter = 0
-        while not lower_alive == k:
+        while not lower_alive == self.k:
             alpha = (upper + lower) / 2
             lassoes.append(self.create_kernel(C=alpha))
             lassoes[-1].fit(X_train, y_train, weights)
@@ -220,7 +220,7 @@ class Lasso_bisection_selection(SelectionPipeline):
             alive = (lassoes[-1].coef_ != 0).sum()
             #print(alive, alpha)
 
-            if alive >= k:
+            if alive >= self.k:
                 lower = alpha
                 lower_alive = alive
             else:
@@ -236,7 +236,7 @@ class Lasso_bisection_selection(SelectionPipeline):
         self.scores = pd.Series(np.abs(coef[-1]).flatten(),
                                 index=x.columns,
                                 name=self.name).sort_values(ascending=False)
-        self.selected_score = self.scores.head(k)
+        self.selected_score = self.scores.head(self.k)
         return self.selected_score
 
 
@@ -246,23 +246,22 @@ class multi_Lasso_selection(SelectionPipeline):
     That leads to diffirent behavior between select k features in a time and select k//n features in n times.
     """
 
-    def __init__(self, objective="regression"):
+    def __init__(self, k, objective="regression"):
         """
         Args:
             objective (str, optional): one of {"Regression", "BinaryClassification"}
         """
-        super().__init__()
+        super().__init__(k=k)
         self.name = "multi_Lasso"
         self.objective = objective
 
-    def Select(self, x, y, k, n=5):
+    def Select(self, x, y, n=5):
         """
         Select k//n features for n times, and then concatenate the results.
 
         Args:
             x (pandas.DataFrame or a 2D array): The data to extract information.
             y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-            k (int): Number of feature to select. The result may less than k
             n (int, optional): Number of batch which splits k to select. Defaults to 10.
 
         Returns:
@@ -270,14 +269,15 @@ class multi_Lasso_selection(SelectionPipeline):
             
         """
         result = []
-        if k == -1:
-            k = x.shape[0]
-        batch_size = k // n + 1
+        if self.k == -1:
+            self.k = x.shape[0]
+        batch_size = self.k // n + 1
 
         for i in range(n):
             result.append(
-                Lasso_bisection_selection(objective=self.objective).Select(
-                    x, y, k=batch_size))
+                Lasso_bisection_selection(k=batch_size,
+                                          objective=self.objective).Select(
+                                              x, y))
             x = x.drop(result[-1].index, axis=1)
             if x.shape[1] == 0:
                 break
@@ -285,5 +285,5 @@ class multi_Lasso_selection(SelectionPipeline):
         result = result - result.min()
         result.name = self.name
 
-        self.selected_score = result.sort_values(ascending=False).head(k)
+        self.selected_score = result.sort_values(ascending=False).head(self.k)
         return self.selected_score.copy()
