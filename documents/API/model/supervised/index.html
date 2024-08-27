@@ -45,7 +45,8 @@ class Basic_tuner(ABC):
 
     &#34;&#34;&#34;
 
-    def __init__(self, n_try, target, kernel_seed, valid_seed, optuna_seed):
+    def __init__(self, n_try, target, kernel_seed, valid_seed, optuna_seed,
+                 validate_penalty):
         &#34;&#34;&#34;
         
         Args:
@@ -55,6 +56,8 @@ class Basic_tuner(ABC):
             valid_seed (int): random seed for cross validation
             optuna_seed (int): random seed for optuna.    
         &#34;&#34;&#34;
+        self.validate_penalty = validate_penalty
+
         self.n_cv = 5
         self.n_try = n_try
 
@@ -85,10 +88,6 @@ class Basic_tuner(ABC):
         self.eval_prob = not target in self.discrete_target
         # Get the scorer
         self.metric = metrics.get_scorer(target)
-
-        # Make the sampler behave in a deterministic way.
-        sampler = TPESampler(seed=optuna_seed)
-        self.study = optuna.create_study(direction=&#34;maximize&#34;, sampler=sampler)
 
         self.optuna_model = None
         self.default_model = None
@@ -135,7 +134,10 @@ class Basic_tuner(ABC):
 
             test_score = self.metric(classifier_obj, x_test, y_test)
             train_score = self.metric(classifier_obj, x_train, y_train)
-            score.append(test_score + 0.2 * (test_score - train_score))
+            if self.validate_penalty:
+                score.append(test_score + 0.1 * (test_score - train_score))
+            else:
+                score.append(test_score)
 
             #score.append(test_score)
         score = sum(score) / self.n_cv
@@ -155,6 +157,10 @@ class Basic_tuner(ABC):
         self.x = x
         self.y = y
         self.n_sample = x.shape[0]
+
+        # Make the sampler behave in a deterministic way.
+        sampler = TPESampler(seed=self.optuna_seed)
+        self.study = optuna.create_study(direction=&#34;maximize&#34;, sampler=sampler)
 
         print(
             &#34;optuna seed {self.optuna_seed}  |  validation seed {self.valid_seed}  |  model seed {self.kernel_seed}&#34;
@@ -340,7 +346,7 @@ array([[ 8,  6,  9,  7], # random
 <dl>
 <dt id="PineBioML.model.supervised.Basic_tuner"><code class="flex name class">
 <span>class <span class="ident">Basic_tuner</span></span>
-<span>(</span><span>n_try, target, kernel_seed, valid_seed, optuna_seed)</span>
+<span>(</span><span>n_try, target, kernel_seed, valid_seed, optuna_seed, validate_penalty)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>The base class of tuner.
@@ -375,7 +381,8 @@ We first using valid_seed to randomly initialize a tape of integers and it will 
 
     &#34;&#34;&#34;
 
-    def __init__(self, n_try, target, kernel_seed, valid_seed, optuna_seed):
+    def __init__(self, n_try, target, kernel_seed, valid_seed, optuna_seed,
+                 validate_penalty):
         &#34;&#34;&#34;
         
         Args:
@@ -385,6 +392,8 @@ We first using valid_seed to randomly initialize a tape of integers and it will 
             valid_seed (int): random seed for cross validation
             optuna_seed (int): random seed for optuna.    
         &#34;&#34;&#34;
+        self.validate_penalty = validate_penalty
+
         self.n_cv = 5
         self.n_try = n_try
 
@@ -415,10 +424,6 @@ We first using valid_seed to randomly initialize a tape of integers and it will 
         self.eval_prob = not target in self.discrete_target
         # Get the scorer
         self.metric = metrics.get_scorer(target)
-
-        # Make the sampler behave in a deterministic way.
-        sampler = TPESampler(seed=optuna_seed)
-        self.study = optuna.create_study(direction=&#34;maximize&#34;, sampler=sampler)
 
         self.optuna_model = None
         self.default_model = None
@@ -465,7 +470,10 @@ We first using valid_seed to randomly initialize a tape of integers and it will 
 
             test_score = self.metric(classifier_obj, x_test, y_test)
             train_score = self.metric(classifier_obj, x_train, y_train)
-            score.append(test_score + 0.2 * (test_score - train_score))
+            if self.validate_penalty:
+                score.append(test_score + 0.1 * (test_score - train_score))
+            else:
+                score.append(test_score)
 
             #score.append(test_score)
         score = sum(score) / self.n_cv
@@ -485,6 +493,10 @@ We first using valid_seed to randomly initialize a tape of integers and it will 
         self.x = x
         self.y = y
         self.n_sample = x.shape[0]
+
+        # Make the sampler behave in a deterministic way.
+        sampler = TPESampler(seed=self.optuna_seed)
+        self.study = optuna.create_study(direction=&#34;maximize&#34;, sampler=sampler)
 
         print(
             &#34;optuna seed {self.optuna_seed}  |  validation seed {self.valid_seed}  |  model seed {self.kernel_seed}&#34;
@@ -569,11 +581,16 @@ We first using valid_seed to randomly initialize a tape of integers and it will 
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
+<li><a title="PineBioML.model.supervised.Classification.AdaBoost_tuner" href="Classification.html#PineBioML.model.supervised.Classification.AdaBoost_tuner">AdaBoost_tuner</a></li>
+<li><a title="PineBioML.model.supervised.Classification.CatBoost_tuner" href="Classification.html#PineBioML.model.supervised.Classification.CatBoost_tuner">CatBoost_tuner</a></li>
+<li><a title="PineBioML.model.supervised.Classification.DecisionTree_tuner" href="Classification.html#PineBioML.model.supervised.Classification.DecisionTree_tuner">DecisionTree_tuner</a></li>
 <li><a title="PineBioML.model.supervised.Classification.ElasticLogit_tuner" href="Classification.html#PineBioML.model.supervised.Classification.ElasticLogit_tuner">ElasticLogit_tuner</a></li>
 <li><a title="PineBioML.model.supervised.Classification.LighGBM_tuner" href="Classification.html#PineBioML.model.supervised.Classification.LighGBM_tuner">LighGBM_tuner</a></li>
 <li><a title="PineBioML.model.supervised.Classification.RandomForest_tuner" href="Classification.html#PineBioML.model.supervised.Classification.RandomForest_tuner">RandomForest_tuner</a></li>
 <li><a title="PineBioML.model.supervised.Classification.SVM_tuner" href="Classification.html#PineBioML.model.supervised.Classification.SVM_tuner">SVM_tuner</a></li>
 <li><a title="PineBioML.model.supervised.Classification.XGBoost_tuner" href="Classification.html#PineBioML.model.supervised.Classification.XGBoost_tuner">XGBoost_tuner</a></li>
+<li><a title="PineBioML.model.supervised.Regression.AdaBoost_tuner" href="Regression.html#PineBioML.model.supervised.Regression.AdaBoost_tuner">AdaBoost_tuner</a></li>
+<li><a title="PineBioML.model.supervised.Regression.DecisionTree_tuner" href="Regression.html#PineBioML.model.supervised.Regression.DecisionTree_tuner">DecisionTree_tuner</a></li>
 <li><a title="PineBioML.model.supervised.Regression.ElasticNet_tuner" href="Regression.html#PineBioML.model.supervised.Regression.ElasticNet_tuner">ElasticNet_tuner</a></li>
 <li><a title="PineBioML.model.supervised.Regression.LighGBM_tuner" href="Regression.html#PineBioML.model.supervised.Regression.LighGBM_tuner">LighGBM_tuner</a></li>
 <li><a title="PineBioML.model.supervised.Regression.RandomForest_tuner" href="Regression.html#PineBioML.model.supervised.Regression.RandomForest_tuner">RandomForest_tuner</a></li>
@@ -660,7 +677,10 @@ float: The score.</p></div>
 
         test_score = self.metric(classifier_obj, x_test, y_test)
         train_score = self.metric(classifier_obj, x_train, y_train)
-        score.append(test_score + 0.2 * (test_score - train_score))
+        if self.validate_penalty:
+            score.append(test_score + 0.1 * (test_score - train_score))
+        else:
+            score.append(test_score)
 
         #score.append(test_score)
     score = sum(score) / self.n_cv
@@ -797,6 +817,10 @@ sklearn.base.BaseEstimator: A sklearn style model object which has the best hype
     self.x = x
     self.y = y
     self.n_sample = x.shape[0]
+
+    # Make the sampler behave in a deterministic way.
+    sampler = TPESampler(seed=self.optuna_seed)
+    self.study = optuna.create_study(direction=&#34;maximize&#34;, sampler=sampler)
 
     print(
         &#34;optuna seed {self.optuna_seed}  |  validation seed {self.valid_seed}  |  model seed {self.kernel_seed}&#34;

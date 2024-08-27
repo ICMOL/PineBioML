@@ -42,12 +42,14 @@ class selector(SelectionPipeline):
     
     &#34;&#34;&#34;
 
-    def __init__(self, k=-1, RF_trees=1024):
+    def __init__(self, k=-1, RF_trees=1024, z_importance_threshold=0):
         &#34;&#34;&#34;
 
         Args:
 
         &#34;&#34;&#34;
+        self.z_importance_threshold = z_importance_threshold
+
         self.kernels = {
             &#34;c45&#34;: DT_selection(k=k, strategy=&#34;c45&#34;),
             &#34;RF_gini&#34;: RF_selection(k=k, strategy=&#34;gini&#34;, trees=RF_trees),
@@ -104,7 +106,7 @@ class selector(SelectionPipeline):
         z_scores = (self.selected_score - self.selected_score.mean()) / (
             self.selected_score.std() + 1e-4)
         z_scores = z_scores.mean(axis=1)
-        z_scores = z_scores[z_scores &gt; 1.]
+        z_scores = z_scores[z_scores &gt; self.z_importance_threshold]
 
         return x[z_scores.index]
 
@@ -128,7 +130,7 @@ class selector(SelectionPipeline):
 <dl>
 <dt id="PineBioML.selection.ensemble.selector"><code class="flex name class">
 <span>class <span class="ident">selector</span></span>
-<span>(</span><span>k=-1, RF_trees=1024)</span>
+<span>(</span><span>k=-1, RF_trees=1024, z_importance_threshold=0)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A functional stack of diffirent methods.</p>
@@ -143,12 +145,14 @@ class selector(SelectionPipeline):
     
     &#34;&#34;&#34;
 
-    def __init__(self, k=-1, RF_trees=1024):
+    def __init__(self, k=-1, RF_trees=1024, z_importance_threshold=0):
         &#34;&#34;&#34;
 
         Args:
 
         &#34;&#34;&#34;
+        self.z_importance_threshold = z_importance_threshold
+
         self.kernels = {
             &#34;c45&#34;: DT_selection(k=k, strategy=&#34;c45&#34;),
             &#34;RF_gini&#34;: RF_selection(k=k, strategy=&#34;gini&#34;, trees=RF_trees),
@@ -205,7 +209,7 @@ class selector(SelectionPipeline):
         z_scores = (self.selected_score - self.selected_score.mean()) / (
             self.selected_score.std() + 1e-4)
         z_scores = z_scores.mean(axis=1)
-        z_scores = z_scores[z_scores &gt; 1.]
+        z_scores = z_scores[z_scores &gt; self.z_importance_threshold]
 
         return x[z_scores.index]
 
@@ -312,7 +316,7 @@ class selector(SelectionPipeline):
     z_scores = (self.selected_score - self.selected_score.mean()) / (
         self.selected_score.std() + 1e-4)
     z_scores = z_scores.mean(axis=1)
-    z_scores = z_scores[z_scores &gt; 1.]
+    z_scores = z_scores[z_scores &gt; self.z_importance_threshold]
 
     return x[z_scores.index]</code></pre>
 </details>
