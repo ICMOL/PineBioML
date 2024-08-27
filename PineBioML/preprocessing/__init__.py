@@ -102,3 +102,67 @@ class Normalizer():
                                columns=x.columns)
 
         return x_original
+
+
+class Pass():
+    """ 
+    Do nothing.
+    """
+
+    def __init__(self):
+        pass
+
+    def fit(self, x, y=None):
+        """
+        Do nothing.    
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to normalize.    
+            y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.    
+
+        Returns:
+            Pass: No, do nothing.
+        """
+
+        return self
+
+    def transform(self, x):
+        """
+        Do nothing.
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to normalize.    
+
+        Returns:
+            pandas.DataFrame or a 2D array: Normalized x.
+        """
+        
+        return x
+
+    def fit_transform(self, x, y=None):
+        """
+        Do nothing.
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to normalize.
+            y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.
+
+        Returns:
+            pandas.DataFrame or a 2D array: x.
+        """
+        self.fit(x, y)
+        x_normalized = self.transform(x)
+        return x_normalized
+
+    def inverse_transform(self, x):
+        """
+        Do nothing.
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to revert original scale.
+
+        Returns:
+            pandas.DataFrame or a 2D array: x.
+        """
+
+        return x

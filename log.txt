@@ -1,3 +1,33 @@
+2024/8/28 1.0.0
+    description:
+        1. add Pine experiment manager. it's a tool to select the best pipeline.
+            a. example_Pine.ipynb: the example of how to use Pine.
+        2. tuner's parameters change.
+        3. IO move from preprocessing to PineBioML
+        4. report.classification_scores: a tool to compute common classification scores
+        5. document update.
+
+    bug:
+        1. bagging:
+             - contradicts to log domain in selection method (the negative output of pca)
+             - the variance of feature will change during bagging (variance matters)
+        2. Lasso logistic regression in grid search need to to modified. In temporary using binary search.
+        3. Issue about installation of pandas lacking of Microsoft Visual C++ 14.0:
+            https://learn.microsoft.com/zh-tw/cpp/windows/latest-supported-vc-redist?view=msvc-170
+    On Going:
+        1. A reliable tutorial. (including mac)
+        2. One click everything (almost)
+    ToDo:
+        1. report and diagnose
+        2. Document reference
+        3. using pretty, beautiful, good-looking, precise packages:
+            a. pca
+            b. The only OPLS da reliable(compare to others), alive, python implement 
+               https://github.com/Omicometrics/pypls?tab=readme-ov-file 
+        n. add parameter dict(json or yaml-like)
+        n. interactive interface or GUI (maybe nicegui/ plotly)
+
+
 2024/8/5 0.7.0
     description:
         1. sklearn pipeline support

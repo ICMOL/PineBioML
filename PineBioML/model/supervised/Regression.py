@@ -3,7 +3,8 @@ from . import Basic_tuner
 from sklearn.model_selection import StratifiedKFold, cross_val_score
 
 from sklearn.svm import SVR
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor
+from sklearn.tree import DecisionTreeRegressor
 from sklearn.linear_model import ElasticNet
 from xgboost import XGBRegressor
 from lightgbm import LGBMRegressor
@@ -18,7 +19,7 @@ from statsmodels.regression.linear_model import OLS
 #       see section Acticating Pruners in https://optuna.readthedocs.io/en/stable/tutorial/10_key_features/003_efficient_optimization_algorithms.html
 
 
-# linear model
+# linear model, elasticnet
 class ElasticNet_tuner(Basic_tuner):
     """
     Tuning a elasic net regression.    
@@ -30,7 +31,8 @@ class ElasticNet_tuner(Basic_tuner):
                  target="neg_mean_squared_error",
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71):
+                 optuna_seed=71,
+                 validate_penalty=True):
         """
         Args:
             n_try (int, optional): Times to try. Defaults to 25.    
@@ -43,7 +45,8 @@ class ElasticNet_tuner(Basic_tuner):
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
-                         optuna_seed=optuna_seed)
+                         optuna_seed=optuna_seed,
+                         validate_penalty=validate_penalty)
 
     def create_model(self, trial, default=False):
         if default:
@@ -85,7 +88,8 @@ class RandomForest_tuner(Basic_tuner):
                  target="neg_mean_squared_error",
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71):
+                 optuna_seed=71,
+                 validate_penalty=True):
         """
 
         Args:
@@ -100,7 +104,8 @@ class RandomForest_tuner(Basic_tuner):
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
-                         optuna_seed=optuna_seed)
+                         optuna_seed=optuna_seed,
+                         validate_penalty=validate_penalty)
 
         self.using_oob = using_oob
 
@@ -119,14 +124,14 @@ class RandomForest_tuner(Basic_tuner):
                 trial.suggest_int('n_estimators', 32, 1024, log=True),
                 "max_depth":
                 trial.suggest_int('max_depth', 2, 16, log=True),
-                "min_samples_split":
-                trial.suggest_int('min_samples_split', 2, 16, log=True),
+                #"min_samples_split":
+                #trial.suggest_int('min_samples_split', 2, 16, log=True),
                 "min_samples_leaf":
                 trial.suggest_int('min_samples_leaf', 1, 16, log=True),
                 "ccp_alpha":
                 trial.suggest_float('ccp_alpha', 1e-3, 1e-1, log=True),
                 "max_samples":
-                trial.suggest_float('max_samples', 0.5, 0.95, log=True),
+                trial.suggest_float('max_samples', 0.5, 0.9, log=True),
                 "bootstrap":
                 self.using_oob,
                 "oob_score":
@@ -180,7 +185,8 @@ class SVM_tuner(Basic_tuner):
                  target="neg_mean_squared_error",
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71):
+                 optuna_seed=71,
+                 validate_penalty=True):
         """
         Args:
             kernel (str, optional): This will be passed to the attribute of SVR: "kernel". Defaults to "rbf".
@@ -194,7 +200,8 @@ class SVM_tuner(Basic_tuner):
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
-                         optuna_seed=optuna_seed)
+                         optuna_seed=optuna_seed,
+                         validate_penalty=validate_penalty)
         self.kernel = kernel  # rbf, linear, poly, sigmoid
 
     def create_model(self, trial, default=False):
@@ -236,11 +243,12 @@ class XGBoost_tuner(Basic_tuner):
     """
 
     def __init__(self,
-                 n_try=100,
+                 n_try=200,
                  target="neg_mean_squared_error",
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71):
+                 optuna_seed=71,
+                 validate_penalty=True):
         """
 
         Args:
@@ -255,7 +263,8 @@ class XGBoost_tuner(Basic_tuner):
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
-                         optuna_seed=optuna_seed)
+                         optuna_seed=optuna_seed,
+                         validate_penalty=validate_penalty)
 
     def create_model(self, trial, default=False):
         if default:
@@ -265,21 +274,31 @@ class XGBoost_tuner(Basic_tuner):
                 "verbosity": 0
             }
         else:
+            if trial.suggest_categorical("use_subsample", [True, False]):
+                sampling_rate = trial.suggest_float('subsample',
+                                                    0.5,
+                                                    0.9,
+                                                    log=True)
+                col_sampling_rate = trial.suggest_float(
+                    'colsample_bytree', 0.1, 0.9)
+            else:
+                sampling_rate = 1.
+                col_sampling_rate = 1.
             parms = {
                 "n_estimators":
-                trial.suggest_int('n_estimators', 16, 256, log=True),
+                trial.suggest_int('n_estimators', 16, 512, log=True),
                 "max_depth":
                 trial.suggest_int('max_depth', 2, 16, log=True),
                 "gamma":
                 trial.suggest_float('gamma', 5e-2, 2e+1, log=True),
                 "learning_rate":
-                trial.suggest_float('learning_rate', 5e-3, 5e-1, log=True),
+                trial.suggest_float('learning_rate', 5e-2, 5e-1, log=True),
                 "subsample":
-                trial.suggest_float('subsample', 0.5, 0.95, log=True),
+                sampling_rate,
                 "colsample_bytree":
-                trial.suggest_float('colsample_bytree', 0.8, 1),
-                "min_child_weight":
-                trial.suggest_float('min_child_weight', 1e-2, 1e+2, log=True),
+                col_sampling_rate,
+                #"min_child_weight":
+                #trial.suggest_float('min_child_weight', 1e-3, 1e+2, log=True),
                 "reg_lambda":
                 trial.suggest_float('reg_lambda', 1e-2, 1e+1, log=True),
                 "n_jobs":
@@ -305,11 +324,12 @@ class LighGBM_tuner(Basic_tuner):
     """
 
     def __init__(self,
-                 n_try=100,
+                 n_try=200,
                  target="neg_mean_squared_error",
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71):
+                 optuna_seed=71,
+                 validate_penalty=True):
         """
 
         Args:
@@ -324,7 +344,8 @@ class LighGBM_tuner(Basic_tuner):
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
-                         optuna_seed=optuna_seed)
+                         optuna_seed=optuna_seed,
+                         validate_penalty=validate_penalty)
 
     def create_model(self, trial, default=False):
         if default:
@@ -341,6 +362,18 @@ class LighGBM_tuner(Basic_tuner):
                                          log=True)
             depth = int(np.rint(depth))
             leaves = int(np.floor(np.power(2, leaves)))
+
+            if trial.suggest_categorical("use_subsample", [True, False]):
+                sampling_rate = trial.suggest_float('subsample',
+                                                    0.5,
+                                                    0.9,
+                                                    log=True)
+                col_sampling_rate = trial.suggest_float(
+                    'colsample_bytree', 0.1, 0.9)
+            else:
+                sampling_rate = 1.
+                col_sampling_rate = 1.
+
             parms = {
                 "n_estimators":
                 trial.suggest_int('n_estimators', 16, 256, log=True),
@@ -350,20 +383,20 @@ class LighGBM_tuner(Basic_tuner):
                 leaves,
                 "learning_rate":
                 trial.suggest_float('learning_rate', 1e-2, 1, log=True),
-                "subsample":
-                trial.suggest_float('subsample', 0.5, 0.95, log=True),
                 "subsample_freq":
                 1,
+                "subsample":
+                sampling_rate,
                 "colsample_bytree":
-                trial.suggest_float('colsample_bytree', 0.7, 1, log=True),
-                "min_child_weight":
-                trial.suggest_float('min_child_weight', 1e-5, 1e-1, log=True),
+                col_sampling_rate,
                 "min_child_samples":
                 trial.suggest_int('min_child_samples', 2, 32, log=True),
                 "reg_lambda":
                 trial.suggest_float('reg_lambda', 5e-3, 1e+1, log=True),
                 "n_jobs":
                 None,
+                "class_weight":
+                "balanced",
                 "random_state":
                 self.kernel_seed_tape[trial.number],
                 "verbosity":
@@ -374,6 +407,110 @@ class LighGBM_tuner(Basic_tuner):
         return lgbm
 
 
-# Todo
+# AdaBoost
+class AdaBoost_tuner(Basic_tuner):
+    """
+    Tuning a AdaBoost regressor.    
+    [sklearn.ensemble.AdaBoostRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostRegressor.html)
+    """
+
+    def __init__(self,
+                 n_try=50,
+                 target="neg_mean_squared_error",
+                 kernel_seed=None,
+                 valid_seed=None,
+                 optuna_seed=71,
+                 validate_penalty=True):
+        """
+        Args:
+            n_try (int, optional): Times to try. Defaults to 50.
+            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "neg_mean_squared_error" (negative mse).    
+            kernel_seed (int): random seed for model kernel. 
+            valid_seed (int): random seed for cross validation
+            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+        """
+        super().__init__(n_try=n_try,
+                         target=target,
+                         kernel_seed=kernel_seed,
+                         valid_seed=valid_seed,
+                         optuna_seed=optuna_seed,
+                         validate_penalty=validate_penalty)
+
+    def create_model(self, trial, default=False):
+        if default:
+            parms = {
+                "random_state": self.kernel_seed,
+            }
+        else:
+            # scaling penalty: https://scikit-learn.org/stable/auto_examples/svm/plot_svm_scale_c.html#sphx-glr-auto-examples-svm-plot-svm-scale-c-py
+            parms = {
+                "n_estimators":
+                trial.suggest_int('n_estimators', 8, 256, log=True),
+                "learning_rate":
+                trial.suggest_float('learning_rate', 1e-2, 1, log=True),
+                "loss":
+                trial.suggest_categorical("loss",
+                                          ["linear", "square", "exponential"]),
+                "random_state":
+                self.kernel_seed_tape[trial.number]
+            }
+        ada = AdaBoostRegressor(**parms)
+        return ada
+
+
+# DT
+class DecisionTree_tuner(Basic_tuner):
+    """
+    Tuning a DecisionTree regressor.    
+    [sklearn.tree.DecisionTreeRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html)
+    """
+
+    def __init__(self,
+                 n_try=25,
+                 target="neg_mean_squared_error",
+                 kernel_seed=None,
+                 valid_seed=None,
+                 optuna_seed=71,
+                 validate_penalty=True):
+        """
+        Args:
+            n_try (int, optional): Times to try. Defaults to 50.
+            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "neg_mean_squared_error" (negative mse).    
+            kernel_seed (int): random seed for model kernel. 
+            valid_seed (int): random seed for cross validation
+            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+        """
+        super().__init__(n_try=n_try,
+                         target=target,
+                         kernel_seed=kernel_seed,
+                         valid_seed=valid_seed,
+                         optuna_seed=optuna_seed,
+                         validate_penalty=validate_penalty)
+
+    def create_model(self, trial, default=False):
+        if default:
+            parms = {
+                "random_state": self.kernel_seed,
+            }
+        else:
+            parms = {
+                "max_depth":
+                trial.suggest_int('max_depth', 2, 16, log=True),
+                "min_samples_split":
+                trial.suggest_int('min_samples_split', 2, 32, log=True),
+                "min_samples_leaf":
+                trial.suggest_int('min_samples_leaf', 1, 16, log=True),
+                "ccp_alpha":
+                trial.suggest_float('ccp_alpha', 1e-3, 1e-1, log=True),
+                "random_state":
+                self.kernel_seed_tape[trial.number],
+                "class_weight":
+                "balanced"
+            }
+        DT = DecisionTreeRegressor(**parms)
+        return DT
+
+
+# CatBoost
 # KNN
 # KNN-Graph spectrum

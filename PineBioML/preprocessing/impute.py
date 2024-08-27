@@ -1,6 +1,5 @@
 from sklearn.impute import KNNImputer, SimpleImputer
 import pandas as pd
-import numpy as np
 from . import Normalizer
 
 
@@ -130,12 +129,14 @@ class simple_imputer(imputer):
     Using a constant value (0, mean, median... etc.) to impute all missing value in a feature.
     """
 
-    def __init__(self, threshold=0.3333, strategy="median"):
+    def __init__(self, threshold=0.333, strategy="median"):
         """
 
         Args:
             threshold (float): float from (0, 1]. If missing value rate of a feature is higher than threshold, it will be deleted. Defaults to 0.333
             strategy (str, optional): The strategy to impute. One of {"mean", "median", "constant"}. Defaults to "median".
+        Todo: 
+            1. filling value for constant mode.
         """
         super().__init__(threshold, center=False, scale=False)
 

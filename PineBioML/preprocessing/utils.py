@@ -1,8 +1,9 @@
-from sklearn.preprocessing import PowerTransformer
 from sklearn.decomposition import PCA
 from sklearn.cross_decomposition import PLSSVD
 import pandas as pd
 import numpy as np
+
+# Todo: sklearn.pipeline.FeatureUnion
 
 class feature_extension():
     def __init__(self, alpha = 0.9, pca = True, pls = False, cross= True, ratio = True, power_transform = True, name = "extend "):
@@ -54,10 +55,11 @@ class feature_extension():
                     #results.append(tmp)
 
         x = results[0].copy()
-        self.mean = x.mean()
-        self.std = x.std()
-        x = (x-self.mean)/self.std
-        
+        #self.mean = x.mean()
+        #self.std = x.std()
+        #x = (x-self.mean)/self.std
+
+
         # PCA
         if self.pca:
             self.pca.fit(x)
@@ -113,7 +115,7 @@ class feature_extension():
                     results.append(tmp)
 
         x = results[0].copy()
-        x = (x-self.mean)/self.std
+        #x = (x-self.mean)/self.std
         
         # PCA
         if self.pca:
@@ -127,4 +129,8 @@ class feature_extension():
             results.append(plsx)
             
         return pd.concat(results, axis =1)
+    
+    def fit_transform(self, x, y=None):
+        self.fit(x, y)
+        return self.transform(x)
 

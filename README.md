@@ -5,8 +5,9 @@ We only support binary classification now.
 ![image](./documents/images/workflow/auto_selection_workflow.png) 
 
 # System requirements
-   1. Python 3.9+
-   2. The following dependencies are required: tqdm, seaborn, gprofiler-official, jupyterlab, optuna, scikit-learn, umap-learn, pacmap, statsmodels, mljar-supervised, joblib
+   1. Python 3.10+
+   2. The following python module dependencies are required: 
+   > pandas openpyxl xlrd tqdm seaborn gprofiler-official jupyter jupyterlab optuna scikit-learn umap-learn pacmap statsmodels mljar-supervised joblib
 
 
 # Installation
@@ -16,7 +17,7 @@ Please follow the tutorial to install python (the sections "Visual Studio Code" 
 
     https://learn.microsoft.com/en-us/windows/python/beginners 
     
-Please skip this step, if you have python 3.9+ installed in your PC.
+Please skip this step, if you have python 3.10+ installed in your PC.
 
 ### 2. Install dependencies and execute the scripts
 
@@ -33,6 +34,10 @@ Step 3. Open the jupyter interface
 Please execute the following command to open jupyter. You will see the figure, if the scripts execute correctly.
 
     > jupyter lab    
+or    
+
+    > python -m notebook
+
 
 ![image](./documents/images/tutorial/browser_jupyter.png)
 
@@ -42,6 +47,8 @@ Please execute the following command to open jupyter. You will see the figure, i
 The input data should be tabular and placed in the ./input folder. We accept .csv, .tsv, .xlsx and R-table in .txt formats.
 
 # Process
+
+### 0. Document
 
 [API](https://htmlpreview.github.io/?https://github.com/ICMOL/PineBioML/blob/main/documents/API/index.html)
 
@@ -59,6 +66,7 @@ The input data should be tabular and placed in the ./input folder. We accept .cs
 |  1 | PCA              | Principal component transform.    |  |
 |  2 | Power transform  | To make data more Gaussian-like, you can use either Box-Cox transform or Yeo-Johnson transform. |   |
 |  3 | Feature clustering        | Group similar features into a cluster.  |  |
+|  4 | Feature expansion        | Generating new features by add/product/ratio in random pair of existing features.  |  |
 
 
 ### 3. Feature selection
@@ -78,9 +86,12 @@ The input data should be tabular and placed in the ./input folder. We accept .cs
 |---------------------|----------------|------------------------------|
 |  1 | ElasticNet    | Using Optuna to find a not-bad hyper parameters on given dataset.   |  |
 |  2 | SVM       | Using Optuna to find a not-bad hyper parameters on given dataset. |   |
-|  3 | Random Forest | Using Optuna to find a not-bad hyper parameters on given dataset.  |  |
-|  4 | XGBoost | Using Optuna to find a not-bad hyper parameters on given dataset.  |  |
-|  3 | LightGBM | Using Optuna to find a not-bad hyper parameters on given dataset.  |  |
+|  3 | Decision Tree | Using Optuna to find a not-bad hyper parameters on given dataset.  |  |
+|  4 | Random Forest | Using Optuna to find a not-bad hyper parameters on given dataset.  |  |
+|  5 | AdaBoost | Using Optuna to find a not-bad hyper parameters on given dataset.  |  |
+|  6 | XGBoost | Using Optuna to find a not-bad hyper parameters on given dataset.  |  |
+|  7 | LightGBM | Using Optuna to find a not-bad hyper parameters on given dataset.  |  |
+|  8 | CatBoost | Using Optuna to find a not-bad hyper parameters on given dataset.  |  |
 
 ### 5. Report and visualization
 |        ID         |        Option         |  Definition |
@@ -88,11 +99,18 @@ The input data should be tabular and placed in the ./input folder. We accept .cs
 |  1 | data_overview  | Giving a glance to input data.   |  |
 |  2 | classification_summary | Summarizing a classification task |  |
 
-# An Example for Program Demonstration    
+# Examples for Program Demonstration    
 
 Chosse one of the following examples, double click it in jupyter interface:    
-- example_BasicUsage.ipynb
-- example_Proteomics.ipynb
+| ID |     Name      |       Description                |
+|----|---------------|----------------------------------|
+|  1 | example_BasicUsage.ipynb   | Demonstrate the basic features of PineBioML  |  |
+|  2 | example_Proteomics.ipynb         | An example on proteomics data analysis |  |
+|  3 | example_PipeLine.ipynb           | Demonstrate how to use the pipeline to store the whole data processing flow |  |
+|  4 | example_Pine.ipynb               | Demonstrate how to use Pine ml to finding the best data processing flow in an efficient way |  |
+|  5 | example_UsingExistingModel.ipynb | An example of unsing existing models/pipeline gained from 3. , 4. or 5.  |  |
+
+
 
 Click the buttom and the script should start.
 ![image](./documents/images/tutorial/jupyter_runall.png)
