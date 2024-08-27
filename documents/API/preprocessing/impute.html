@@ -28,7 +28,6 @@
 </summary>
 <pre><code class="python">from sklearn.impute import KNNImputer, SimpleImputer
 import pandas as pd
-import numpy as np
 from . import Normalizer
 
 
@@ -158,12 +157,14 @@ class simple_imputer(imputer):
     Using a constant value (0, mean, median... etc.) to impute all missing value in a feature.
     &#34;&#34;&#34;
 
-    def __init__(self, threshold=0.3333, strategy=&#34;median&#34;):
+    def __init__(self, threshold=0.333, strategy=&#34;median&#34;):
         &#34;&#34;&#34;
 
         Args:
             threshold (float): float from (0, 1]. If missing value rate of a feature is higher than threshold, it will be deleted. Defaults to 0.333
             strategy (str, optional): The strategy to impute. One of {&#34;mean&#34;, &#34;median&#34;, &#34;constant&#34;}. Defaults to &#34;median&#34;.
+        Todo: 
+            1. filling value for constant mode.
         &#34;&#34;&#34;
         super().__init__(threshold, center=False, scale=False)
 
@@ -513,7 +514,7 @@ class simple_imputer(imputer):
 </dd>
 <dt id="PineBioML.preprocessing.impute.simple_imputer"><code class="flex name class">
 <span>class <span class="ident">simple_imputer</span></span>
-<span>(</span><span>threshold=0.3333, strategy='median')</span>
+<span>(</span><span>threshold=0.333, strategy='median')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Using a constant value (0, mean, median&hellip; etc.) to impute all missing value in a feature.</p>
@@ -523,7 +524,9 @@ class simple_imputer(imputer):
 <dd>float from (0, 1]. If missing value rate of a feature is higher than threshold, it will be deleted. Defaults to 0.333</dd>
 <dt><strong><code>strategy</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>The strategy to impute. One of {"mean", "median", "constant"}. Defaults to "median".</dd>
-</dl></div>
+</dl>
+<p>Todo:
+1. filling value for constant mode.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -533,12 +536,14 @@ class simple_imputer(imputer):
     Using a constant value (0, mean, median... etc.) to impute all missing value in a feature.
     &#34;&#34;&#34;
 
-    def __init__(self, threshold=0.3333, strategy=&#34;median&#34;):
+    def __init__(self, threshold=0.333, strategy=&#34;median&#34;):
         &#34;&#34;&#34;
 
         Args:
             threshold (float): float from (0, 1]. If missing value rate of a feature is higher than threshold, it will be deleted. Defaults to 0.333
             strategy (str, optional): The strategy to impute. One of {&#34;mean&#34;, &#34;median&#34;, &#34;constant&#34;}. Defaults to &#34;median&#34;.
+        Todo: 
+            1. filling value for constant mode.
         &#34;&#34;&#34;
         super().__init__(threshold, center=False, scale=False)
 

@@ -14,12 +14,14 @@ class selector(SelectionPipeline):
     
     """
 
-    def __init__(self, k=-1, RF_trees=1024):
+    def __init__(self, k=-1, RF_trees=1024, z_importance_threshold=0):
         """
 
         Args:
 
         """
+        self.z_importance_threshold = z_importance_threshold
+
         self.kernels = {
             "c45": DT_selection(k=k, strategy="c45"),
             "RF_gini": RF_selection(k=k, strategy="gini", trees=RF_trees),
@@ -76,7 +78,7 @@ class selector(SelectionPipeline):
         z_scores = (self.selected_score - self.selected_score.mean()) / (
             self.selected_score.std() + 1e-4)
         z_scores = z_scores.mean(axis=1)
-        z_scores = z_scores[z_scores > 1.]
+        z_scores = z_scores[z_scores > self.z_importance_threshold]
 
         return x[z_scores.index]
 

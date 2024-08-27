@@ -129,7 +129,71 @@ class Normalizer():
                                index=x.index,
                                columns=x.columns)
 
-        return x_original</code></pre>
+        return x_original
+
+
+class Pass():
+    &#34;&#34;&#34; 
+    Do nothing.
+    &#34;&#34;&#34;
+
+    def __init__(self):
+        pass
+
+    def fit(self, x, y=None):
+        &#34;&#34;&#34;
+        Do nothing.    
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to normalize.    
+            y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.    
+
+        Returns:
+            Pass: No, do nothing.
+        &#34;&#34;&#34;
+
+        return self
+
+    def transform(self, x):
+        &#34;&#34;&#34;
+        Do nothing.
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to normalize.    
+
+        Returns:
+            pandas.DataFrame or a 2D array: Normalized x.
+        &#34;&#34;&#34;
+        
+        return x
+
+    def fit_transform(self, x, y=None):
+        &#34;&#34;&#34;
+        Do nothing.
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to normalize.
+            y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.
+
+        Returns:
+            pandas.DataFrame or a 2D array: x.
+        &#34;&#34;&#34;
+        self.fit(x, y)
+        x_normalized = self.transform(x)
+        return x_normalized
+
+    def inverse_transform(self, x):
+        &#34;&#34;&#34;
+        Do nothing.
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to revert original scale.
+
+        Returns:
+            pandas.DataFrame or a 2D array: x.
+        &#34;&#34;&#34;
+
+        return x</code></pre>
 </details>
 </section>
 <section>
@@ -459,6 +523,225 @@ PowerTransformer(x) = yeo-johnson transform(x)</p>
 </dd>
 </dl>
 </dd>
+<dt id="PineBioML.preprocessing.Pass"><code class="flex name class">
+<span>class <span class="ident">Pass</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Do nothing.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Pass():
+    &#34;&#34;&#34; 
+    Do nothing.
+    &#34;&#34;&#34;
+
+    def __init__(self):
+        pass
+
+    def fit(self, x, y=None):
+        &#34;&#34;&#34;
+        Do nothing.    
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to normalize.    
+            y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.    
+
+        Returns:
+            Pass: No, do nothing.
+        &#34;&#34;&#34;
+
+        return self
+
+    def transform(self, x):
+        &#34;&#34;&#34;
+        Do nothing.
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to normalize.    
+
+        Returns:
+            pandas.DataFrame or a 2D array: Normalized x.
+        &#34;&#34;&#34;
+        
+        return x
+
+    def fit_transform(self, x, y=None):
+        &#34;&#34;&#34;
+        Do nothing.
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to normalize.
+            y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.
+
+        Returns:
+            pandas.DataFrame or a 2D array: x.
+        &#34;&#34;&#34;
+        self.fit(x, y)
+        x_normalized = self.transform(x)
+        return x_normalized
+
+    def inverse_transform(self, x):
+        &#34;&#34;&#34;
+        Do nothing.
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to revert original scale.
+
+        Returns:
+            pandas.DataFrame or a 2D array: x.
+        &#34;&#34;&#34;
+
+        return x</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="PineBioML.preprocessing.Pass.fit"><code class="name flex">
+<span>def <span class="ident">fit</span></span>(<span>self, x, y=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Do nothing.
+</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
+<dd>The data to normalize.
+</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
+<dd>A placeholder only. Normalizer do nothing to y.
+</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="PineBioML.preprocessing.Pass" href="#PineBioML.preprocessing.Pass">Pass</a></code></dt>
+<dd>No, do nothing.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit(self, x, y=None):
+    &#34;&#34;&#34;
+    Do nothing.    
+
+    Args:
+        x (pandas.DataFrame or a 2D array): The data to normalize.    
+        y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.    
+
+    Returns:
+        Pass: No, do nothing.
+    &#34;&#34;&#34;
+
+    return self</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.preprocessing.Pass.fit_transform"><code class="name flex">
+<span>def <span class="ident">fit_transform</span></span>(<span>self, x, y=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Do nothing.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
+<dd>The data to normalize.</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
+<dd>A placeholder only. Normalizer do nothing to y.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
+<dd>x.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit_transform(self, x, y=None):
+    &#34;&#34;&#34;
+    Do nothing.
+
+    Args:
+        x (pandas.DataFrame or a 2D array): The data to normalize.
+        y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.
+
+    Returns:
+        pandas.DataFrame or a 2D array: x.
+    &#34;&#34;&#34;
+    self.fit(x, y)
+    x_normalized = self.transform(x)
+    return x_normalized</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.preprocessing.Pass.inverse_transform"><code class="name flex">
+<span>def <span class="ident">inverse_transform</span></span>(<span>self, x)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Do nothing.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
+<dd>The data to revert original scale.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
+<dd>x.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def inverse_transform(self, x):
+    &#34;&#34;&#34;
+    Do nothing.
+
+    Args:
+        x (pandas.DataFrame or a 2D array): The data to revert original scale.
+
+    Returns:
+        pandas.DataFrame or a 2D array: x.
+    &#34;&#34;&#34;
+
+    return x</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.preprocessing.Pass.transform"><code class="name flex">
+<span>def <span class="ident">transform</span></span>(<span>self, x)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Do nothing.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
+<dd>The data to normalize.
+</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
+<dd>Normalized x.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def transform(self, x):
+    &#34;&#34;&#34;
+    Do nothing.
+
+    Args:
+        x (pandas.DataFrame or a 2D array): The data to normalize.    
+
+    Returns:
+        pandas.DataFrame or a 2D array: Normalized x.
+    &#34;&#34;&#34;
+    
+    return x</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
 </dl>
 </section>
 </article>
@@ -490,6 +773,15 @@ PowerTransformer(x) = yeo-johnson transform(x)</p>
 <li><code><a title="PineBioML.preprocessing.Normalizer.fit_transform" href="#PineBioML.preprocessing.Normalizer.fit_transform">fit_transform</a></code></li>
 <li><code><a title="PineBioML.preprocessing.Normalizer.inverse_transform" href="#PineBioML.preprocessing.Normalizer.inverse_transform">inverse_transform</a></code></li>
 <li><code><a title="PineBioML.preprocessing.Normalizer.transform" href="#PineBioML.preprocessing.Normalizer.transform">transform</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="PineBioML.preprocessing.Pass" href="#PineBioML.preprocessing.Pass">Pass</a></code></h4>
+<ul class="">
+<li><code><a title="PineBioML.preprocessing.Pass.fit" href="#PineBioML.preprocessing.Pass.fit">fit</a></code></li>
+<li><code><a title="PineBioML.preprocessing.Pass.fit_transform" href="#PineBioML.preprocessing.Pass.fit_transform">fit_transform</a></code></li>
+<li><code><a title="PineBioML.preprocessing.Pass.inverse_transform" href="#PineBioML.preprocessing.Pass.inverse_transform">inverse_transform</a></code></li>
+<li><code><a title="PineBioML.preprocessing.Pass.transform" href="#PineBioML.preprocessing.Pass.transform">transform</a></code></li>
 </ul>
 </li>
 </ul>

@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>PineBioML.model.utils API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>PineBioML.model.utils</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from PineBioML.report.utils import classification_scores
+from sklearn.model_selection import StratifiedKFold
+from sklearn.pipeline import Pipeline
+import numpy as np
+from pandas import DataFrame
+
+# ToDo: the Integration of .predict and .transform
+
+
+class Pine():
+    &#34;&#34;&#34;
+    Deep first traversal the given experiment setting.    
+    the last step of experiment sould be model.    
+
+
+    note: experiment step and experiment stage is the same thing.
+    &#34;&#34;&#34;
+
+    def __init__(self, experiment):
+        &#34;&#34;&#34;
+
+        Args:
+            experiment (list): list of experiment steps. step should be in the form: tuple(str, dict) = (step_name, {method_name: method}). it could be several method in one step and they will fork in deep first traversal.
+        &#34;&#34;&#34;
+        self.experiment = experiment
+        self.total_stage = len(experiment) - 1
+        self.result = []
+
+    def do_stage(self, train_x, train_y, test_x, test_y, stage, record):
+        &#34;&#34;&#34;
+        the recursive function to traversal the experiment setting.    
+        the socres and path will be stored in self.result, so there is no return in recursive function.     
+
+        Args:
+            train_x (pd.DataFrame): training x
+            train_y (pd.Series): training y
+            test_x (pd.DataFrame): training x
+            test_y (pd.Series): training y
+            stage (int): the order of current stage in the experiment setting
+            record (dict): record the traversal path in a dict of str
+        &#34;&#34;&#34;
+        # if not the last stage
+        if stage &lt; self.total_stage:
+            # unzip the stage, stage = (stage_name, {operator_name: operator})
+            stage_name, operators = self.experiment[stage]
+
+            # fork to next stage according to the diffirent operator (opt)
+            for opt_name in operators:
+                record[stage_name] = opt_name
+                opt = operators[opt_name]
+
+                # transform by operators
+                processed_train_x = opt.fit_transform(train_x, train_y)
+                if test_x is not None:
+                    processed_test_x = opt.transform(test_x)
+
+                # reccursivly call
+                self.do_stage(processed_train_x, train_y, processed_test_x,
+                              test_y, stage + 1, record)
+        # the last layer, it should be models
+        else:
+            stage_name, operators = self.experiment[stage]
+            for opt_name in operators:
+                # unzip the stage, stage = (stage_name, {operator_name: operator})
+                record[stage_name] = opt_name
+                tuner = operators[opt_name]
+
+                # tune/fit the model on training data
+                model = tuner.fit(train_x, train_y)
+                # compute the training score
+                train_scores = classification_scores(model,
+                                                     train_x,
+                                                     train_y,
+                                                     prefix=&#34;train_&#34;)
+                # if there is testing data
+                if test_x is not None:
+                    # compute the testing score
+                    test_scores = classification_scores(model,
+                                                        test_x,
+                                                        test_y,
+                                                        prefix=&#34;test_&#34;)
+
+                # compute the cross validation score on training set
+                valid_scores = {}
+                fold_scores = []
+                # for each fold
+                for (train_idx, valid_idx) in StratifiedKFold(
+                        5, shuffle=True,
+                        random_state=133).split(train_x, train_y):
+                    # fit on fold
+                    model.fit(train_x.iloc[train_idx], train_y.iloc[train_idx])
+                    # compute fold score
+                    fold_scores.append(
+                        classification_scores(model,
+                                              train_x.iloc[valid_idx],
+                                              train_y.iloc[valid_idx],
+                                              prefix=&#34;cv_&#34;))
+                # average the fold scores
+                for metric_name in fold_scores[0]:
+                    valid_scores[metric_name] = np.array([
+                        fold_scores[cv][metric_name] for cv in range(5)
+                    ]).mean()
+
+                # concatenate the score dicts
+                if test_x is not None:
+                    self.result.append(
+                        dict(**record, **train_scores, **valid_scores,
+                             **test_scores))
+                else:
+                    self.result.append(
+                        dict(**record, **train_scores, **valid_scores))
+
+    def do_experiment(self, train_x, train_y, test_x=None, test_y=None):
+        &#34;&#34;&#34;
+        the first call of recurssive fuction.
+
+        Args:
+            train_x (pd.DataFrame): training x
+            train_y (pd.Series): training y
+            test_x (pd.DataFrame): training x
+            test_y (pd.Series): training y
+
+        Returns:
+            pd.DataFrame: the result
+        &#34;&#34;&#34;
+        # clear the results.
+        self.result = []
+
+        self.do_stage(train_x, train_y, test_x, test_y, 0, {})
+
+        return DataFrame(self.result)
+
+    def recall_model(self, id):
+        &#34;&#34;&#34;
+        query the last experiment result by id and build the pipeline object.
+
+        Todo: A proper way to fit the pipeline object.
+
+        Args:
+            id (int): the order of experiment path.
+
+        Returns:
+            sklearn.pipeline.Pipeline: ready to use object.
+        &#34;&#34;&#34;
+
+        model_spec = self.result[id]
+        model_pipeline = []
+        for (step_name, methods) in self.experiment:
+            using_method = model_spec[step_name]
+            model_pipeline.append((step_name, methods[using_method]))
+        return Pipeline(model_pipeline)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="PineBioML.model.utils.Pine"><code class="flex name class">
+<span>class <span class="ident">Pine</span></span>
+<span>(</span><span>experiment)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Deep first traversal the given experiment setting.
+<br>
+the last step of experiment sould be model.
+</p>
+<p>note: experiment step and experiment stage is the same thing.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>experiment</code></strong> :&ensp;<code>list</code></dt>
+<dd>list of experiment steps. step should be in the form: tuple(str, dict) = (step_name, {method_name: method}). it could be several method in one step and they will fork in deep first traversal.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Pine():
+    &#34;&#34;&#34;
+    Deep first traversal the given experiment setting.    
+    the last step of experiment sould be model.    
+
+
+    note: experiment step and experiment stage is the same thing.
+    &#34;&#34;&#34;
+
+    def __init__(self, experiment):
+        &#34;&#34;&#34;
+
+        Args:
+            experiment (list): list of experiment steps. step should be in the form: tuple(str, dict) = (step_name, {method_name: method}). it could be several method in one step and they will fork in deep first traversal.
+        &#34;&#34;&#34;
+        self.experiment = experiment
+        self.total_stage = len(experiment) - 1
+        self.result = []
+
+    def do_stage(self, train_x, train_y, test_x, test_y, stage, record):
+        &#34;&#34;&#34;
+        the recursive function to traversal the experiment setting.    
+        the socres and path will be stored in self.result, so there is no return in recursive function.     
+
+        Args:
+            train_x (pd.DataFrame): training x
+            train_y (pd.Series): training y
+            test_x (pd.DataFrame): training x
+            test_y (pd.Series): training y
+            stage (int): the order of current stage in the experiment setting
+            record (dict): record the traversal path in a dict of str
+        &#34;&#34;&#34;
+        # if not the last stage
+        if stage &lt; self.total_stage:
+            # unzip the stage, stage = (stage_name, {operator_name: operator})
+            stage_name, operators = self.experiment[stage]
+
+            # fork to next stage according to the diffirent operator (opt)
+            for opt_name in operators:
+                record[stage_name] = opt_name
+                opt = operators[opt_name]
+
+                # transform by operators
+                processed_train_x = opt.fit_transform(train_x, train_y)
+                if test_x is not None:
+                    processed_test_x = opt.transform(test_x)
+
+                # reccursivly call
+                self.do_stage(processed_train_x, train_y, processed_test_x,
+                              test_y, stage + 1, record)
+        # the last layer, it should be models
+        else:
+            stage_name, operators = self.experiment[stage]
+            for opt_name in operators:
+                # unzip the stage, stage = (stage_name, {operator_name: operator})
+                record[stage_name] = opt_name
+                tuner = operators[opt_name]
+
+                # tune/fit the model on training data
+                model = tuner.fit(train_x, train_y)
+                # compute the training score
+                train_scores = classification_scores(model,
+                                                     train_x,
+                                                     train_y,
+                                                     prefix=&#34;train_&#34;)
+                # if there is testing data
+                if test_x is not None:
+                    # compute the testing score
+                    test_scores = classification_scores(model,
+                                                        test_x,
+                                                        test_y,
+                                                        prefix=&#34;test_&#34;)
+
+                # compute the cross validation score on training set
+                valid_scores = {}
+                fold_scores = []
+                # for each fold
+                for (train_idx, valid_idx) in StratifiedKFold(
+                        5, shuffle=True,
+                        random_state=133).split(train_x, train_y):
+                    # fit on fold
+                    model.fit(train_x.iloc[train_idx], train_y.iloc[train_idx])
+                    # compute fold score
+                    fold_scores.append(
+                        classification_scores(model,
+                                              train_x.iloc[valid_idx],
+                                              train_y.iloc[valid_idx],
+                                              prefix=&#34;cv_&#34;))
+                # average the fold scores
+                for metric_name in fold_scores[0]:
+                    valid_scores[metric_name] = np.array([
+                        fold_scores[cv][metric_name] for cv in range(5)
+                    ]).mean()
+
+                # concatenate the score dicts
+                if test_x is not None:
+                    self.result.append(
+                        dict(**record, **train_scores, **valid_scores,
+                             **test_scores))
+                else:
+                    self.result.append(
+                        dict(**record, **train_scores, **valid_scores))
+
+    def do_experiment(self, train_x, train_y, test_x=None, test_y=None):
+        &#34;&#34;&#34;
+        the first call of recurssive fuction.
+
+        Args:
+            train_x (pd.DataFrame): training x
+            train_y (pd.Series): training y
+            test_x (pd.DataFrame): training x
+            test_y (pd.Series): training y
+
+        Returns:
+            pd.DataFrame: the result
+        &#34;&#34;&#34;
+        # clear the results.
+        self.result = []
+
+        self.do_stage(train_x, train_y, test_x, test_y, 0, {})
+
+        return DataFrame(self.result)
+
+    def recall_model(self, id):
+        &#34;&#34;&#34;
+        query the last experiment result by id and build the pipeline object.
+
+        Todo: A proper way to fit the pipeline object.
+
+        Args:
+            id (int): the order of experiment path.
+
+        Returns:
+            sklearn.pipeline.Pipeline: ready to use object.
+        &#34;&#34;&#34;
+
+        model_spec = self.result[id]
+        model_pipeline = []
+        for (step_name, methods) in self.experiment:
+            using_method = model_spec[step_name]
+            model_pipeline.append((step_name, methods[using_method]))
+        return Pipeline(model_pipeline)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="PineBioML.model.utils.Pine.do_experiment"><code class="name flex">
+<span>def <span class="ident">do_experiment</span></span>(<span>self, train_x, train_y, test_x=None, test_y=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>the first call of recurssive fuction.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>train_x</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>training x</dd>
+<dt><strong><code>train_y</code></strong> :&ensp;<code>pd.Series</code></dt>
+<dd>training y</dd>
+<dt><strong><code>test_x</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>training x</dd>
+<dt><strong><code>test_y</code></strong> :&ensp;<code>pd.Series</code></dt>
+<dd>training y</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pd.DataFrame</code></dt>
+<dd>the result</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def do_experiment(self, train_x, train_y, test_x=None, test_y=None):
+    &#34;&#34;&#34;
+    the first call of recurssive fuction.
+
+    Args:
+        train_x (pd.DataFrame): training x
+        train_y (pd.Series): training y
+        test_x (pd.DataFrame): training x
+        test_y (pd.Series): training y
+
+    Returns:
+        pd.DataFrame: the result
+    &#34;&#34;&#34;
+    # clear the results.
+    self.result = []
+
+    self.do_stage(train_x, train_y, test_x, test_y, 0, {})
+
+    return DataFrame(self.result)</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.model.utils.Pine.do_stage"><code class="name flex">
+<span>def <span class="ident">do_stage</span></span>(<span>self, train_x, train_y, test_x, test_y, stage, record)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>the recursive function to traversal the experiment setting.
+<br>
+the socres and path will be stored in self.result, so there is no return in recursive function.
+</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>train_x</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>training x</dd>
+<dt><strong><code>train_y</code></strong> :&ensp;<code>pd.Series</code></dt>
+<dd>training y</dd>
+<dt><strong><code>test_x</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>training x</dd>
+<dt><strong><code>test_y</code></strong> :&ensp;<code>pd.Series</code></dt>
+<dd>training y</dd>
+<dt><strong><code>stage</code></strong> :&ensp;<code>int</code></dt>
+<dd>the order of current stage in the experiment setting</dd>
+<dt><strong><code>record</code></strong> :&ensp;<code>dict</code></dt>
+<dd>record the traversal path in a dict of str</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def do_stage(self, train_x, train_y, test_x, test_y, stage, record):
+    &#34;&#34;&#34;
+    the recursive function to traversal the experiment setting.    
+    the socres and path will be stored in self.result, so there is no return in recursive function.     
+
+    Args:
+        train_x (pd.DataFrame): training x
+        train_y (pd.Series): training y
+        test_x (pd.DataFrame): training x
+        test_y (pd.Series): training y
+        stage (int): the order of current stage in the experiment setting
+        record (dict): record the traversal path in a dict of str
+    &#34;&#34;&#34;
+    # if not the last stage
+    if stage &lt; self.total_stage:
+        # unzip the stage, stage = (stage_name, {operator_name: operator})
+        stage_name, operators = self.experiment[stage]
+
+        # fork to next stage according to the diffirent operator (opt)
+        for opt_name in operators:
+            record[stage_name] = opt_name
+            opt = operators[opt_name]
+
+            # transform by operators
+            processed_train_x = opt.fit_transform(train_x, train_y)
+            if test_x is not None:
+                processed_test_x = opt.transform(test_x)
+
+            # reccursivly call
+            self.do_stage(processed_train_x, train_y, processed_test_x,
+                          test_y, stage + 1, record)
+    # the last layer, it should be models
+    else:
+        stage_name, operators = self.experiment[stage]
+        for opt_name in operators:
+            # unzip the stage, stage = (stage_name, {operator_name: operator})
+            record[stage_name] = opt_name
+            tuner = operators[opt_name]
+
+            # tune/fit the model on training data
+            model = tuner.fit(train_x, train_y)
+            # compute the training score
+            train_scores = classification_scores(model,
+                                                 train_x,
+                                                 train_y,
+                                                 prefix=&#34;train_&#34;)
+            # if there is testing data
+            if test_x is not None:
+                # compute the testing score
+                test_scores = classification_scores(model,
+                                                    test_x,
+                                                    test_y,
+                                                    prefix=&#34;test_&#34;)
+
+            # compute the cross validation score on training set
+            valid_scores = {}
+            fold_scores = []
+            # for each fold
+            for (train_idx, valid_idx) in StratifiedKFold(
+                    5, shuffle=True,
+                    random_state=133).split(train_x, train_y):
+                # fit on fold
+                model.fit(train_x.iloc[train_idx], train_y.iloc[train_idx])
+                # compute fold score
+                fold_scores.append(
+                    classification_scores(model,
+                                          train_x.iloc[valid_idx],
+                                          train_y.iloc[valid_idx],
+                                          prefix=&#34;cv_&#34;))
+            # average the fold scores
+            for metric_name in fold_scores[0]:
+                valid_scores[metric_name] = np.array([
+                    fold_scores[cv][metric_name] for cv in range(5)
+                ]).mean()
+
+            # concatenate the score dicts
+            if test_x is not None:
+                self.result.append(
+                    dict(**record, **train_scores, **valid_scores,
+                         **test_scores))
+            else:
+                self.result.append(
+                    dict(**record, **train_scores, **valid_scores))</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.model.utils.Pine.recall_model"><code class="name flex">
+<span>def <span class="ident">recall_model</span></span>(<span>self, id)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>query the last experiment result by id and build the pipeline object.</p>
+<p>Todo: A proper way to fit the pipeline object.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>id</code></strong> :&ensp;<code>int</code></dt>
+<dd>the order of experiment path.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>sklearn.pipeline.Pipeline</code></dt>
+<dd>ready to use object.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def recall_model(self, id):
+    &#34;&#34;&#34;
+    query the last experiment result by id and build the pipeline object.
+
+    Todo: A proper way to fit the pipeline object.
+
+    Args:
+        id (int): the order of experiment path.
+
+    Returns:
+        sklearn.pipeline.Pipeline: ready to use object.
+    &#34;&#34;&#34;
+
+    model_spec = self.result[id]
+    model_pipeline = []
+    for (step_name, methods) in self.experiment:
+        using_method = model_spec[step_name]
+        model_pipeline.append((step_name, methods[using_method]))
+    return Pipeline(model_pipeline)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="PineBioML.model" href="index.html">PineBioML.model</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="PineBioML.model.utils.Pine" href="#PineBioML.model.utils.Pine">Pine</a></code></h4>
+<ul class="">
+<li><code><a title="PineBioML.model.utils.Pine.do_experiment" href="#PineBioML.model.utils.Pine.do_experiment">do_experiment</a></code></li>
+<li><code><a title="PineBioML.model.utils.Pine.do_stage" href="#PineBioML.model.utils.Pine.do_stage">do_stage</a></code></li>
+<li><code><a title="PineBioML.model.utils.Pine.recall_model" href="#PineBioML.model.utils.Pine.recall_model">recall_model</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

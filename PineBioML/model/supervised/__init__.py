@@ -17,7 +17,8 @@ class Basic_tuner(ABC):
 
     """
 
-    def __init__(self, n_try, target, kernel_seed, valid_seed, optuna_seed):
+    def __init__(self, n_try, target, kernel_seed, valid_seed, optuna_seed,
+                 validate_penalty):
         """
         
         Args:
@@ -27,6 +28,8 @@ class Basic_tuner(ABC):
             valid_seed (int): random seed for cross validation
             optuna_seed (int): random seed for optuna.    
         """
+        self.validate_penalty = validate_penalty
+
         self.n_cv = 5
         self.n_try = n_try
 
@@ -57,10 +60,6 @@ class Basic_tuner(ABC):
         self.eval_prob = not target in self.discrete_target
         # Get the scorer
         self.metric = metrics.get_scorer(target)
-
-        # Make the sampler behave in a deterministic way.
-        sampler = TPESampler(seed=optuna_seed)
-        self.study = optuna.create_study(direction="maximize", sampler=sampler)
 
         self.optuna_model = None
         self.default_model = None
@@ -107,7 +106,10 @@ class Basic_tuner(ABC):
 
             test_score = self.metric(classifier_obj, x_test, y_test)
             train_score = self.metric(classifier_obj, x_train, y_train)
-            score.append(test_score + 0.2 * (test_score - train_score))
+            if self.validate_penalty:
+                score.append(test_score + 0.1 * (test_score - train_score))
+            else:
+                score.append(test_score)
 
             #score.append(test_score)
         score = sum(score) / self.n_cv
@@ -127,6 +129,10 @@ class Basic_tuner(ABC):
         self.x = x
         self.y = y
         self.n_sample = x.shape[0]
+
+        # Make the sampler behave in a deterministic way.
+        sampler = TPESampler(seed=self.optuna_seed)
+        self.study = optuna.create_study(direction="maximize", sampler=sampler)
 
         print(
             "optuna seed {self.optuna_seed}  |  validation seed {self.valid_seed}  |  model seed {self.kernel_seed}"
