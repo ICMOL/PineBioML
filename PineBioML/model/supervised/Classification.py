@@ -126,7 +126,7 @@ class RandomForest_tuner(Basic_tuner):
             parms = {
                 "bootstrap": self.using_oob,
                 "oob_score": self.using_oob,
-                "n_jobs": -1,
+                "n_jobs": 1, # faster than -1.  omg
                 "random_state": self.kernel_seed,
                 "verbose": 0,
             }
@@ -151,7 +151,7 @@ class RandomForest_tuner(Basic_tuner):
                 "oob_score":
                 self.using_oob,
                 "n_jobs":
-                -1,
+                1, # faster than -1.  omg
                 "random_state":
                 self.kernel_seed_tape[trial.number],
                 "verbose":
@@ -197,7 +197,8 @@ class RandomForest_tuner(Basic_tuner):
                     n_splits=5,
                     shuffle=True,
                     random_state=self.valid_seed_tape[trial.number]),
-                scoring=self.metric)
+                scoring=self.metric,
+                n_jobs=-1)
             score = score.mean()
         return score
 

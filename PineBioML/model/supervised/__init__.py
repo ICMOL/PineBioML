@@ -27,6 +27,8 @@ class Basic_tuner(ABC):
             kernel_seed (int): random seed for model kernel. 
             valid_seed (int): random seed for cross validation
             optuna_seed (int): random seed for optuna.    
+
+        ToDo: None seed for tuner from __init__ to fit
         """
         self.validate_penalty = validate_penalty
 

@@ -2,7 +2,7 @@
 This package aims to help analysising biomedical data using ML method in python.    
 We only support binary classification now.
 
-![image](./documents/images/workflow/auto_selection_workflow.png) 
+![image](./documents/images/workflow/PineBioML_workflow_v3.png) 
 
 # System requirements
    1. Python 3.10+

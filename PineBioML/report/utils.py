@@ -85,7 +85,8 @@ def data_overview(input_x, y, label_name="y", title=""):
     fig.set_title("PLS")
     plt.show()
 
-def classification_scores(fitted_model, x, y_true, prefix = ""):
+
+def classification_scores(fitted_model, x, y_true, prefix=""):
     """
     compute classification metrics, including acc, f1, recall, specificity, sensitivity, mcc, auc
 
@@ -99,10 +100,12 @@ def classification_scores(fitted_model, x, y_true, prefix = ""):
         dict: python dict for scores
     """
     y_pred_prob = fitted_model.predict_proba(x)
-    y_pred= np.argmax(y_pred_prob, axis =1)
+    y_pred = np.argmax(y_pred_prob, axis=1)
 
-    confusion_scores = metrics.classification_report(y_true, y_pred, output_dict=True)
-    
+    confusion_scores = metrics.classification_report(y_true,
+                                                     y_pred,
+                                                     output_dict=True)
+
     if len(confusion_scores) == 5:
         if "1" in confusion_scores:
             result = confusion_scores["1"]
@@ -118,15 +121,14 @@ def classification_scores(fitted_model, x, y_true, prefix = ""):
             #sensitivity = confusion_scores["1.0"]["recall"]
             #specificity = confusion_scores["0.0"]["recall"]
 
-    result["mcc"] = metrics.get_scorer("matthews_corrcoef")(fitted_model, x, y_true)
-    result["auc"] = metrics.get_scorer("roc_auc")(fitted_model, x, y_true)
+    result["mcc"] = metrics.matthews_corrcoef(y_true, y_pred)
+    result["auc"] = metrics.roc_auc_score(y_true, y_pred_prob[:, 1])
 
     prefix_result = {}
     for score in result:
         prefix_result[prefix + score] = result[score]
 
     return prefix_result
-
 
 
 def classification_summary(y_true, y_pred_prob, title=""):

@@ -8,17 +8,19 @@
         5. document update.
 
     bug:
-        1. bagging:
+        1. feature bagging:
              - contradicts to log domain in selection method (the negative output of pca)
              - the variance of feature will change during bagging (variance matters)
         2. Lasso logistic regression in grid search need to to modified. In temporary using binary search.
         3. Issue about installation of pandas lacking of Microsoft Visual C++ 14.0:
             https://learn.microsoft.com/zh-tw/cpp/windows/latest-supported-vc-redist?view=msvc-170
+        4. RF tuner too slow.
     On Going:
+        0. verbosity or or progress bar for Pine
         1. A reliable tutorial. (including mac)
         2. One click everything (almost)
     ToDo:
-        1. report and diagnose
+        1. report and diagnose, Pine pipeline graph.
         2. Document reference
         3. using pretty, beautiful, good-looking, precise packages:
             a. pca
