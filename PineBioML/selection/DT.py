@@ -74,11 +74,9 @@ class DT_selection(SelectionPipeline):
         Returns:
             float: entropy
         """
-        x = x["label"]
-        p = x.mean()
-        q = 1 - p
-        if p and q:  # not all zero
-            entropy = -(p * np.log(p + 1e-6) + q * np.log(q + 1e-6))
-        else:
-            entropy = 0
+        label_nums = x["label"].value_counts()
+        label_prop = label_nums / label_nums.sum()
+
+        entropy = -(label_prop * np.log(label_prop + 1e-6)).sum()
+
         return entropy

@@ -1,17 +1,19 @@
 from . import Basic_tuner
 
-from sklearn.model_selection import StratifiedKFold, cross_val_score
-from sklearn.utils.class_weight import compute_sample_weight
+from joblib import parallel_backend
 
+from sklearn.model_selection import StratifiedKFold
+from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
+from statsmodels.discrete.discrete_model import Logit, MNLogit
 from sklearn.linear_model import LogisticRegression
 from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
 from catboost import CatBoostClassifier, Pool
+
 import numpy as np
-from statsmodels.discrete.discrete_model import Logit
 
 # ToDo: multi class support
 # ToDo: optuna pruner
@@ -28,10 +30,10 @@ class ElasticLogit_tuner(Basic_tuner):
     def __init__(self,
                  kernel="saga",
                  n_try=25,
-                 target="matthews_corrcoef",
+                 target=None,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         """
         Args:
@@ -44,6 +46,7 @@ class ElasticLogit_tuner(Basic_tuner):
         """
         super().__init__(n_try=n_try,
                          target=target,
+                         is_regression=False,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
@@ -60,15 +63,16 @@ class ElasticLogit_tuner(Basic_tuner):
                 "verbose": 0,
                 "l1_ratio": 0.5,
                 "penalty": self.penalty,
-                "solver": self.kernel
+                "solver": self.kernel,
+                "random_state": self.kernel_seed_tape[trial.number]
             }
         else:
             parms = {
                 "C": trial.suggest_float('C', 1e-6, 1e+2, log=True),
                 "l1_ratio": trial.suggest_float('l1_ratio', 0, 1),
                 "penalty": self.penalty,
-                "class_weight": "balanced",
                 "solver": self.kernel,
+                "random_state": self.kernel_seed_tape[trial.number],
                 "verbose": 0,
             }
         lg = LogisticRegression(**parms)
@@ -79,11 +83,23 @@ class ElasticLogit_tuner(Basic_tuner):
         It is the way I found to cram a sklearn regression result into the statsmodel regresion.    
         The only reason to do this is that statsmodel provides R-style summary.    
         """
-        sm_logit = Logit(self.y, self.x).fit(
-            disp=False,
-            start_params=self.best_model.coef_.flatten(),
-            maxiter=0,
-            warn_convergence=False)
+        if len(self.best_model.classes_) > 2:
+            # multi-class classification
+            # Todo
+            raise TypeError(
+                "multi-class classification summary not support yet.")
+            sm_logit = MNLogit(self.y,
+                               self.x).fit(disp=False,
+                                           start_params=self.best_model.coef_,
+                                           maxiter=0,
+                                           warn_convergence=False)
+        else:
+            # binary classification
+            sm_logit = Logit(self.y, self.x).fit(
+                disp=False,
+                start_params=self.best_model.coef_.flatten(),
+                maxiter=0,
+                warn_convergence=False)
         print(sm_logit.summary())
 
 
@@ -97,10 +113,10 @@ class RandomForest_tuner(Basic_tuner):
     def __init__(self,
                  using_oob=True,
                  n_try=50,
-                 target="matthews_corrcoef",
+                 target=None,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         """
 
@@ -114,6 +130,7 @@ class RandomForest_tuner(Basic_tuner):
         """
         super().__init__(n_try=n_try,
                          target=target,
+                         is_regression=False,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
@@ -126,7 +143,7 @@ class RandomForest_tuner(Basic_tuner):
             parms = {
                 "bootstrap": self.using_oob,
                 "oob_score": self.using_oob,
-                "n_jobs": 1, # faster than -1.  omg
+                "n_jobs": -1,
                 "random_state": self.kernel_seed,
                 "verbose": 0,
             }
@@ -134,14 +151,8 @@ class RandomForest_tuner(Basic_tuner):
             parms = {
                 "n_estimators":
                 trial.suggest_int('n_estimators', 32, 1024, log=True),
-                "max_depth":
-                trial.suggest_int('max_depth', 2, 16, log=True),
-                #"min_samples_split":
-                #trial.suggest_int('min_samples_split', 2, 16, log=True),
                 "min_samples_leaf":
                 trial.suggest_int('min_samples_leaf', 1, 16, log=True),
-                #"min_weight_fraction_leaf":
-                #trial.suggest_float('min_weight_fraction_leaf', 1e-4, 1e-1, log=True),
                 "ccp_alpha":
                 trial.suggest_float('ccp_alpha', 1e-3, 1e-1, log=True),
                 "max_samples":
@@ -151,13 +162,11 @@ class RandomForest_tuner(Basic_tuner):
                 "oob_score":
                 self.using_oob,
                 "n_jobs":
-                1, # faster than -1.  omg
+                -1,  # faster than -1.  omg
                 "random_state":
                 self.kernel_seed_tape[trial.number],
                 "verbose":
                 0,
-                "class_weight":
-                "balanced"
             }
 
         rf = RandomForestClassifier(**parms)
@@ -177,29 +186,59 @@ class RandomForest_tuner(Basic_tuner):
 
         if self.using_oob:
             # oob predict
-            classifier_obj.fit(self.x, self.y)
-            y_pred = classifier_obj.oob_decision_function_[:, 1]
+            # there is a bug that default sklaern randomforest parallel_backend using thread where others use "loky", see joblib.parallel_backend.
+            with parallel_backend('loky'):
+                classifier_obj.fit(self.x,
+                                   self.y,
+                                   sample_weight=compute_sample_weight(
+                                       class_weight="balanced", y=self.y))
+
+            # oob prediction
+            y_pred = classifier_obj.oob_decision_function_
+            if self.metric_name == "roc_auc":
+                # roc_auc can only be used on binary classification. Do not try ovr, ovo. forget them.
+                y_pred = y_pred[:, 1]
 
             # oob score
-            if not self.eval_prob:
-                # !!! some metrics (such as accuracy and F1) require discrete predictions.
-                # !!! If the score function raise an error about y_pred should not be float,
-                # !!! then please add the name of your metric(target) into Basic_tuner's "discrete_target" in ./__init__.py.
-                y_pred = y_pred > 0.5
-            score = self.metric._score_func(self.y, y_pred)
+            ### manual scorer wraper.
+            if self.metric_using_proba:
+                score = self.metric._score_func(self.y, y_pred)
+            else:
+                # revert to class symbols.
+                y_pred = classifier_obj.classes_[y_pred.argmax(axis=-1)]
+                score = self.metric._score_func(self.y, y_pred)
+            if not self.metric_great_better:
+                # if not great is better, then multiply -1
+                score *= -1
         else:
             # cv score
-            score = cross_val_score(
-                classifier_obj,
-                self.x,
-                self.y,
-                cv=StratifiedKFold(
-                    n_splits=5,
-                    shuffle=True,
-                    random_state=self.valid_seed_tape[trial.number]),
-                scoring=self.metric,
-                n_jobs=-1)
-            score = score.mean()
+            cv = StratifiedKFold(
+                n_splits=self.n_cv,
+                shuffle=True,
+                random_state=self.valid_seed_tape[trial.number])
+
+            score = []
+            for i, (train_ind, test_ind) in enumerate(cv.split(self.x,
+                                                               self.y)):
+                x_train = self.x.iloc[train_ind]
+                y_train = self.y.iloc[train_ind]
+                x_test = self.x.iloc[test_ind]
+                y_test = self.y.iloc[test_ind]
+
+                with parallel_backend('loky'):
+                    classifier_obj.fit(x_train,
+                                       y_train,
+                                       sample_weight=compute_sample_weight(
+                                           class_weight="balanced", y=y_train))
+
+                test_score = self.metric(classifier_obj, x_test, y_test)
+                train_score = self.metric(classifier_obj, x_train, y_train)
+                if self.validate_penalty:
+                    score.append(test_score + 0.1 * (test_score - train_score))
+                else:
+                    score.append(test_score)
+
+            score = sum(score) / self.n_cv
         return score
 
 
@@ -213,10 +252,10 @@ class SVM_tuner(Basic_tuner):
     def __init__(self,
                  kernel="rbf",
                  n_try=25,
-                 target="matthews_corrcoef",
+                 target=None,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         """
         Args:
@@ -229,6 +268,7 @@ class SVM_tuner(Basic_tuner):
         """
         super().__init__(n_try=n_try,
                          target=target,
+                         is_regression=False,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
@@ -252,8 +292,6 @@ class SVM_tuner(Basic_tuner):
                                     log=True),
                 "kernel":
                 self.kernel,
-                "class_weight":
-                "balanced",
                 "gamma":
                 "auto",
                 "probability":
@@ -280,11 +318,11 @@ class XGBoost_tuner(Basic_tuner):
     """
 
     def __init__(self,
-                 n_try=200,
-                 target="matthews_corrcoef",
+                 n_try=100,
+                 target=None,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         """
 
@@ -298,6 +336,7 @@ class XGBoost_tuner(Basic_tuner):
         """
         super().__init__(n_try=n_try,
                          target=target,
+                         is_regression=False,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
@@ -324,7 +363,7 @@ class XGBoost_tuner(Basic_tuner):
 
             parms = {
                 "n_estimators":
-                trial.suggest_int('n_estimators', 16, 512, log=True),
+                trial.suggest_int('n_estimators', 16, 256, log=True),
                 "max_depth":
                 trial.suggest_int('max_depth', 2, 16, log=True),
                 "gamma":
@@ -335,8 +374,6 @@ class XGBoost_tuner(Basic_tuner):
                 sampling_rate,
                 "colsample_bytree":
                 col_sampling_rate,
-                #"min_child_weight":
-                #trial.suggest_float('min_child_weight', 1e-3, 1e+2, log=True),
                 "reg_lambda":
                 trial.suggest_float('reg_lambda', 1e-2, 1e+1, log=True),
                 "n_jobs":
@@ -350,42 +387,6 @@ class XGBoost_tuner(Basic_tuner):
         xgb = XGBClassifier(**parms)
         return xgb
 
-    def evaluate(self, trial, default=False):
-        """
-        xgboost do not support class_weight.    
-        we use sample_weight as substitute.    
-
-        Args:
-            trial (optuna.trial.Trial): optuna trial in this call.
-            default (bool): To use default hyper parameter. This argument will be passed to creat_model
-        Returns:
-            float: The score.    
-        ToDo:
-            manage class_weight manually in baseclass. for consistency.    
-
-        """
-        classifier_obj = self.create_model(trial, default)
-
-        cv = StratifiedKFold(n_splits=5,
-                             shuffle=True,
-                             random_state=self.valid_seed_tape[trial.number])
-
-        score = []
-        for i, (train_ind, test_ind) in enumerate(cv.split(self.x, self.y)):
-            x_train = self.x.iloc[train_ind]
-            y_train = self.y.iloc[train_ind]
-            x_test = self.x.iloc[test_ind]
-            y_test = self.y.iloc[test_ind]
-
-            classifier_obj.fit(x_train,
-                               y_train,
-                               sample_weight=compute_sample_weight(
-                                   class_weight="balanced", y=y_train))
-
-            score.append(self.metric(classifier_obj, x_test, y_test))
-        score = np.array(score).mean()
-        return score
-
 
 # lightGBM
 class LighGBM_tuner(Basic_tuner):
@@ -398,11 +399,11 @@ class LighGBM_tuner(Basic_tuner):
     """
 
     def __init__(self,
-                 n_try=200,
-                 target="matthews_corrcoef",
+                 n_try=100,
+                 target=None,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         """
 
@@ -416,6 +417,7 @@ class LighGBM_tuner(Basic_tuner):
         """
         super().__init__(n_try=n_try,
                          target=target,
+                         is_regression=False,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
@@ -469,8 +471,6 @@ class LighGBM_tuner(Basic_tuner):
                 trial.suggest_float('reg_lambda', 5e-3, 1e+1, log=True),
                 "n_jobs":
                 None,
-                "class_weight":
-                "balanced",
                 "random_state":
                 self.kernel_seed_tape[trial.number],
                 "verbosity":
@@ -490,10 +490,10 @@ class AdaBoost_tuner(Basic_tuner):
 
     def __init__(self,
                  n_try=50,
-                 target="matthews_corrcoef",
+                 target=None,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         """
         Args:
@@ -505,6 +505,7 @@ class AdaBoost_tuner(Basic_tuner):
         """
         super().__init__(n_try=n_try,
                          target=target,
+                         is_regression=False,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
@@ -523,7 +524,7 @@ class AdaBoost_tuner(Basic_tuner):
                 "learning_rate":
                 trial.suggest_float('learning_rate', 1e-2, 1, log=True),
                 "algorithm":
-                trial.suggest_categorical("algorithm", ["SAMME", "SAMME.R"]),
+                "SAMME",
                 "random_state":
                 self.kernel_seed_tape[trial.number]
             }
@@ -540,10 +541,10 @@ class DecisionTree_tuner(Basic_tuner):
 
     def __init__(self,
                  n_try=25,
-                 target="matthews_corrcoef",
+                 target=None,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         """
         Args:
@@ -555,6 +556,7 @@ class DecisionTree_tuner(Basic_tuner):
         """
         super().__init__(n_try=n_try,
                          target=target,
+                         is_regression=False,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
@@ -577,8 +579,6 @@ class DecisionTree_tuner(Basic_tuner):
                 trial.suggest_float('ccp_alpha', 1e-3, 1e-1, log=True),
                 "random_state":
                 self.kernel_seed_tape[trial.number],
-                "class_weight":
-                "balanced"
             }
         DT = DecisionTreeClassifier(**parms)
         return DT
@@ -596,10 +596,10 @@ class CatBoost_tuner(Basic_tuner):
 
     def __init__(self,
                  n_try=200,
-                 target="matthews_corrcoef",
+                 target=None,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         """
 
@@ -613,6 +613,7 @@ class CatBoost_tuner(Basic_tuner):
         """
         super().__init__(n_try=n_try,
                          target=target,
+                         is_regression=False,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
@@ -659,8 +660,6 @@ class CatBoost_tuner(Basic_tuner):
                 "subsample":
                 sampling_rate,
                 #"use_best_model": True,
-                "auto_class_weights":
-                "Balanced",
                 "random_seed":
                 self.kernel_seed_tape[trial.number],
                 "verbose":

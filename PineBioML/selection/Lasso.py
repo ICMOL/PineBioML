@@ -3,6 +3,7 @@ import pandas as pd
 from tqdm import tqdm
 from sklearn.linear_model import LogisticRegression, Lasso
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder
 from . import SelectionPipeline, sample_weight
 
 
@@ -135,8 +136,8 @@ class Lasso_bisection_selection(SelectionPipeline):
             objective (str, optional): one of {"Regression", "BinaryClassification"}
         """
         super().__init__(k=k)
-        self.upper_init = 1e+3
-        self.lower_init = 1e-3
+        self.upper_init = 1e+5
+        self.lower_init = 1e-5
         self.objective = objective
         if self.objective in ["regression", "Regression"]:
             self.regression = True
@@ -185,10 +186,16 @@ class Lasso_bisection_selection(SelectionPipeline):
         else:
             weights = np.ones_like(y_train)
 
+        if self.k == -1:
+            self.k = x.shape[0]
+
+        y_train = OneHotEncoder(sparse_output=False).fit_transform(
+            y_train.to_numpy().reshape(-1, 1))
+
         lassoes = []
         score = []
         # Bisection searching
-        ### scaling x
+        ### standardize x
         X_train = X_train / X_train.values.std()
 
         upper = self.upper_init
@@ -197,7 +204,7 @@ class Lasso_bisection_selection(SelectionPipeline):
         if not self.blind:
             score.append(((lassoes[-1].predict(X_test)
                            > 0.5) == y_test).mean())
-        upper_alive = (lassoes[-1].coef_ != 0).sum()
+        upper_alive = (self.coef_to_importance(lassoes[-1].coef_) != 0).sum()
         #print(upper, upper_alive)
 
         lower = self.lower_init
@@ -206,7 +213,7 @@ class Lasso_bisection_selection(SelectionPipeline):
         if not self.blind:
             score.append(((lassoes[-1].predict(X_test)
                            > 0.5) == y_test).mean())
-        lower_alive = (lassoes[-1].coef_ != 0).sum()
+        lower_alive = (self.coef_to_importance(lassoes[-1].coef_) != 0).sum()
         #print(lower, lower_alive)
 
         counter = 0
@@ -217,7 +224,7 @@ class Lasso_bisection_selection(SelectionPipeline):
             if not self.blind:
                 score.append(((lassoes[-1].predict(X_test)
                                > 0.5) == y_test).mean())
-            alive = (lassoes[-1].coef_ != 0).sum()
+            alive = (self.coef_to_importance(lassoes[-1].coef_) != 0).sum()
             #print(alive, alpha)
 
             if alive >= self.k:
@@ -233,11 +240,14 @@ class Lasso_bisection_selection(SelectionPipeline):
 
         coef = np.array([clr.coef_ for clr in lassoes])
 
-        self.scores = pd.Series(np.abs(coef[-1]).flatten(),
+        self.scores = pd.Series(self.coef_to_importance(coef[-1]),
                                 index=x.columns,
                                 name=self.name).sort_values(ascending=False)
         self.selected_score = self.scores.head(self.k)
         return self.selected_score
+
+    def coef_to_importance(self, coef):
+        return np.linalg.norm(coef, ord=2, axis=0)
 
 
 class multi_Lasso_selection(SelectionPipeline):
