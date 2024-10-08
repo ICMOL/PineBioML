@@ -1,3 +1,22 @@
+2024/9/30 v1.1.0:
+    description:
+        1. Tutorial
+        2. task support:
+                    \  data_overview  |  selection  |  tuner  |  summary  |  Pine 
+        binary      |       v               v            v          v         v
+        multi       |       v               v            v          v         
+        regression  |       v                            v
+
+        3. Pine monitor, progress bar and report. experiment setting visualization.
+        4. tuner metrics easy mode.
+        
+
+    fixed:
+        1. RF too slow: In some reason(still unknown) the sklearn rf using "thread" mode as joblib.parallel_backend. That leads to single processing. Fixed by manually set joblib.parallel_backend to loky. 
+        2. DT random_state
+        3. Lasso in essemble selector returns all zero score.
+
+
 2024/8/28 1.0.0
     description:
         1. add Pine experiment manager. it's a tool to select the best pipeline.
@@ -15,6 +34,7 @@
         3. Issue about installation of pandas lacking of Microsoft Visual C++ 14.0:
             https://learn.microsoft.com/zh-tw/cpp/windows/latest-supported-vc-redist?view=msvc-170
         4. RF tuner too slow.
+        5. elasticnet and DT have random behavier
     On Going:
         0. verbosity or or progress bar for Pine
         1. A reliable tutorial. (including mac)

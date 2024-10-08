@@ -1,0 +1,31 @@
+# resource
+optuna:
+https://www.jeffchiou.com/blog/hyperparameter-optimization-optuna/
+
+imbalanced learn:
+https://imbalanced-learn.org/stable/user_guide.html
+
+fairlearn:
+https://fairlearn.org/v0.10/user_guide/index.html
+
+read the doc
+https://docs.readthedocs.io/en/stable/
+
+Boruta-shap
+https://github.com/Ekeany/Boruta-Shap
+
+smart pls
+https://www.smartpls.com/
+
+tsai
+https://timeseriesai.github.io/tsai/
+A state-of-the-art deep learning library for time series and sequential data
+
+# competitor
+pycaret
+https://pycaret.org/
+ - an auto ML toolkit
+
+pychemauth
+https://pychemauth.readthedocs.io/en/latest/index.html
+ - soft/hard pls

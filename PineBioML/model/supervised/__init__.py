@@ -2,6 +2,8 @@ import sklearn.metrics as metrics
 import optuna
 from abc import ABC, abstractmethod
 from sklearn.model_selection import StratifiedKFold
+from sklearn.utils.class_weight import compute_sample_weight
+from sklearn.preprocessing import LabelEncoder
 from optuna.samplers import TPESampler
 from numpy.random import RandomState, randint
 from pandas import Series, DataFrame
@@ -12,24 +14,34 @@ optuna.logging.set_verbosity(optuna.logging.WARNING)
 class Basic_tuner(ABC):
     """
     The base class of tuner.    
-    To conserve the reproducibility and to reduce the hyper parameter overfitting along the process of hyper parameter tuning. 
-    We first using valid_seed to randomly initialize a tape of integers and it will sequentially be used in optuna trials.    
+    To conserve the reproducibility and to reduce the hyper parameter overfitting along the process of hyper parameter tuning, 
+    we first using valid_seed to randomly initialize a tape of integers and it will sequentially be used in optuna trials.    
+
 
     """
 
-    def __init__(self, n_try, target, kernel_seed, valid_seed, optuna_seed,
-                 validate_penalty):
+    def __init__(self,
+                 n_try,
+                 target,
+                 validate_penalty,
+                 is_regression,
+                 kernel_seed=None,
+                 valid_seed=None,
+                 optuna_seed=None):
         """
         
         Args:
             n_try (int): Times to try.    
             target (str): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics.    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
+            kernel_seed (int): random seed for model kernel.    
+            valid_seed (int): random seed for cross validation    
             optuna_seed (int): random seed for optuna.    
 
-        ToDo: None seed for tuner from __init__ to fit
+        ToDo: None seed for tuner from __init__ to fit    
         """
+        self.is_regression = is_regression
+        self.y_mapping = LabelEncoder()
+
         self.validate_penalty = validate_penalty
 
         self.n_cv = 5
@@ -57,11 +69,8 @@ class Basic_tuner(ABC):
         self.kernel_seed_tape = RandomState(self.kernel_seed).randint(
             low=0, high=16384, size=n_try)
 
-        # If the tuning target is not in discrete_target, the kernel will not be required to return in prob which is costy fro some method like svm.
-        self.discrete_target = ["accuracy", "f1", "matthews_corrcoef"]
-        self.eval_prob = not target in self.discrete_target
         # Get the scorer
-        self.metric = metrics.get_scorer(target)
+        self.metric = self.get_scorer(target)
 
         self.optuna_model = None
         self.default_model = None
@@ -104,7 +113,13 @@ class Basic_tuner(ABC):
             x_test = self.x.iloc[test_ind]
             y_test = self.y.iloc[test_ind]
 
-            classifier_obj.fit(x_train, y_train)
+            if self.is_regression:
+                sample_weight = None
+            else:
+                sample_weight = compute_sample_weight(class_weight="balanced",
+                                                      y=y_train)
+
+            classifier_obj.fit(x_train, y_train, sample_weight=sample_weight)
 
             test_score = self.metric(classifier_obj, x_test, y_test)
             train_score = self.metric(classifier_obj, x_train, y_train)
@@ -113,8 +128,8 @@ class Basic_tuner(ABC):
             else:
                 score.append(test_score)
 
-            #score.append(test_score)
         score = sum(score) / self.n_cv
+        #print(score)
         return score
 
     def tune(self, x, y):
@@ -128,9 +143,15 @@ class Basic_tuner(ABC):
         Returns :
             sklearn.base.BaseEstimator: A sklearn style model object which has the best hyperparameters.
         """
+        # input data
         self.x = x
         self.y = y
+
+        # the total number of samples
         self.n_sample = x.shape[0]
+
+        # check task
+        self.check_task()
 
         # Make the sampler behave in a deterministic way.
         sampler = TPESampler(seed=self.optuna_seed)
@@ -141,7 +162,9 @@ class Basic_tuner(ABC):
             .format(self=self))
         print("    start tuning. it will take a while.")
         # using optuna tuning hyper parameter
-        self.study.optimize(self.evaluate, n_trials=self.n_try)
+        self.study.optimize(self.evaluate,
+                            n_trials=self.n_try,
+                            show_progress_bar=False)
         self.optuna_model = self.create_model(self.study.best_trial,
                                               default=False)
 
@@ -163,8 +186,9 @@ class Basic_tuner(ABC):
                   self.study.best_trial.number)
             self.best_model = self.optuna_model
 
-        print(self.best_model, "\n")
-        return self.best_model
+        #print(self.best_model, "\n")
+        # decrepted
+        #return self.best_model
 
     def fit(self, x, y):
         """
@@ -176,13 +200,23 @@ class Basic_tuner(ABC):
         """
         self.label_name = y.name
 
+        # label encoding
+        if not self.is_regression:
+            y = Series(self.y_mapping.fit_transform(y),
+                       index=y.index,
+                       name=y.name)
+
         # tune the model.
         self.tune(x, y)
 
         # fit the model.
-        self.best_model.fit(x, y)
+        if self.is_regression:
+            sample_weight = None
+        else:
+            sample_weight = compute_sample_weight(class_weight="balanced", y=y)
+        self.best_model.fit(x, y, sample_weight=sample_weight)
 
-        return self.best_model
+        return self
 
     def predict(self, x):
         """
@@ -195,9 +229,11 @@ class Basic_tuner(ABC):
             1D-array: prediction
         """
         # using the model.
-        y_pred = Series(self.best_model.predict(x),
-                        index=x.index,
-                        name=self.label_name)
+        y_pred = self.best_model.predict(x)
+        # label decoding
+        if not self.is_regression:
+            y_pred = self.y_mapping.inverse_transform(y_pred)
+        y_pred = Series(y_pred, index=x.index, name=self.label_name)
 
         return y_pred
 
@@ -211,4 +247,68 @@ class Basic_tuner(ABC):
         Returns:
             1D-array: prediction in prob
         """
-        return self.best_model.predict_proba(x)
+        return DataFrame(self.best_model.predict_proba(x),
+                         index=x.index,
+                         columns=self.y_mapping.classes_)
+
+    def get_scorer(self, scorer_name):
+        # easy query
+        ### polymorphism
+        scorer_name = scorer_name.lower().replace("-", "_").replace(" ", "_")
+
+        ### common abbreviation
+        nicknames = {
+            "acc": "accuracy",
+            "auc": "roc_auc",
+            "f1_score": "f1",
+            "mcc": "matthews_corrcoef",
+            "log_loss": "neg_log_loss",
+            "cross_entropy": "neg_log_loss",
+            "ce": "neg_log_loss",
+            "bce": "neg_log_loss",
+            "mse": "neg_mean_squared_error",
+            "mean_squared_error": "neg_mean_squared_error",
+            "mae": "neg_mean_absolute_error",
+            "mean_absolute_error": "neg_mean_absolute_error",
+            "mape": "neg_mean_absolute_percentage_error",
+            "mean_absolute_percentage_error":
+            "neg_mean_absolute_percentage_error",
+            "rmse": "neg_root_mean_squared_error",
+            "root_mean_squared_error": "neg_root_mean_squared_error",
+            "qwk": "quadratic_weighted_kappa",
+            "kappa": "cohen_kappa"
+        }
+        if scorer_name in nicknames:
+            scorer_name = nicknames[scorer_name]
+
+        self.metric_name = scorer_name
+
+        # get the scorer
+        ### kappa
+        if scorer_name == "quadratic_weighted_kappa":
+            return metrics.make_scorer(metrics.cohen_kappa_score,
+                                       weights="quadratic",
+                                       response_method="predict")
+        elif scorer_name == "cohen_kappa":
+            return metrics.make_scorer(metrics.cohen_kappa_score,
+                                       weights=None,
+                                       response_method="predict")
+        ### others
+        return metrics.get_scorer(scorer_name)
+
+    def check_task(self):
+        # check auc and binary classification
+        is_auc = self.metric_name == "roc_auc"
+        is_binary = len(self.y.value_counts()) == 2
+        if is_auc and not is_binary:
+            # roc_auc only can be used on binary classification. Do not try ovr, ovo. forget them.
+            raise ValueError(
+                "auc only support binary classification, but more than 2 values are detected in y."
+            )
+
+        # sparse the metric
+        self.metric_using_proba = self.metric.__str__().find("_proba") != -1
+        self.metric_great_better = self.metric.__str__().find(
+            "greater_is_better=False") == -1
+
+        return True

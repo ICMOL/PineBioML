@@ -81,7 +81,6 @@ class Pine():
                                                         prefix="test_")
 
                 # compute the cross validation score on training set
-                valid_scores = {}
                 fold_scores = []
                 # for each fold
                 for (train_idx, valid_idx) in StratifiedKFold(
@@ -96,6 +95,7 @@ class Pine():
                                               train_y.iloc[valid_idx],
                                               prefix="cv_"))
                 # average the fold scores
+                valid_scores = {}
                 for metric_name in fold_scores[0]:
                     valid_scores[metric_name] = np.array([
                         fold_scores[cv][metric_name] for cv in range(5)

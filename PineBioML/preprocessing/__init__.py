@@ -136,7 +136,7 @@ class Pass():
         Returns:
             pandas.DataFrame or a 2D array: Normalized x.
         """
-        
+
         return x
 
     def fit_transform(self, x, y=None):

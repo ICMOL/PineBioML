@@ -79,9 +79,16 @@ def read_multiple_groups(file_path_list, transpose=False, index_col=0):
 
     x = concat(datas, axis=0)
     y = concat(group_label, axis=0)
+
+    if len(set(y.index)) == len(y.index):
+        # index repeats
+        x = x.reset_index(drop=True)
+        y = y.reset_index(drop=True)
+
     return x, y
 
-def save_model(model_obj, save_path, save_name, overide = False):
+
+def save_model(model_obj, save_path, save_name, overide=False):
     """
     Saving the model_obj by joblib in pickle format.
 
@@ -92,23 +99,26 @@ def save_model(model_obj, save_path, save_name, overide = False):
         overide (bool, optional): whether to overide if the save_name has already exist in save_path. Defaults to False.
     """
     if not save_path[-1] == "/":
-        save_path = save_path+"/"
+        save_path = save_path + "/"
 
     if not os.path.exists(save_path):
         print(save_path, " does not exist yet. we will try to create it.")
         os.makedirs(save_path)
-        
-    if os.path.exists(save_path+save_name):
+
+    if os.path.exists(save_path + save_name):
         print(save_name, " has already exist in ", save_path)
         if overide:
             print("It will be overide.")
-            joblib.dump(model_obj, save_path+ save_name)
+            joblib.dump(model_obj, save_path + save_name)
         else:
-            print("please choose another model save_name or set overide to True which will replace the existing one")
+            print(
+                "please choose another model save_name or set overide to True which will replace the existing one"
+            )
     else:
-        joblib.dump(model_obj, save_path+ save_name)
+        joblib.dump(model_obj, save_path + save_name)
 
-def load_model(save_path, save_name = None):
+
+def load_model(save_path, save_name=None):
     """
     load saved model.
 
@@ -121,9 +131,9 @@ def load_model(save_path, save_name = None):
     """
     if save_name:
         if not save_path[-1] == "/":
-            save_path = save_path+"/"
+            save_path = save_path + "/"
 
-        return joblib.load(save_path+save_name)
+        return joblib.load(save_path + save_name)
     else:
         # lazy mode
         return joblib.load(save_path)

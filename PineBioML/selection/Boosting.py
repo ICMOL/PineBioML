@@ -5,6 +5,7 @@ import numpy as np
 import xgboost as xgb
 import lightgbm as lgbm
 from sklearn.ensemble import AdaBoostClassifier
+from sklearn.preprocessing import OneHotEncoder
 
 
 class XGboost_selection(SelectionPipeline):
@@ -41,6 +42,8 @@ class XGboost_selection(SelectionPipeline):
         else:
             sample_weight = np.ones(len(y))
 
+        y = OneHotEncoder(sparse_output=False).fit_transform(
+            y.to_numpy().reshape(-1, 1))
         self.kernel.fit(x, y, sample_weight=sample_weight)
         score = self.kernel.feature_importances_
         self.scores = pd.Series(score, index=x.columns,
