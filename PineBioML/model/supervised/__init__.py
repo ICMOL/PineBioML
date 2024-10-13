@@ -8,7 +8,10 @@ from optuna.samplers import TPESampler
 from numpy.random import RandomState, randint
 from pandas import Series, DataFrame
 
+from sklearn.exceptions import ConvergenceWarning
+
 optuna.logging.set_verbosity(optuna.logging.WARNING)
+ConvergenceWarning('ignore')
 
 
 class Basic_tuner(ABC):
@@ -22,9 +25,9 @@ class Basic_tuner(ABC):
 
     def __init__(self,
                  n_try,
+                 n_cv,
                  target,
                  validate_penalty,
-                 is_regression,
                  kernel_seed=None,
                  valid_seed=None,
                  optuna_seed=None):
@@ -39,12 +42,11 @@ class Basic_tuner(ABC):
 
         ToDo: None seed for tuner from __init__ to fit    
         """
-        self.is_regression = is_regression
         self.y_mapping = LabelEncoder()
 
         self.validate_penalty = validate_penalty
 
-        self.n_cv = 5
+        self.n_cv = n_cv
         self.n_try = n_try
 
         if kernel_seed:
@@ -75,6 +77,10 @@ class Basic_tuner(ABC):
         self.optuna_model = None
         self.default_model = None
         self.best_model = None
+
+    @abstractmethod
+    def is_regression(self):
+        pass
 
     @abstractmethod
     def create_model(self, trial, default):
@@ -113,7 +119,7 @@ class Basic_tuner(ABC):
             x_test = self.x.iloc[test_ind]
             y_test = self.y.iloc[test_ind]
 
-            if self.is_regression:
+            if self.is_regression():
                 sample_weight = None
             else:
                 sample_weight = compute_sample_weight(class_weight="balanced",
@@ -186,10 +192,6 @@ class Basic_tuner(ABC):
                   self.study.best_trial.number)
             self.best_model = self.optuna_model
 
-        #print(self.best_model, "\n")
-        # decrepted
-        #return self.best_model
-
     def fit(self, x, y):
         """
         The sklearn.base.BaseEstimator fit api.
@@ -201,7 +203,7 @@ class Basic_tuner(ABC):
         self.label_name = y.name
 
         # label encoding
-        if not self.is_regression:
+        if not self.is_regression():
             y = Series(self.y_mapping.fit_transform(y),
                        index=y.index,
                        name=y.name)
@@ -210,7 +212,7 @@ class Basic_tuner(ABC):
         self.tune(x, y)
 
         # fit the model.
-        if self.is_regression:
+        if self.is_regression():
             sample_weight = None
         else:
             sample_weight = compute_sample_weight(class_weight="balanced", y=y)
@@ -231,25 +233,11 @@ class Basic_tuner(ABC):
         # using the model.
         y_pred = self.best_model.predict(x)
         # label decoding
-        if not self.is_regression:
+        if not self.is_regression():
             y_pred = self.y_mapping.inverse_transform(y_pred)
         y_pred = Series(y_pred, index=x.index, name=self.label_name)
 
         return y_pred
-
-    def predict_proba(self, x):
-        """
-        The sklearn.base.BaseEstimator predict_prob api.
-
-        Args:
-            x (pandas.DataFrame or 2D-array): feature to extract information from.
-
-        Returns:
-            1D-array: prediction in prob
-        """
-        return DataFrame(self.best_model.predict_proba(x),
-                         index=x.index,
-                         columns=self.y_mapping.classes_)
 
     def get_scorer(self, scorer_name):
         # easy query
@@ -261,6 +249,7 @@ class Basic_tuner(ABC):
             "acc": "accuracy",
             "auc": "roc_auc",
             "f1_score": "f1",
+            "macro_f1": "f1_macro",
             "mcc": "matthews_corrcoef",
             "log_loss": "neg_log_loss",
             "cross_entropy": "neg_log_loss",
@@ -288,11 +277,13 @@ class Basic_tuner(ABC):
         if scorer_name == "quadratic_weighted_kappa":
             return metrics.make_scorer(metrics.cohen_kappa_score,
                                        weights="quadratic",
-                                       response_method="predict")
+                                       response_method="predict",
+                                       greater_is_better=True)
         elif scorer_name == "cohen_kappa":
             return metrics.make_scorer(metrics.cohen_kappa_score,
                                        weights=None,
-                                       response_method="predict")
+                                       response_method="predict",
+                                       greater_is_better=True)
         ### others
         return metrics.get_scorer(scorer_name)
 
@@ -307,8 +298,30 @@ class Basic_tuner(ABC):
             )
 
         # sparse the metric
-        self.metric_using_proba = self.metric.__str__().find("_proba") != -1
-        self.metric_great_better = self.metric.__str__().find(
-            "greater_is_better=False") == -1
+        scorer_kargs = {}
+        for arg in [
+                i.split("=")
+                for i in self.metric.__str__()[12:-1].split(", ")[1:]
+        ]:
+            scorer_kargs[arg[0]] = arg[1]
+
+        # response method
+        self.metric_using_proba = scorer_kargs["response_method"].find(
+            "_proba") != -1
+        scorer_kargs.pop("response_method")
+
+        # greater is better
+        if 'greater_is_better' in scorer_kargs:
+            self.metric_great_better = not scorer_kargs[
+                "greater_is_better"] == "False"
+            scorer_kargs.pop('greater_is_better')
+        else:
+            self.metric_great_better = True
+
+        # pos_label for f1 socres
+        if "pos_label" in scorer_kargs:
+            scorer_kargs.pop("pos_label")
+
+        self.scorer_kargs = scorer_kargs
 
         return True

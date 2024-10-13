@@ -1,4 +1,7 @@
 # resource
+sklearn estimator guideline:
+https://scikit-learn.org/1.5/developers/develop.html#developer-api-for-html-representation
+
 optuna:
 https://www.jeffchiou.com/blog/hyperparameter-optimization-optuna/
 

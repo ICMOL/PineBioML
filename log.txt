@@ -1,3 +1,41 @@
+2024/10/14 v1.1.1:
+    description:
+        1. task support:
+                    \  data_overview  |  selection  |  tuner  |  summary  |  Pine 
+        binary      |       v               v            v          v         v
+        multi       |       v               v            v          v         v
+        regression  |       v               v            v          v         v
+
+        2. selection revised.
+        3. Pine scorer revised: polymorphism for regression and classification.
+        4. Pine do_stage revised: polymorphism for regression and classification
+        5. plot functions revised: sturctural adjustment.
+        6. tuner metric sparser reviesd: kargs supported now. Nearly full support sklearn scoerers
+
+    bug:
+        1. feature bagging:
+             - contradicts to log domain in selection method (the negative output of pca)
+             - the variance of feature will change during bagging (variance matters)
+        2. Lasso logistic regression in grid search need to to modified. In temporary using binary search.
+        
+    fixed:
+        1. C++ 14.0 issue can be solved by: https://blog.csdn.net/Lc_001/article/details/129195335
+        2. IO didn't reset repeatued index.
+
+    On Going:
+        0. A reliable tutorial. (including mac) / Document reference
+        1. Pine monitor, progress bar and report. experiment setting visualization.
+        
+    ToDo:
+        1. report and diagnose, Pine pipeline graph.
+        2. using pretty, beautiful, good-looking, precise packages:
+            a. pca
+            b. The only OPLS da reliable(compare to others), alive, python implement 
+               https://github.com/Omicometrics/pypls?tab=readme-ov-file 
+        n. add parameter dict(json or yaml-like)
+        n. interactive interface or GUI (maybe nicegui/ plotly)
+
+
 2024/9/30 v1.1.0:
     description:
         1. Tutorial
@@ -5,10 +43,9 @@
                     \  data_overview  |  selection  |  tuner  |  summary  |  Pine 
         binary      |       v               v            v          v         v
         multi       |       v               v            v          v         
-        regression  |       v                            v
+        regression  |       v               v            v
 
-        3. Pine monitor, progress bar and report. experiment setting visualization.
-        4. tuner metrics easy mode.
+        3. tuner metrics easy mode.
         
 
     fixed:
