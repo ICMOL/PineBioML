@@ -1,4 +1,5 @@
 from . import Basic_tuner
+from abc import abstractmethod
 
 from joblib import parallel_backend
 
@@ -14,14 +15,64 @@ from lightgbm import LGBMClassifier
 from catboost import CatBoostClassifier, Pool
 
 import numpy as np
+from pandas import DataFrame
 
-# ToDo: multi class support
 # ToDo: optuna pruner
 #       see section Acticating Pruners in https://optuna.readthedocs.io/en/stable/tutorial/10_key_features/003_efficient_optimization_algorithms.html
 
 
+class Classification_tuner(Basic_tuner):
+
+    def __init__(self,
+                 n_try,
+                 n_cv,
+                 target,
+                 validate_penalty,
+                 kernel_seed=None,
+                 valid_seed=None,
+                 optuna_seed=None):
+        super().__init__(n_try=n_try,
+                         n_cv=n_cv,
+                         target=target,
+                         validate_penalty=validate_penalty,
+                         kernel_seed=kernel_seed,
+                         valid_seed=valid_seed,
+                         optuna_seed=optuna_seed)
+
+    def is_regression(self):
+        return False
+
+    @abstractmethod
+    def create_model(self, trial, default):
+        """
+        Create model based on default setting or optuna trial
+
+        Args:
+            trial (optuna.trial.Trial): optuna trial in this call.
+            default (bool): To use default hyper parameter
+            
+        Returns :
+            sklearn.base.BaseEstimator: A sklearn style model object.
+        """
+        pass
+
+    def predict_proba(self, x):
+        """
+        The sklearn.base.BaseEstimator predict_prob api.
+
+        Args:
+            x (pandas.DataFrame or 2D-array): feature to extract information from.
+
+        Returns:
+            1D-array: prediction in prob
+        """
+        return DataFrame(self.best_model.predict_proba(x),
+                         index=x.index,
+                         columns=self.y_mapping.classes_)
+
+
 # linear model, elasticnet
-class ElasticLogit_tuner(Basic_tuner):
+class ElasticLogit_tuner(Classification_tuner):
     """
     Tuning a elasic net logistic regression.    
     [sklearn.linear_model.LogisticRegression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression), reminds the choice of the algorithm depends on the penalty chosen and on (multinomial) multiclass support.    
@@ -30,7 +81,8 @@ class ElasticLogit_tuner(Basic_tuner):
     def __init__(self,
                  kernel="saga",
                  n_try=25,
-                 target=None,
+                 n_cv=5,
+                 target="mcc",
                  kernel_seed=None,
                  valid_seed=None,
                  optuna_seed=None,
@@ -45,8 +97,8 @@ class ElasticLogit_tuner(Basic_tuner):
             optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
         """
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
-                         is_regression=False,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
@@ -61,6 +113,7 @@ class ElasticLogit_tuner(Basic_tuner):
         if default:
             parms = {
                 "verbose": 0,
+                "C": 1.0,
                 "l1_ratio": 0.5,
                 "penalty": self.penalty,
                 "solver": self.kernel,
@@ -87,12 +140,8 @@ class ElasticLogit_tuner(Basic_tuner):
             # multi-class classification
             # Todo
             raise TypeError(
-                "multi-class classification summary not support yet.")
-            sm_logit = MNLogit(self.y,
-                               self.x).fit(disp=False,
-                                           start_params=self.best_model.coef_,
-                                           maxiter=0,
-                                           warn_convergence=False)
+                "multi-class classification summary not support yet. Please tell me why do you need that in a multi-class classification task"
+            )
         else:
             # binary classification
             sm_logit = Logit(self.y, self.x).fit(
@@ -104,7 +153,7 @@ class ElasticLogit_tuner(Basic_tuner):
 
 
 # RF
-class RandomForest_tuner(Basic_tuner):
+class RandomForest_tuner(Classification_tuner):
     """
     Tuning a random forest model.    
     [sklearn.ensemble.RandomForestClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
@@ -113,7 +162,8 @@ class RandomForest_tuner(Basic_tuner):
     def __init__(self,
                  using_oob=True,
                  n_try=50,
-                 target=None,
+                 n_cv=5,
+                 target="mcc",
                  kernel_seed=None,
                  valid_seed=None,
                  optuna_seed=None,
@@ -129,8 +179,8 @@ class RandomForest_tuner(Basic_tuner):
             optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
         """
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
-                         is_regression=False,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
@@ -151,8 +201,10 @@ class RandomForest_tuner(Basic_tuner):
             parms = {
                 "n_estimators":
                 trial.suggest_int('n_estimators', 32, 1024, log=True),
+                "max_depth":
+                trial.suggest_int('max_depth', 4, 16, log=True),
                 "min_samples_leaf":
-                trial.suggest_int('min_samples_leaf', 1, 16, log=True),
+                trial.suggest_int('min_samples_leaf', 1, 32, log=True),
                 "ccp_alpha":
                 trial.suggest_float('ccp_alpha', 1e-3, 1e-1, log=True),
                 "max_samples":
@@ -162,7 +214,7 @@ class RandomForest_tuner(Basic_tuner):
                 "oob_score":
                 self.using_oob,
                 "n_jobs":
-                -1,  # faster than -1.  omg
+                -1,
                 "random_state":
                 self.kernel_seed_tape[trial.number],
                 "verbose":
@@ -202,11 +254,13 @@ class RandomForest_tuner(Basic_tuner):
             # oob score
             ### manual scorer wraper.
             if self.metric_using_proba:
-                score = self.metric._score_func(self.y, y_pred)
+                score = self.metric._score_func(self.y, y_pred,
+                                                **self.scorer_kargs)
             else:
                 # revert to class symbols.
                 y_pred = classifier_obj.classes_[y_pred.argmax(axis=-1)]
-                score = self.metric._score_func(self.y, y_pred)
+                score = self.metric._score_func(self.y, y_pred,
+                                                **self.scorer_kargs)
             if not self.metric_great_better:
                 # if not great is better, then multiply -1
                 score *= -1
@@ -243,7 +297,7 @@ class RandomForest_tuner(Basic_tuner):
 
 
 # SVM
-class SVM_tuner(Basic_tuner):
+class SVM_tuner(Classification_tuner):
     """
     Tuning a support vector machine.    
     [sklearn.svm.SVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html)
@@ -252,7 +306,8 @@ class SVM_tuner(Basic_tuner):
     def __init__(self,
                  kernel="rbf",
                  n_try=25,
-                 target=None,
+                 n_cv=5,
+                 target="mcc",
                  kernel_seed=None,
                  valid_seed=None,
                  optuna_seed=None,
@@ -267,8 +322,8 @@ class SVM_tuner(Basic_tuner):
             optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
         """
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
-                         is_regression=False,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
@@ -305,7 +360,7 @@ class SVM_tuner(Basic_tuner):
 
 # Todo: learning rate and number of iteration adjustment
 # XGboost
-class XGBoost_tuner(Basic_tuner):
+class XGBoost_tuner(Classification_tuner):
     """
     Tuning a XGBoost classifier model.    
     [xgboost.XGBClassifier](https://xgboost.readthedocs.io/en/stable/python/python_api.html)
@@ -319,7 +374,8 @@ class XGBoost_tuner(Basic_tuner):
 
     def __init__(self,
                  n_try=100,
-                 target=None,
+                 n_cv=5,
+                 target="mcc",
                  kernel_seed=None,
                  valid_seed=None,
                  optuna_seed=None,
@@ -335,8 +391,8 @@ class XGBoost_tuner(Basic_tuner):
         
         """
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
-                         is_regression=False,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
@@ -389,7 +445,7 @@ class XGBoost_tuner(Basic_tuner):
 
 
 # lightGBM
-class LighGBM_tuner(Basic_tuner):
+class LighGBM_tuner(Classification_tuner):
     """
     Tuning a LighGBM classifier model.    
     [lightgbm.LGBMClassifier](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html)     
@@ -400,7 +456,8 @@ class LighGBM_tuner(Basic_tuner):
 
     def __init__(self,
                  n_try=100,
-                 target=None,
+                 n_cv=5,
+                 target="mcc",
                  kernel_seed=None,
                  valid_seed=None,
                  optuna_seed=None,
@@ -416,8 +473,8 @@ class LighGBM_tuner(Basic_tuner):
         
         """
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
-                         is_regression=False,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
@@ -482,7 +539,7 @@ class LighGBM_tuner(Basic_tuner):
 
 
 # Adaboost
-class AdaBoost_tuner(Basic_tuner):
+class AdaBoost_tuner(Classification_tuner):
     """
     Tuning a AdaBoost calssifier.    
     [sklearn.ensemble.AdaBoostClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html)
@@ -490,7 +547,8 @@ class AdaBoost_tuner(Basic_tuner):
 
     def __init__(self,
                  n_try=50,
-                 target=None,
+                 n_cv=5,
+                 target="mcc",
                  kernel_seed=None,
                  valid_seed=None,
                  optuna_seed=None,
@@ -504,8 +562,8 @@ class AdaBoost_tuner(Basic_tuner):
             optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
         """
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
-                         is_regression=False,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
@@ -533,7 +591,7 @@ class AdaBoost_tuner(Basic_tuner):
 
 
 # DT
-class DecisionTree_tuner(Basic_tuner):
+class DecisionTree_tuner(Classification_tuner):
     """
     Tuning a DecisionTree calssifier.    
     [sklearn.tree.DecisionTreeClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html)
@@ -541,7 +599,8 @@ class DecisionTree_tuner(Basic_tuner):
 
     def __init__(self,
                  n_try=25,
-                 target=None,
+                 n_cv=5,
+                 target="mcc",
                  kernel_seed=None,
                  valid_seed=None,
                  optuna_seed=None,
@@ -555,8 +614,8 @@ class DecisionTree_tuner(Basic_tuner):
             optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
         """
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
-                         is_regression=False,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
@@ -585,7 +644,7 @@ class DecisionTree_tuner(Basic_tuner):
 
 
 # catboost
-class CatBoost_tuner(Basic_tuner):
+class CatBoost_tuner(Classification_tuner):
     """
     Tuning a CatBoost classifier model.    
     [catboost.CatBoostClassifier](https://catboost.ai/en/docs/concepts/python-reference_catboostclassifier)     
@@ -595,8 +654,9 @@ class CatBoost_tuner(Basic_tuner):
     """
 
     def __init__(self,
-                 n_try=200,
-                 target=None,
+                 n_try=100,
+                 n_cv=5,
+                 target="mcc",
                  kernel_seed=None,
                  valid_seed=None,
                  optuna_seed=None,
@@ -612,8 +672,8 @@ class CatBoost_tuner(Basic_tuner):
         
         """
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
-                         is_regression=False,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,

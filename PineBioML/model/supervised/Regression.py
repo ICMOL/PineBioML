@@ -1,6 +1,9 @@
 from . import Basic_tuner
+from abc import abstractmethod
 
-from sklearn.model_selection import StratifiedKFold, cross_val_score
+from joblib import parallel_backend
+
+from sklearn.model_selection import StratifiedKFold
 
 from sklearn.svm import SVR
 from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor
@@ -12,15 +15,49 @@ from lightgbm import LGBMRegressor
 import numpy as np
 from statsmodels.regression.linear_model import OLS
 
-# ToDo: sample weight
-# ToDo: now we only support mse now, we have to add more loss.
-# ToDo: random seed for optuna, cross validation and model. Currently, cross validation and model shared the same seed
 # ToDo: optuna pruner
 #       see section Acticating Pruners in https://optuna.readthedocs.io/en/stable/tutorial/10_key_features/003_efficient_optimization_algorithms.html
+# Todo: Now loss(not metrics) only support mse, we need more like mae, mape, hinge... etc
+
+
+class Regression_tuner(Basic_tuner):
+
+    def __init__(self,
+                 n_try,
+                 n_cv,
+                 target,
+                 validate_penalty,
+                 kernel_seed=None,
+                 valid_seed=None,
+                 optuna_seed=None):
+        super().__init__(n_try=n_try,
+                         n_cv=n_cv,
+                         target=target,
+                         validate_penalty=validate_penalty,
+                         kernel_seed=kernel_seed,
+                         valid_seed=valid_seed,
+                         optuna_seed=optuna_seed)
+
+    def is_regression(self):
+        return True
+
+    @abstractmethod
+    def create_model(self, trial, default):
+        """
+        Create model based on default setting or optuna trial
+
+        Args:
+            trial (optuna.trial.Trial): optuna trial in this call.
+            default (bool): To use default hyper parameter
+            
+        Returns :
+            sklearn.base.BaseEstimator: A sklearn style model object.
+        """
+        pass
 
 
 # linear model, elasticnet
-class ElasticNet_tuner(Basic_tuner):
+class ElasticNet_tuner(Regression_tuner):
     """
     Tuning a elasic net regression.    
     [sklearn.linear_model.ElasticNet](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html)
@@ -28,20 +65,22 @@ class ElasticNet_tuner(Basic_tuner):
 
     def __init__(self,
                  n_try=25,
-                 target="neg_mean_squared_error",
+                 n_cv=5,
+                 target="mse",
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         """
         Args:
             n_try (int, optional): Times to try. Defaults to 25.    
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "neg_mean_squared_error" (mse score).    
+            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "mse" (mse score).    
             kernel_seed (int): random seed for model kernel. 
             valid_seed (int): random seed for cross validation
             optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
         """
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
@@ -50,12 +89,11 @@ class ElasticNet_tuner(Basic_tuner):
 
     def create_model(self, trial, default=False):
         if default:
-            parms = {"verbose": 0}
+            parms = {}
         else:
             parms = {
                 "alpha": trial.suggest_float('alpha', 1e-3, 1e+3, log=True),
                 "l1_ratio": trial.suggest_float('l1_ratio', 0, 1),
-                "verbose": 0
             }
         enr = ElasticNet(**parms)
         return enr
@@ -65,18 +103,18 @@ class ElasticNet_tuner(Basic_tuner):
         It is the way I found to cram a sklearn regression result into the statsmodel regresion.    
         The only reason to do this is that statsmodel provides R-style summary.    
         """
+        raise NotImplementedError
         sm_ols = OLS(self.y, self.x).fit_regularized(
-            disp=False,
             alpha=self.best_model.alpha,
             L1_wt=self.best_model.l1_ratio,
             start_params=self.best_model.coef_.flatten(),
             maxiter=0,
-            warn_convergence=False)
+        )
         print(sm_ols.summary())
 
 
 # RF
-class RandomForest_tuner(Basic_tuner):
+class RandomForest_tuner(Regression_tuner):
     """
     Tuning a random forest model.    
     [sklearn.ensemble.RandomForestRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html)
@@ -85,22 +123,24 @@ class RandomForest_tuner(Basic_tuner):
     def __init__(self,
                  using_oob=True,
                  n_try=50,
-                 target="neg_mean_squared_error",
+                 n_cv=5,
+                 target="mse",
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         """
 
         Args:
             using_oob (bool, optional): Using out of bag score as validation. Defaults to True.
             n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "neg_mean_squared_error" (mse score).    
+            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "mse" (mse score).    
             kernel_seed (int): random seed for model kernel. 
             valid_seed (int): random seed for cross validation
             optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
         """
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
@@ -114,7 +154,7 @@ class RandomForest_tuner(Basic_tuner):
             parms = {
                 "bootstrap": self.using_oob,
                 "oob_score": self.using_oob,
-                "n_jobs": 1,  # faster than -1.  omg
+                "n_jobs": -1,
                 "random_state": self.kernel_seed,
                 "verbose": 0,
             }
@@ -123,13 +163,11 @@ class RandomForest_tuner(Basic_tuner):
                 "n_estimators":
                 trial.suggest_int('n_estimators', 32, 1024, log=True),
                 "max_depth":
-                trial.suggest_int('max_depth', 2, 16, log=True),
-                #"min_samples_split":
-                #trial.suggest_int('min_samples_split', 2, 16, log=True),
+                trial.suggest_int('max_depth', 4, 16, log=True),
                 "min_samples_leaf":
-                trial.suggest_int('min_samples_leaf', 1, 16, log=True),
+                trial.suggest_int('min_samples_leaf', 1, 32, log=True),
                 "ccp_alpha":
-                trial.suggest_float('ccp_alpha', 1e-3, 1e-1, log=True),
+                trial.suggest_float('ccp_alpha', 1e-4, 1e-1, log=True),
                 "max_samples":
                 trial.suggest_float('max_samples', 0.5, 0.9, log=True),
                 "bootstrap":
@@ -137,7 +175,7 @@ class RandomForest_tuner(Basic_tuner):
                 "oob_score":
                 self.using_oob,
                 "n_jobs":
-                1,  # faster than -1.  omg
+                -1,
                 "random_state":
                 self.kernel_seed_tape[trial.number],
                 "verbose":
@@ -148,33 +186,52 @@ class RandomForest_tuner(Basic_tuner):
         return rf
 
     def evaluate(self, trial, default=False):
-        classifier_obj = self.create_model(trial, default)
+        regressor_obj = self.create_model(trial, default)
 
         if self.using_oob:
             # oob predict
-            classifier_obj.fit(self.x, self.y)
-            y_pred = classifier_obj.oob_decision_function_[:, 1]
+            with parallel_backend('loky'):
+                regressor_obj.fit(self.x, self.y)
+            y_pred = regressor_obj.oob_prediction_
 
             # oob score
             score = self.metric._score_func(self.y, y_pred)
+
+            if not self.metric_great_better:
+                # if not great is better, then multiply -1
+                score *= -1
         else:
             # cv score
-            score = cross_val_score(
-                classifier_obj,
-                self.x,
-                self.y,
-                cv=StratifiedKFold(
-                    n_splits=5,
-                    shuffle=True,
-                    random_state=self.valid_seed_tape[trial.number]),
-                scoring=self.metric,
-                n_jobs=-1)
-            score = score.mean()
+            cv = StratifiedKFold(
+                n_splits=self.n_cv,
+                shuffle=True,
+                random_state=self.valid_seed_tape[trial.number])
+            score = []
+
+            for i, (train_ind, test_ind) in enumerate(cv.split(self.x,
+                                                               self.y)):
+                x_train = self.x.iloc[train_ind]
+                y_train = self.y.iloc[train_ind]
+                x_test = self.x.iloc[test_ind]
+                y_test = self.y.iloc[test_ind]
+
+                with parallel_backend('loky'):
+                    regressor_obj.fit(self.x, self.y)
+
+                test_score = self.metric(regressor_obj, x_test, y_test)
+                train_score = self.metric(regressor_obj, x_train, y_train)
+
+                if self.validate_penalty:
+                    score.append(test_score + 0.1 * (test_score - train_score))
+                else:
+                    score.append(test_score)
+
+            score = sum(score) / self.n_cv
         return score
 
 
 # SVM
-class SVM_tuner(Basic_tuner):
+class SVM_tuner(Regression_tuner):
     """
     Tuning a support vector machine.    
     [sklearn.svm.SVR](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html)
@@ -183,21 +240,23 @@ class SVM_tuner(Basic_tuner):
     def __init__(self,
                  kernel="rbf",
                  n_try=25,
-                 target="neg_mean_squared_error",
+                 n_cv=5,
+                 target="mse",
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         """
         Args:
             kernel (str, optional): This will be passed to the attribute of SVR: "kernel". Defaults to "rbf".
             n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "neg_mean_squared_error" (mse score).    
+            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "mse" (mse score).    
             kernel_seed (int): random seed for model kernel. 
             valid_seed (int): random seed for cross validation
             optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
         """
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
@@ -209,7 +268,6 @@ class SVM_tuner(Basic_tuner):
         if default:
             parms = {
                 "kernel": self.kernel,
-                "random_state": self.kernel_seed,
             }
         else:
             # scaling penalty: https://scikit-learn.org/stable/auto_examples/svm/plot_svm_scale_c.html#sphx-glr-auto-examples-svm-plot-svm-scale-c-py
@@ -223,15 +281,13 @@ class SVM_tuner(Basic_tuner):
                 self.kernel,
                 "gamma":
                 "auto",
-                "random_state":
-                self.kernel_seed_tape[trial.number]
             }
         svm = SVR(**parms)
         return svm
 
 
 # XGboost
-class XGBoost_tuner(Basic_tuner):
+class XGBoost_tuner(Regression_tuner):
     """
     Tuning a XGBoost classifier model.    
     [xgboost.XGBClassifier](https://xgboost.readthedocs.io/en/stable/python/python_api.html)
@@ -244,23 +300,25 @@ class XGBoost_tuner(Basic_tuner):
     """
 
     def __init__(self,
-                 n_try=200,
-                 target="neg_mean_squared_error",
+                 n_try=100,
+                 n_cv=5,
+                 target="mse",
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         """
 
         Args:
             n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "neg_mean_squared_error" (mse score).    
+            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "mse" (mse score).    
             kernel_seed (int): random seed for model kernel. 
             valid_seed (int): random seed for cross validation
             optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
         
         """
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
@@ -315,7 +373,7 @@ class XGBoost_tuner(Basic_tuner):
 
 
 # lightGBM
-class LighGBM_tuner(Basic_tuner):
+class LighGBM_tuner(Regression_tuner):
     """
     Tuning a LighGBM classifier model.    
     [lightgbm.LGBMClassifier](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html)     
@@ -325,23 +383,25 @@ class LighGBM_tuner(Basic_tuner):
     """
 
     def __init__(self,
-                 n_try=200,
-                 target="neg_mean_squared_error",
+                 n_try=100,
+                 n_cv=5,
+                 target="mse",
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         """
 
         Args:
             n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "neg_mean_squared_error" (mse score).    
+            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "mse" (mse score).    
             kernel_seed (int): random seed for model kernel. 
             valid_seed (int): random seed for cross validation
             optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
         
         """
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
@@ -409,7 +469,7 @@ class LighGBM_tuner(Basic_tuner):
 
 
 # AdaBoost
-class AdaBoost_tuner(Basic_tuner):
+class AdaBoost_tuner(Regression_tuner):
     """
     Tuning a AdaBoost regressor.    
     [sklearn.ensemble.AdaBoostRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostRegressor.html)
@@ -417,20 +477,22 @@ class AdaBoost_tuner(Basic_tuner):
 
     def __init__(self,
                  n_try=50,
-                 target="neg_mean_squared_error",
+                 n_cv=5,
+                 target="mse",
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         """
         Args:
             n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "neg_mean_squared_error" (negative mse).    
+            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "mse" (negative mse).    
             kernel_seed (int): random seed for model kernel. 
             valid_seed (int): random seed for cross validation
             optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
         """
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
@@ -460,7 +522,7 @@ class AdaBoost_tuner(Basic_tuner):
 
 
 # DT
-class DecisionTree_tuner(Basic_tuner):
+class DecisionTree_tuner(Regression_tuner):
     """
     Tuning a DecisionTree regressor.    
     [sklearn.tree.DecisionTreeRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html)
@@ -468,20 +530,22 @@ class DecisionTree_tuner(Basic_tuner):
 
     def __init__(self,
                  n_try=25,
-                 target="neg_mean_squared_error",
+                 n_cv=5,
+                 target="mse",
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         """
         Args:
             n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "neg_mean_squared_error" (negative mse).    
+            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "mse" (negative mse).    
             kernel_seed (int): random seed for model kernel. 
             valid_seed (int): random seed for cross validation
             optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
         """
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,

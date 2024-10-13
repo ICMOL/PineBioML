@@ -80,7 +80,7 @@ def read_multiple_groups(file_path_list, transpose=False, index_col=0):
     x = concat(datas, axis=0)
     y = concat(group_label, axis=0)
 
-    if len(set(y.index)) == len(y.index):
+    if not len(set(y.index)) == len(y.index):
         # index repeats
         x = x.reset_index(drop=True)
         y = y.reset_index(drop=True)

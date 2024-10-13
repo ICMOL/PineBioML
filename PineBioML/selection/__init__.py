@@ -1,26 +1,10 @@
-import pandas as pd
-import numpy as np
-from tqdm import tqdm
 import matplotlib.pyplot as plt
-from sklearn.utils.class_weight import compute_sample_weight
 
+import warnings
+from sklearn.exceptions import ConvergenceWarning
 
-def sample_weight(y):
-    """
-    Compute sample weight for unbalance labeling.
-
-    Args:
-        y (pandas.Serise or 1D array): labels
-
-    Returns:
-        pandas.Serise or 1D array: sample weights
-    """
-    #p = y.mean()
-    #q = 1 - p
-    #sp = 1 / p / 2
-    #sq = 1 / q / 2
-    #return y * sp + (1 - y) * sq
-    return compute_sample_weight(class_weight="balanced", y=y)
+# Suppress only ConvergenceWarning
+warnings.filterwarnings("ignore", category=ConvergenceWarning)
 
 
 class SelectionPipeline:
@@ -117,6 +101,9 @@ class SelectionPipeline:
     def fit_transform(self, x, y):
         self.fit(x, y)
         return self.transform(x)
+
+    def what_matters(self):
+        return self.selected_score
 
     def Plotting(self):
         """
