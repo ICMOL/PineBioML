@@ -351,8 +351,7 @@ class DT_selection(SelectionPipeline):
         """
         upper = x.quantile(1 - self.q)
         lower = x.quantile(self.q)
-        #print(upper, lower)
-        normed = (x - lower) / (upper - lower)
+        normed = (x - lower) / (upper - lower + 1e-5)
         normed = normed.clip(0, 1)
         bin_idx = (normed * self.bins - 0.5).round().astype(np.int32)
         columns = bin_idx.columns
@@ -554,6 +553,7 @@ class AdaBoost_selection(SelectionPipeline):
             n_estimators=n_iter,
             learning_rate=learning_rate,
             random_state=142,
+            algorithm="SAMME",
         )
         self.name = "AdaBoost" + str(n_iter)
 

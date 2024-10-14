@@ -192,7 +192,7 @@ class Basic_tuner(ABC):
                   self.study.best_trial.number)
             self.best_model = self.optuna_model
 
-    def fit(self, x, y):
+    def fit(self, x, y, retune=True):
         """
         The sklearn.base.BaseEstimator fit api.
 
@@ -209,7 +209,8 @@ class Basic_tuner(ABC):
                        name=y.name)
 
         # tune the model.
-        self.tune(x, y)
+        if retune:
+            self.tune(x, y)
 
         # fit the model.
         if self.is_regression():

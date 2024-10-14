@@ -204,7 +204,8 @@ class Pine():
 
                         # fit on training fold
                         model.fit(train_x.iloc[train_idx],
-                                  train_y.iloc[train_idx])
+                                  train_y.iloc[train_idx],
+                                  retune=False)
 
                         # score on testing fold
                         fold_pred = f(train_x.iloc[valid_idx])

@@ -75,7 +75,7 @@ class pca_plot(basic_plot):
 
     def draw(self, x, y=None):
         # calculate pca and store in pd.DataFrame
-        pcs = PCA(self.n_pc).fit_transform((x - x.mean()) / x.std())
+        pcs = PCA(self.n_pc).fit_transform((x - x.mean()) / (x.std() + 1e-4))
         pcs = pd.DataFrame(
             pcs,
             index=x.index,
