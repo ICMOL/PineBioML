@@ -1,3 +1,12 @@
+2024/10/14 v1.1.2:
+    description:
+        1. RF tuner search range change: cpp :[1e-3, 1e-1] -> [1e-5, 1e-1]. the larger dataset needs smaller cpp.
+        2. Pine do not retune the model while doing cv evaluation.
+        3. pca_plot standardization add elpsilon to prevent zero std.
+        4. c4.5 selection add add elpsilon to prevent zero std.
+
+
+
 2024/10/14 v1.1.1:
     description:
         1. task support:

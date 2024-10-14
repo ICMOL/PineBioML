@@ -201,12 +201,12 @@ class RandomForest_tuner(Classification_tuner):
             parms = {
                 "n_estimators":
                 trial.suggest_int('n_estimators', 32, 1024, log=True),
-                "max_depth":
-                trial.suggest_int('max_depth', 4, 16, log=True),
+                #"max_depth":
+                #trial.suggest_int('max_depth', 4, 16, log=True),
                 "min_samples_leaf":
                 trial.suggest_int('min_samples_leaf', 1, 32, log=True),
                 "ccp_alpha":
-                trial.suggest_float('ccp_alpha', 1e-3, 1e-1, log=True),
+                trial.suggest_float('ccp_alpha', 1e-4, 1e-1, log=True),
                 "max_samples":
                 trial.suggest_float('max_samples', 0.5, 0.9, log=True),
                 "bootstrap":
