@@ -9,7 +9,7 @@ class sklearn_esitimator_wrapper():
     def __init__(self, kernel):
         self.kernel = kernel
 
-    def fit(self, x, y):
+    def fit(self, x, y, retune=True):
         self.label_name = y.name
         self.kernel.fit(x, y)
         return self

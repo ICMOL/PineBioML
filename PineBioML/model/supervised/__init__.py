@@ -79,6 +79,10 @@ class Basic_tuner(ABC):
         self.best_model = None
 
     @abstractmethod
+    def name(self):
+        pass
+
+    @abstractmethod
     def is_regression(self):
         pass
 
@@ -166,7 +170,7 @@ class Basic_tuner(ABC):
         print(
             "optuna seed {self.optuna_seed}  |  validation seed {self.valid_seed}  |  model seed {self.kernel_seed}"
             .format(self=self))
-        print("    start tuning. it will take a while.")
+        print("    {} start tuning. it will take a while.".format(self.name()))
         # using optuna tuning hyper parameter
         self.study.optimize(self.evaluate,
                             n_trials=self.n_try,
@@ -300,11 +304,13 @@ class Basic_tuner(ABC):
 
         # sparse the metric
         scorer_kargs = {}
-        for arg in [
-                i.split("=")
-                for i in self.metric.__str__()[12:-1].split(", ")[1:]
-        ]:
-            scorer_kargs[arg[0]] = arg[1]
+        for arguments in self.metric.__str__()[12:-1].split(", ")[1:]:
+            if "(" in arguments:  # for roc auc scorer: response_method=('decision_function', 'predict_proba')
+                scorer_kargs["response_method"] = "predict_proba"
+            else:
+                arg = arguments.split("=")
+                if len(arg) == 2:
+                    scorer_kargs[arg[0]] = arg[1]
 
         # response method
         self.metric_using_proba = scorer_kargs["response_method"].find(
