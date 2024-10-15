@@ -32,3 +32,14 @@ https://pycaret.org/
 pychemauth
 https://pychemauth.readthedocs.io/en/latest/index.html
  - soft/hard pls
+
+JADBio
+https://support.jadbio.com/
+ - AWS platform
+
+# autoML
+mljar
+H2O
+
+AutoML.org
+https://www.automl.org/automl-for-x/tabular-data/

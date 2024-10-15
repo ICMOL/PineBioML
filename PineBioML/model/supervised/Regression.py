@@ -42,6 +42,10 @@ class Regression_tuner(Basic_tuner):
         return True
 
     @abstractmethod
+    def name(self):
+        pass
+
+    @abstractmethod
     def create_model(self, trial, default):
         """
         Create model based on default setting or optuna trial
@@ -86,6 +90,9 @@ class ElasticNet_tuner(Regression_tuner):
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
                          validate_penalty=validate_penalty)
+
+    def name(self):
+        return "ElasticNet"
 
     def create_model(self, trial, default=False):
         if default:
@@ -148,6 +155,9 @@ class RandomForest_tuner(Regression_tuner):
                          validate_penalty=validate_penalty)
 
         self.using_oob = using_oob
+
+    def name(self):
+        return "RandomForest"
 
     def create_model(self, trial, default=False):
         if default:
@@ -264,6 +274,9 @@ class SVM_tuner(Regression_tuner):
                          validate_penalty=validate_penalty)
         self.kernel = kernel  # rbf, linear, poly, sigmoid
 
+    def name(self):
+        return self.kernel + "-SVM"
+
     def create_model(self, trial, default=False):
         if default:
             parms = {
@@ -324,6 +337,9 @@ class XGBoost_tuner(Regression_tuner):
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
                          validate_penalty=validate_penalty)
+
+    def name(self):
+        return "XGBoost"
 
     def create_model(self, trial, default=False):
         if default:
@@ -407,6 +423,9 @@ class LighGBM_tuner(Regression_tuner):
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
                          validate_penalty=validate_penalty)
+
+    def name(self):
+        return "LightGBM"
 
     def create_model(self, trial, default=False):
         if default:
@@ -499,6 +518,9 @@ class AdaBoost_tuner(Regression_tuner):
                          optuna_seed=optuna_seed,
                          validate_penalty=validate_penalty)
 
+    def name(self):
+        return "AdaBoost"
+
     def create_model(self, trial, default=False):
         if default:
             parms = {
@@ -551,6 +573,9 @@ class DecisionTree_tuner(Regression_tuner):
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
                          validate_penalty=validate_penalty)
+
+    def name(self):
+        return "DecisionTree"
 
     def create_model(self, trial, default=False):
         if default:
