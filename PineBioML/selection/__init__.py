@@ -117,6 +117,21 @@ class SelectionPipeline:
 
         plt.show()
 
+    def reference(self) -> dict[str, str]:
+        """
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    >Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        """
+        refers = {
+            "sklearn publication":
+            "https://dl.acm.org/doi/10.5555/1953048.2078195"
+        }
+
+        return refers
+
     def Diagnose(self):
         """
         Give diagnose of selection.

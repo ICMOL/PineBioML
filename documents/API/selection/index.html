@@ -26,29 +26,13 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import pandas as pd
-import numpy as np
-from tqdm import tqdm
-import matplotlib.pyplot as plt
-from sklearn.utils.class_weight import compute_sample_weight
+<pre><code class="python">import matplotlib.pyplot as plt
 
+import warnings
+from sklearn.exceptions import ConvergenceWarning
 
-def sample_weight(y):
-    &#34;&#34;&#34;
-    Compute sample weight for unbalance labeling.
-
-    Args:
-        y (pandas.Serise or 1D array): labels
-
-    Returns:
-        pandas.Serise or 1D array: sample weights
-    &#34;&#34;&#34;
-    #p = y.mean()
-    #q = 1 - p
-    #sp = 1 / p / 2
-    #sq = 1 / q / 2
-    #return y * sp + (1 - y) * sq
-    return compute_sample_weight(class_weight=&#34;balanced&#34;, y=y)
+# Suppress only ConvergenceWarning
+warnings.filterwarnings(&#34;ignore&#34;, category=ConvergenceWarning)
 
 
 class SelectionPipeline:
@@ -146,6 +130,9 @@ class SelectionPipeline:
         self.fit(x, y)
         return self.transform(x)
 
+    def what_matters(self):
+        return self.selected_score
+
     def Plotting(self):
         &#34;&#34;&#34;
         plot hist graph of selectied feature importance
@@ -157,6 +144,21 @@ class SelectionPipeline:
         ax.set_title(self.name + &#34; score&#34;)
 
         plt.show()
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refers = {
+            &#34;sklearn publication&#34;:
+            &#34;https://dl.acm.org/doi/10.5555/1953048.2078195&#34;
+        }
+
+        return refers
 
     def Diagnose(self):
         &#34;&#34;&#34;
@@ -174,31 +176,15 @@ class SelectionPipeline:
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt><code class="name"><a title="PineBioML.selection.Boosting" href="Boosting.html">PineBioML.selection.Boosting</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="PineBioML.selection.DT" href="DT.html">PineBioML.selection.DT</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="PineBioML.selection.Lasso" href="Lasso.html">PineBioML.selection.Lasso</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="PineBioML.selection.RF" href="RF.html">PineBioML.selection.RF</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="PineBioML.selection.SVM" href="SVM.html">PineBioML.selection.SVM</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
 <dt><code class="name"><a title="PineBioML.selection.Volcano" href="Volcano.html">PineBioML.selection.Volcano</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt><code class="name"><a title="PineBioML.selection.ensemble" href="ensemble.html">PineBioML.selection.ensemble</a></code></dt>
+<dt><code class="name"><a title="PineBioML.selection.classification" href="classification.html">PineBioML.selection.classification</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="PineBioML.selection.regression" href="regression.html">PineBioML.selection.regression</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -207,46 +193,6 @@ class SelectionPipeline:
 <section>
 </section>
 <section>
-<h2 class="section-title" id="header-functions">Functions</h2>
-<dl>
-<dt id="PineBioML.selection.sample_weight"><code class="name flex">
-<span>def <span class="ident">sample_weight</span></span>(<span>y)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Compute sample weight for unbalance labeling.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Serise</code> or <code>1D array</code></dt>
-<dd>labels</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>pandas.Serise</code> or <code>1D array</code></dt>
-<dd>sample weights</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def sample_weight(y):
-    &#34;&#34;&#34;
-    Compute sample weight for unbalance labeling.
-
-    Args:
-        y (pandas.Serise or 1D array): labels
-
-    Returns:
-        pandas.Serise or 1D array: sample weights
-    &#34;&#34;&#34;
-    #p = y.mean()
-    #q = 1 - p
-    #sp = 1 / p / 2
-    #sq = 1 / q / 2
-    #return y * sp + (1 - y) * sq
-    return compute_sample_weight(class_weight=&#34;balanced&#34;, y=y)</code></pre>
-</details>
-</dd>
-</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
@@ -363,6 +309,9 @@ The detail methods is to be determinded.</p>
         self.fit(x, y)
         return self.transform(x)
 
+    def what_matters(self):
+        return self.selected_score
+
     def Plotting(self):
         &#34;&#34;&#34;
         plot hist graph of selectied feature importance
@@ -374,6 +323,21 @@ The detail methods is to be determinded.</p>
         ax.set_title(self.name + &#34; score&#34;)
 
         plt.show()
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refers = {
+            &#34;sklearn publication&#34;:
+            &#34;https://dl.acm.org/doi/10.5555/1953048.2078195&#34;
+        }
+
+        return refers
 
     def Diagnose(self):
         &#34;&#34;&#34;
@@ -389,18 +353,26 @@ The detail methods is to be determinded.</p>
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li><a title="PineBioML.selection.Boosting.AdaBoost_selection" href="Boosting.html#PineBioML.selection.Boosting.AdaBoost_selection">AdaBoost_selection</a></li>
-<li><a title="PineBioML.selection.Boosting.Lightgbm_selection" href="Boosting.html#PineBioML.selection.Boosting.Lightgbm_selection">Lightgbm_selection</a></li>
-<li><a title="PineBioML.selection.Boosting.XGboost_selection" href="Boosting.html#PineBioML.selection.Boosting.XGboost_selection">XGboost_selection</a></li>
-<li><a title="PineBioML.selection.DT.DT_selection" href="DT.html#PineBioML.selection.DT.DT_selection">DT_selection</a></li>
-<li><a title="PineBioML.selection.Lasso.Lasso_bisection_selection" href="Lasso.html#PineBioML.selection.Lasso.Lasso_bisection_selection">Lasso_bisection_selection</a></li>
-<li><a title="PineBioML.selection.Lasso.Lasso_selection" href="Lasso.html#PineBioML.selection.Lasso.Lasso_selection">Lasso_selection</a></li>
-<li><a title="PineBioML.selection.Lasso.multi_Lasso_selection" href="Lasso.html#PineBioML.selection.Lasso.multi_Lasso_selection">multi_Lasso_selection</a></li>
-<li><a title="PineBioML.selection.RF.RF_selection" href="RF.html#PineBioML.selection.RF.RF_selection">RF_selection</a></li>
-<li><a title="PineBioML.selection.RF.pcRF_selection" href="RF.html#PineBioML.selection.RF.pcRF_selection">pcRF_selection</a></li>
-<li><a title="PineBioML.selection.SVM.SVM_selection" href="SVM.html#PineBioML.selection.SVM.SVM_selection">SVM_selection</a></li>
 <li><a title="PineBioML.selection.Volcano.Volcano_selection" href="Volcano.html#PineBioML.selection.Volcano.Volcano_selection">Volcano_selection</a></li>
-<li><a title="PineBioML.selection.ensemble.selector" href="ensemble.html#PineBioML.selection.ensemble.selector">selector</a></li>
+<li><a title="PineBioML.selection.classification.AdaBoost_selection" href="classification.html#PineBioML.selection.classification.AdaBoost_selection">AdaBoost_selection</a></li>
+<li><a title="PineBioML.selection.classification.DT_selection" href="classification.html#PineBioML.selection.classification.DT_selection">DT_selection</a></li>
+<li><a title="PineBioML.selection.classification.Lasso_bisection_selection" href="classification.html#PineBioML.selection.classification.Lasso_bisection_selection">Lasso_bisection_selection</a></li>
+<li><a title="PineBioML.selection.classification.Lasso_selection" href="classification.html#PineBioML.selection.classification.Lasso_selection">Lasso_selection</a></li>
+<li><a title="PineBioML.selection.classification.Lightgbm_selection" href="classification.html#PineBioML.selection.classification.Lightgbm_selection">Lightgbm_selection</a></li>
+<li><a title="PineBioML.selection.classification.RF_selection" href="classification.html#PineBioML.selection.classification.RF_selection">RF_selection</a></li>
+<li><a title="PineBioML.selection.classification.SVM_selection" href="classification.html#PineBioML.selection.classification.SVM_selection">SVM_selection</a></li>
+<li><a title="PineBioML.selection.classification.XGboost_selection" href="classification.html#PineBioML.selection.classification.XGboost_selection">XGboost_selection</a></li>
+<li><a title="PineBioML.selection.classification.essemble_selector" href="classification.html#PineBioML.selection.classification.essemble_selector">essemble_selector</a></li>
+<li><a title="PineBioML.selection.classification.multi_Lasso_selection" href="classification.html#PineBioML.selection.classification.multi_Lasso_selection">multi_Lasso_selection</a></li>
+<li><a title="PineBioML.selection.regression.AdaBoost_selection" href="regression.html#PineBioML.selection.regression.AdaBoost_selection">AdaBoost_selection</a></li>
+<li><a title="PineBioML.selection.regression.Lasso_bisection_selection" href="regression.html#PineBioML.selection.regression.Lasso_bisection_selection">Lasso_bisection_selection</a></li>
+<li><a title="PineBioML.selection.regression.Lasso_selection" href="regression.html#PineBioML.selection.regression.Lasso_selection">Lasso_selection</a></li>
+<li><a title="PineBioML.selection.regression.Lightgbm_selection" href="regression.html#PineBioML.selection.regression.Lightgbm_selection">Lightgbm_selection</a></li>
+<li><a title="PineBioML.selection.regression.RF_selection" href="regression.html#PineBioML.selection.regression.RF_selection">RF_selection</a></li>
+<li><a title="PineBioML.selection.regression.SVM_selection" href="regression.html#PineBioML.selection.regression.SVM_selection">SVM_selection</a></li>
+<li><a title="PineBioML.selection.regression.XGboost_selection" href="regression.html#PineBioML.selection.regression.XGboost_selection">XGboost_selection</a></li>
+<li><a title="PineBioML.selection.regression.essemble_selector" href="regression.html#PineBioML.selection.regression.essemble_selector">essemble_selector</a></li>
+<li><a title="PineBioML.selection.regression.multi_Lasso_selection" href="regression.html#PineBioML.selection.regression.multi_Lasso_selection">multi_Lasso_selection</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
@@ -632,6 +604,40 @@ k = # (z-scores &gt; 1)</p>
     return self.transform(x)</code></pre>
 </details>
 </dd>
+<dt id="PineBioML.selection.SelectionPipeline.reference"><code class="name flex">
+<span>def <span class="ident">reference</span></span>(<span>self) ‑> dict[str, str]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This function will return reference of this method in python dict.
+<br>
+If you want to access it in PineBioML api document, then click on the
+&gt;Expand source code
+</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dict[str, str]</code></dt>
+<dd>a dict of reference.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def reference(self) -&gt; dict[str, str]:
+    &#34;&#34;&#34;
+    This function will return reference of this method in python dict.    
+    If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+    Returns:
+        dict[str, str]: a dict of reference.
+    &#34;&#34;&#34;
+    refers = {
+        &#34;sklearn publication&#34;:
+        &#34;https://dl.acm.org/doi/10.5555/1953048.2078195&#34;
+    }
+
+    return refers</code></pre>
+</details>
+</dd>
 <dt id="PineBioML.selection.SelectionPipeline.transform"><code class="name flex">
 <span>def <span class="ident">transform</span></span>(<span>self, x)</span>
 </code></dt>
@@ -643,6 +649,19 @@ k = # (z-scores &gt; 1)</p>
 </summary>
 <pre><code class="python">def transform(self, x):
     return x[self.selected_score.index]</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.selection.SelectionPipeline.what_matters"><code class="name flex">
+<span>def <span class="ident">what_matters</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def what_matters(self):
+    return self.selected_score</code></pre>
 </details>
 </dd>
 </dl>
@@ -663,18 +682,9 @@ k = # (z-scores &gt; 1)</p>
 </li>
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
-<li><code><a title="PineBioML.selection.Boosting" href="Boosting.html">PineBioML.selection.Boosting</a></code></li>
-<li><code><a title="PineBioML.selection.DT" href="DT.html">PineBioML.selection.DT</a></code></li>
-<li><code><a title="PineBioML.selection.Lasso" href="Lasso.html">PineBioML.selection.Lasso</a></code></li>
-<li><code><a title="PineBioML.selection.RF" href="RF.html">PineBioML.selection.RF</a></code></li>
-<li><code><a title="PineBioML.selection.SVM" href="SVM.html">PineBioML.selection.SVM</a></code></li>
 <li><code><a title="PineBioML.selection.Volcano" href="Volcano.html">PineBioML.selection.Volcano</a></code></li>
-<li><code><a title="PineBioML.selection.ensemble" href="ensemble.html">PineBioML.selection.ensemble</a></code></li>
-</ul>
-</li>
-<li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
-<li><code><a title="PineBioML.selection.sample_weight" href="#PineBioML.selection.sample_weight">sample_weight</a></code></li>
+<li><code><a title="PineBioML.selection.classification" href="classification.html">PineBioML.selection.classification</a></code></li>
+<li><code><a title="PineBioML.selection.regression" href="regression.html">PineBioML.selection.regression</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
@@ -690,7 +700,9 @@ k = # (z-scores &gt; 1)</p>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Select" href="#PineBioML.selection.SelectionPipeline.Select">Select</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.fit" href="#PineBioML.selection.SelectionPipeline.fit">fit</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.fit_transform" href="#PineBioML.selection.SelectionPipeline.fit_transform">fit_transform</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.reference" href="#PineBioML.selection.SelectionPipeline.reference">reference</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.transform" href="#PineBioML.selection.SelectionPipeline.transform">transform</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.what_matters" href="#PineBioML.selection.SelectionPipeline.what_matters">what_matters</a></code></li>
 </ul>
 </li>
 </ul>

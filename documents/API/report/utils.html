@@ -26,138 +26,686 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import pandas as pd
+<pre><code class="python">from abc import ABC, abstractmethod
+from typing import Union
+
+import pandas as pd
 import numpy as np
 
 import matplotlib.pyplot as plt
-from seaborn import scatterplot, heatmap, pairplot
+from matplotlib.colors import Normalize
+from seaborn import scatterplot, heatmap, pairplot, color_palette
 
 from sklearn.decomposition import PCA
-import sklearn.metrics as metrics
 from sklearn.cross_decomposition import PLSRegression
+from sklearn.preprocessing import OneHotEncoder
+import sklearn.metrics as metrics
+
 from umap import UMAP
 
 
-def data_overview(input_x, y, label_name=&#34;y&#34;, title=&#34;&#34;):
+class basic_plot(ABC):
     &#34;&#34;&#34;
-    Give a data overview, including:    
-        1. raw data boxplot, pairplot.        
-        2. pca pairt plot.     
-        3. corelation heatmap.    
+    the base class of plots.    
+    Using make_figure(x, y) to generate a figure.    
+
+    &#34;&#34;&#34;
+
+    def __init__(self,
+                 prefix: str = &#34;&#34;,
+                 save_path: str = &#34;./&#34;,
+                 save_fig: bool = False,
+                 show_fig: bool = True):
+        &#34;&#34;&#34;
+
+        Args:
+            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to &#34;&#34;.
+            save_path (str, optional): the path to export the figure. Defaults to &#34;./&#34;.
+            save_fig (bool, optional): whether to export the figure or not. Defaults to False.
+            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
+        &#34;&#34;&#34;
+
+        self.prefix = prefix
+        self.save_path = save_path
+        self.save_fig = save_fig
+        self.show_fig = show_fig
+
+    @abstractmethod
+    def save_name(self):
+        pass
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = {
+            &#34;matplotlib document&#34;: &#34;https://matplotlib.org/&#34;,
+            &#34;seaborn document&#34;: &#34;https://seaborn.pydata.org/&#34;
+        }
+
+        return refer
+
+    @abstractmethod
+    def draw(self, x: pd.DataFrame, y: pd.Series = None):
+        &#34;&#34;&#34;
+        How and what to draw should be implemented in here.    
+
+        Args:
+            x (pd.DataFrame): feature
+            y (pd.Series, optional): label. Defaults to None.
+        &#34;&#34;&#34;
+        pass
+
+    def make_figure(self, x: pd.DataFrame, y: pd.Series = None):
+        &#34;&#34;&#34;
+        1. draw(x, y)    
+        2. To save or to show the result.
+
+        Args:
+            x (pd.DataFrame): features
+            y (pd.Series, optional): label. Defaults to None.
+        &#34;&#34;&#34;
+
+        self.draw(x, y)
+
+        if self.save_fig:
+            plt.savefig(self.save_path + self.save_name())
+        if self.show_fig:
+            plt.show()
+        else:
+            plt.clf()
+
+
+class pca_plot(basic_plot):
+    &#34;&#34;&#34;
+    Calling pca_plot().make_figure(x) or pca_plot().make_figure(x, y) to draw a pca plot of x with n_pc components.    
+
+    &#34;&#34;&#34;
+
+    def __init__(self,
+                 n_pc: int = 4,
+                 discrete_legend: bool = True,
+                 prefix: str = &#34;&#34;,
+                 save_path: str = &#34;./output/images/&#34;,
+                 save_fig: bool = True,
+                 show_fig: bool = True):
+        &#34;&#34;&#34;
+
+        Args:
+            n_pc (int, optional): number of precipal compoment to plot. Defaults to 4.
+            discrete_legend (bool, optional): To color the plot based on y in discrete hue or continuous color bar. If y is continuous, then you should set it to False. Defaults to True.
+            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to &#34;&#34;.
+            save_path (str, optional): the path to export the figure. Defaults to &#34;./output/images/&#34;.
+            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
+            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
+        &#34;&#34;&#34;
+        super().__init__(prefix=prefix,
+                         save_path=save_path,
+                         save_fig=save_fig,
+                         show_fig=show_fig)
+        self.n_pc = n_pc
+        self.discrete_legend = discrete_legend
+        self.name = &#34;PCA&#34;
+
+    def save_name(self) -&gt; str:
+        &#34;&#34;&#34;
+        Returns:
+            str: {prefix} PCA plot
+        &#34;&#34;&#34;
+        return &#34;{} {} plot&#34;.format(self.prefix, self.name)
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = super().reference()
+        refer[
+            self.name +
+            &#34; document&#34;] = &#34;https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html&#34;
+
+        return refer
+
+    def draw(self, x: pd.DataFrame, y: pd.Series = None):
+        &#34;&#34;&#34;
+        Using x to draw a pca plot. The difference between pca_plot().draw(x) and pca_plot().draw(x, y) is that:    
+         - pca_plot().draw(x) will give a normal pca plot.    
+         - pca_plot().draw(x, y) will coloring the points on the figure based on y. Set discrete_legend to True if y is continuous, False otherwise.    
+
+        What we do here is:    
+            1. standardize x    
+            2. fit a PCA(n_pc) on x and storing the result in pd.DataFrame    
+            3. Decide how to color the plots by various cases of y and discrete_legend.    
+
+        Args:
+            x (pd.DataFrame): feature    
+            y (pd.Series, optional): label. Defaults to None.    
+        &#34;&#34;&#34;
+
+        # calculate pca and store in pd.DataFrame
+        pcs = PCA(self.n_pc).fit_transform((x - x.mean()) / (x.std() + 1e-4))
+        pcs = pd.DataFrame(
+            pcs,
+            index=x.index,
+            columns=[&#34;pc_&#34; + str(i + 1) for i in range(self.n_pc)])
+
+        if y is None:
+            y_name = None
+        else:
+            # add y into the DataFrame for coloring the data points
+            y_name = &#34;y&#34; if y.name is None else y.name
+            pcs[y_name] = y
+
+        if self.discrete_legend:
+            # discrete legend
+            plot = pairplot(data=pcs, hue=y_name)
+        elif not y is None:
+            # color bar
+            cmap = color_palette(&#39;ch:&#39;, as_cmap=True)
+            sm = plt.cm.ScalarMappable(cmap=cmap, norm=Normalize())
+            sm.set_array([])
+            plot = pairplot(data=pcs, hue=y_name)
+            plot.legend.remove()
+
+            cbar = plt.colorbar(sm, ax=plot.axes)
+            cbar.set_label(y_name)
+        else:
+            # vanilla
+            plot = pairplot(data=pcs)
+
+        plot.figure.suptitle(&#34;{} {} Scatter plot&#34;.format(
+            self.prefix, self.name),
+                             y=1.01)
+
+
+class pls_plot(basic_plot):
+    &#34;&#34;&#34;
+    PLS-DA is a supervied method in dimension decomposition.    
+    This function will plot the result of PLS-DA of given data.    
+
+    Using pls_plot().make_figure(x, y) to generate a figure.
+
+    Warning: PLS-DA is a limited tool in multi-class classification and unlinear regression problem.
+
+    &#34;&#34;&#34;
+
+    def __init__(self,
+                 is_classification: bool,
+                 discrete_legend: bool = True,
+                 prefix: str = &#34;&#34;,
+                 save_path: str = &#34;./output/images/&#34;,
+                 save_fig: bool = True,
+                 show_fig: bool = True):
+        &#34;&#34;&#34;
+
+        Args:
+            is_classification (bool): If (x, y) is a classification task, then set is_classification to True.
+            discrete_legend (bool, optional): To color the plot based on y in discrete hue or continuous color bar. If y is continuous, then you should set it to False. Defaults to True.
+            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to &#34;&#34;.
+            save_path (str, optional): the path to export the figure. Defaults to &#34;./output/images/&#34;.
+            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
+            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
+        &#34;&#34;&#34;
+        super().__init__(prefix=prefix,
+                         save_path=save_path,
+                         save_fig=save_fig,
+                         show_fig=show_fig)
+        self.discrete_legend = discrete_legend
+        self.is_classification = is_classification
+        self.name = &#34;PLS&#34;
+
+    def save_name(self):
+        return &#34;{} {} plot&#34;.format(self.prefix, self.name)
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = super().reference()
+        refer[
+            self.name +
+            &#34; document&#34;] = &#34;https://scikit-learn.org/stable/modules/generated/sklearn.cross_decomposition.PLSRegression.html&#34;
+
+        return refer
+
+    def draw(self, x: pd.DataFrame, y: pd.Series):
+        &#34;&#34;&#34;
+        What we do here is:    
+            1. If is_classification =&gt; one-hot encode the y. 
+            2. Do PLS-DA
+            3. Decide how to color the plots by various cases of y and discrete_legend.    
+
+        Args:
+            x (pd.DataFrame): features 
+            y (pd.Series, optional): label.
+
+        Raises:
+            TypeError: _description_
+        &#34;&#34;&#34;
+        # one hot encoder for classification
+        if self.is_classification:
+            OneHot_y = OneHotEncoder(sparse_output=False).fit_transform(
+                y.to_numpy().reshape(-1, 1))
+            # fit pls regression
+            pls = PLSRegression(n_components=2).fit(x, OneHot_y)
+        else:
+            if y.dtype == &#34;O&#34;:
+                raise TypeError(
+                    &#34;the dtype of y can&#39;t be object while is_classification was setting to False, which means it is a regression task and y should be float or int.&#34;
+                )
+            # fit pls regression
+            pls = PLSRegression(n_components=2).fit(x, y)
+
+        # project x
+        plscs = pls.transform(x)
+        plscs = pd.DataFrame(
+            plscs,
+            index=x.index,
+            columns=[self.name + &#34; componet 1&#34;, self.name + &#34; componet 2&#34;])
+
+        if y is None:
+            y_name = None
+        else:
+            # add y into the DataFrame for coloring the data points
+            y_name = &#34;y&#34; if y.name is None else y.name
+            plscs[y_name] = y
+
+        if self.discrete_legend:
+            # discrete legend
+            plot = scatterplot(data=plscs,
+                               x=self.name + &#34; componet 1&#34;,
+                               y=self.name + &#34; componet 2&#34;,
+                               hue=y_name)
+            plt.legend(loc=&#39;center left&#39;, bbox_to_anchor=(1, 0.5))
+        elif not y is None:
+            # color bar
+            cmap = color_palette(&#39;ch:&#39;, as_cmap=True)
+            sm = plt.cm.ScalarMappable(cmap=cmap, norm=Normalize())
+            plot = scatterplot(data=plscs,
+                               x=self.name + &#34; componet 1&#34;,
+                               y=self.name + &#34; componet 2&#34;,
+                               hue=y_name,
+                               hue_norm=sm.norm,
+                               palette=cmap,
+                               legend=False)
+            cbar = plt.colorbar(sm, ax=plt.gca())
+            cbar.set_label(y_name)
+        else:
+            # vanilla
+            plot = scatterplot(data=plscs,
+                               x=self.name + &#34; componet 1&#34;,
+                               y=self.name + &#34; componet 2&#34;)
+
+        plot.set_title(&#34;{} {} Scatter plot&#34;.format(self.prefix, self.name))
+
+
+class umap_plot(basic_plot):
+    &#34;&#34;&#34;
+    Umap is a unsupervissed method to reduce the number of dimension of given data. It&#39;s based on manifold learning and it has uncertainty.    
+
+    Using umap_plot().make_figure(x) or umap_plot().make_figure(x, y) to generate a Umap plot.    
+    
+    Warning: Only the clustering tendency is reliable on the graph. 
+    &#34;&#34;&#34;
+
+    def __init__(self,
+                 discrete_legend=True,
+                 prefix=&#34;&#34;,
+                 save_path=&#34;./output/images/&#34;,
+                 save_fig=True,
+                 show_fig=True):
+        &#34;&#34;&#34;
+
+        Args:
+            discrete_legend (bool, optional): To color the plot based on y in discrete hue or continuous color bar. If y is continuous, then you should set it to False. Defaults to True.
+            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to &#34;&#34;.
+            save_path (str, optional): the path to export the figure. Defaults to &#34;./output/images/&#34;.
+            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
+            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
+        &#34;&#34;&#34;
+        super().__init__(prefix=prefix,
+                         save_path=save_path,
+                         save_fig=save_fig,
+                         show_fig=show_fig)
+        self.discrete_legend = discrete_legend
+        self.name = &#34;UMAP&#34;
+
+    def save_name(self):
+        return &#34;{} {} plot&#34;.format(self.prefix, self.name)
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = super().reference()
+        refer[self.name +
+              &#34; document&#34;] = &#34;https://umap-learn.readthedocs.io/en/latest/&#34;
+        refer[
+            self.name +
+            &#34; publication&#34;] = &#34;https://joss.theoj.org/papers/10.21105/joss.00861&#34;
+
+        return refer
+
+    def draw(self, x: pd.DataFrame, y: pd.Series = None):
+        &#34;&#34;&#34;
+        Using Umap do transform x into 2D plane. The difference between umap_plot().draw(x) and umap_plot().draw(x, y) is that:    
+         - umap_plot().draw(x) will give a normal umap scatter plot.    
+         - umap_plot().draw(x, y) will coloring the points on the figure based on y. Set discrete_legend to True if y is continuous, False otherwise.    
+
+        What we do here is:    
+            1. standardize x    
+            2. fit a UMAP(n_neighbors=np.log2(n_sample) on x and storing the result in pd.DataFrame    
+            3. Decide how to color the plots by various cases of y and discrete_legend.    
+
+        Args:
+            x (pd.DataFrame): feature    
+            y (pd.Series, optional): label. Defaults to None.    
+        &#34;&#34;&#34;
+
+        # fit a umap for x, you can change n_neighbors to any other feasible value.
+        umapcs = UMAP(n_neighbors=round(np.log2(x.shape[0])),
+                      n_components=2).fit_transform(
+                          (x - x.mean()) / (x.std() + 1e-6))
+        umapcs = pd.DataFrame(
+            umapcs,
+            index=x.index,
+            columns=[self.name + &#34; dimension 1&#34;, self.name + &#34; dimension 2&#34;])
+
+        if y is None:
+            y_name = None
+        else:
+            # add y into the DataFrame for coloring the data points
+            y_name = &#34;y&#34; if y.name is None else y.name
+            umapcs[y_name] = y
+
+        if self.discrete_legend:
+            # discrete legend
+            plot = scatterplot(data=umapcs,
+                               x=self.name + &#34; dimension 1&#34;,
+                               y=self.name + &#34; dimension 2&#34;,
+                               hue=y_name)
+            plt.legend(loc=&#39;center left&#39;, bbox_to_anchor=(1, 0.5))
+        elif not y is None:
+            # color bar
+            cmap = color_palette(&#39;ch:&#39;, as_cmap=True)
+            sm = plt.cm.ScalarMappable(cmap=cmap, norm=Normalize())
+            plot = scatterplot(data=umapcs,
+                               x=self.name + &#34; dimension 1&#34;,
+                               y=self.name + &#34; dimension 2&#34;,
+                               hue=y_name,
+                               hue_norm=sm.norm,
+                               palette=cmap,
+                               legend=False)
+            cbar = plt.colorbar(sm, ax=plt.gca())
+            cbar.set_label(y_name)
+        else:
+            # vanilla
+            plot = scatterplot(data=umapcs,
+                               x=self.name + &#34; dimension 1&#34;,
+                               y=self.name + &#34; dimension 2&#34;)
+
+        plot.set_title(&#34;{} {} Scatter plot&#34;.format(self.prefix, self.name))
+
+
+class corr_heatmap_plot(basic_plot):
+    &#34;&#34;&#34;
+    plot correlation coefficients of given data in heatmap.    
+
+    Using corr_heatmap_plot().make_figure(x) or corr_heatmap_plot().make_figure(x, y) to generate a figure.    
+    &#34;&#34;&#34;
+
+    def __init__(self,
+                 prefix=&#34;&#34;,
+                 save_path=&#34;./output/images/&#34;,
+                 save_fig=True,
+                 show_fig=True):
+        &#34;&#34;&#34;
+
+        Args:
+            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to &#34;&#34;.
+            save_path (str, optional): the path to export the figure. Defaults to &#34;./output/images/&#34;.
+            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
+            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
+        &#34;&#34;&#34;
+        super().__init__(prefix=prefix,
+                         save_path=save_path,
+                         save_fig=save_fig,
+                         show_fig=show_fig)
+        self.name = &#34;Correlation Heatmap&#34;
+
+    def save_name(self):
+        return &#34;{} {} plot&#34;.format(self.prefix, self.name)
+
+    def draw(self, x: pd.DataFrame, y: pd.Series = None):
+        &#34;&#34;&#34;
+        what we do here is:    
+            1. add y into x as a new column if y is not None.    
+            2. compute correlation between x&#39;s columns.
+            3. drawint the result in heatmap.
+
+        Args:
+            x (pd.DataFrame): feature
+            y (pd.Series, optional): Label. Defaults to None.
+        &#34;&#34;&#34;
+
+        data = x.copy()
+        if y is None:
+            y_name = None
+        else:
+            # add y into the DataFrame for coloring the data points
+            y_name = &#34;y&#34; if y.name is None else y.name
+            data[y_name] = y
+
+        plot = heatmap(data.corr(), vmin=-1, vmax=1, cmap=&#39;RdBu&#39;)
+
+        plot.set_title(&#34;{} {}&#34;.format(self.prefix, self.name))
+
+
+class confusion_matrix_plot(basic_plot):
+    &#34;&#34;&#34;
+    plot confusion matrix of given ground true label and predictions.
+    &#34;&#34;&#34;
+
+    def __init__(self,
+                 prefix=&#34;&#34;,
+                 save_path=&#34;./output/images/&#34;,
+                 save_fig=True,
+                 show_fig=True):
+        &#34;&#34;&#34;
+
+        Args:
+            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to &#34;&#34;.
+            save_path (str, optional): the path to export the figure. Defaults to &#34;./output/images/&#34;.
+            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
+            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
+
+        Todo:
+            value normalize by y_true and crowding problem in multi-class classification.
+        &#34;&#34;&#34;
+        super().__init__(prefix=prefix,
+                         save_path=save_path,
+                         save_fig=save_fig,
+                         show_fig=show_fig)
+        self.name = &#34;Confusion Matrix&#34;
+        self.normalize = None
+
+    def save_name(self):
+        return &#34;{} {}&#34;.format(self.prefix, self.name)
+
+    def draw(self, y_true: pd.Series, y_pred: pd.Series):
+        &#34;&#34;&#34;
+        plot the confusion matrix using y_true and y_pred.
+
+        Args:
+            y_true (pd.Series): Ground true
+            y_pred (pd.Series): prediction from an estimator.
+        &#34;&#34;&#34;
+
+        metrics.ConfusionMatrixDisplay.from_predictions(
+            y_true,
+            y_pred,
+            normalize=self.normalize,
+            xticks_rotation=&#34;vertical&#34;)
+
+
+class roc_plot(basic_plot):
+    &#34;&#34;&#34;
+    Depends on how the number of class in y_true and, pos_label, this function will plot a roc curve or several curves of given data.    
+    &#34;&#34;&#34;
+
+    def __init__(self,
+                 pos_label: Union[str, int, float] = None,
+                 prefix=&#34;&#34;,
+                 save_path=&#34;./output/images/&#34;,
+                 save_fig=True,
+                 show_fig=True):
+        &#34;&#34;&#34;
+
+        Args:
+            pos_label (Union[str, int, float], optional): If not None, the result will be pos_label vs rest (ovr) roc curve. Defaults to None.
+            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to &#34;&#34;.
+            save_path (str, optional): the path to export the figure. Defaults to &#34;./output/images/&#34;.
+            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
+            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
+        &#34;&#34;&#34;
+        super().__init__(prefix=prefix,
+                         save_path=save_path,
+                         save_fig=save_fig,
+                         show_fig=show_fig)
+        self.name = &#34;ROC Curve&#34;
+        self.pos_label = pos_label
+
+    def save_name(self):
+        return &#34;{} {}&#34;.format(self.prefix, self.name)
+
+    def draw(self, y_true: pd.Series, y_pred_prob: pd.DataFrame):
+        &#34;&#34;&#34;
+        draw roc curve
+
+        Args:
+            y_true (pd.Series): Ground true
+            y_pred_prob (pd.DataFrame): The probability that model predicted for each class. y_pred_prob should have shape (n_samples, n_class)
+        &#34;&#34;&#34;
+
+        # ROC curve
+        if len(y_true.value_counts()) &lt;= 2:
+            # binary ROC curve
+            fpr, tpr, threshold = metrics.roc_curve(y_true,
+                                                    y_pred_prob.iloc[:, 1],
+                                                    pos_label=self.pos_label)
+            roc_auc = metrics.auc(fpr, tpr)
+            plt.plot(fpr, tpr, &#39;b&#39;, label=&#39;AUC = %0.3f&#39; % roc_auc)
+            plt.title(self.prefix + &#39;ROC curve&#39;)
+
+        else:
+            # one vs rest ROC curve
+            for label in y_pred_prob.columns:
+                label_prob = y_pred_prob[label]
+
+                fpr, tpr, threshold = metrics.roc_curve(
+                    y_true == label, label_prob)
+                roc_auc = metrics.auc(fpr, tpr)
+
+                plt.plot(fpr, tpr, label=str(label) + &#39; (AUC=%0.3f)&#39; % roc_auc)
+            plt.title(self.prefix + &#39;one vs rest ROC curves&#39;)
+
+        plt.plot([0, 1], [0, 1], &#39;r--&#39;)
+        plt.xlim([0, 1])
+        plt.ylim([0, 1])
+        plt.ylabel(&#39;True Positive Rate&#39;)
+        plt.xlabel(&#39;False Positive Rate&#39;)
+        plt.legend(loc=&#39;lower right&#39;)
+
+
+def data_overview(input_x: pd.DataFrame,
+                  y: pd.Series,
+                  is_classification: bool = True,
+                  discrete_legend=True,
+                  n_pc=4,
+                  prefix=&#34;&#34;,
+                  save_fig=True,
+                  save_path=&#34;./output/images/&#34;,
+                  show_fig=True):
+    &#34;&#34;&#34;
+    Make a glance to data. Specifically it will:    
+        1. make a pca plot.    
+        2. make a pls plot.    
+        3. make a Umap plot.   
+        4. make a correlation heatmap.     
 
     Args:
-            input_x (pandas.DataFrame): the data
-            y (pandas.Series or a 1D array): label
-            label_name (str): the name of y
-            title (str): the name of data
+        input_x (pd.DataFrame): the input feature (or the explanatory variables). 
+        y (pd.Series): the target variable (or the response variable).
+        is_classification (bool, optional): whether the task to fit y is a classification task or a regression task. Defaults to True.
+        discrete_legend (bool, optional): whether to use a discrete legend, otherwise a color bar will be used. If is_classification is True, then discrete_legend will forced to be Ture. Defaults to True.
+        prefix (str, optional): the name or the description to the task. It will be add into the title and the export figure name. Defaults to &#34;&#34;.
+        save_fig (bool, optional): To export the figure or not. Defaults to True.
+        save_path (str, optional): The export path of the figure. Defaults to &#34;./output/images/&#34;.
+        show_fig (bool, optional): To show the figure before export or not. Defaults to True.
     &#34;&#34;&#34;
 
     x = input_x.copy()
+    if is_classification:
+        discrete_legend = True
 
     # PCA
-    print(&#34;start PCA&#34;)
-    pcs = PCA(4).fit_transform((x - x.mean()) / x.std())
-    # turn into pandas dataframe format
-    pcs = pd.DataFrame(pcs,
-                       index=x.index,
-                       columns=[&#34;pc_&#34; + str(i + 1) for i in range(4)])
+    pca_plot(n_pc=n_pc,
+             discrete_legend=discrete_legend,
+             prefix=prefix,
+             save_path=save_path,
+             save_fig=save_fig,
+             show_fig=show_fig).make_figure(x, y)
 
     # PLS
-    print(&#34;start PLS&#34;)
-    pls = PLSRegression().fit(x, y)
-    plscs = pls.transform(x)
-    plscs = pd.DataFrame(plscs,
-                         index=x.index,
-                         columns=[&#34;pls componet 1&#34;, &#34;pls componet 2&#34;])
+    pls_plot(is_classification=is_classification,
+             discrete_legend=discrete_legend,
+             prefix=prefix,
+             save_path=save_path,
+             save_fig=save_fig,
+             show_fig=show_fig).make_figure(x, y)
 
     # UMAP
-    print(&#34;start UMAP&#34;)
-    umapcs = UMAP(n_neighbors=round(np.log2(x.shape[0])),
-                  n_components=2).fit_transform(x)
-    umapcs = pd.DataFrame(umapcs,
-                          index=x.index,
-                          columns=[&#34;umap dimension 1&#34;, &#34;umap dimension 2&#34;])
+    umap_plot(discrete_legend=discrete_legend,
+              prefix=prefix,
+              save_path=save_path,
+              save_fig=save_fig,
+              show_fig=show_fig).make_figure(x, y)
 
-    x[label_name] = y
-    pcs[label_name] = y
-    plscs[label_name] = y
-    umapcs[label_name] = y
-
-    # plotting
-    ### correlation heatmap
-    fig = heatmap(x.corr(), vmin=-1, vmax=1,
-                  cmap=&#39;RdBu&#39;).set_title(title + &#34; Variable Correlation&#34;)
-    plt.tight_layout()
-    plt.show()
-
-    ### pca pair plot
-    print(title + &#34; PCA Scatter plot&#34;)
-    # plot up to 12 principle complenent
-    fig = pairplot(pcs, hue=label_name)
-    #sns.scatterplot(pcs[[&#34;pc_1&#34;, &#34;pc_2&#34;, label_name]], hue=label_name)
-    plt.show()
-
-    ### Umap
-    fig = scatterplot(data=umapcs,
-                      x=&#34;umap dimension 1&#34;,
-                      y=&#34;umap dimension 2&#34;,
-                      hue=label_name)
-    fig.set_title(&#34;umap&#34;)
-    plt.show()
-
-    ### PLS
-    fig = scatterplot(data=plscs,
-                      x=&#34;pls componet 1&#34;,
-                      y=&#34;pls componet 2&#34;,
-                      hue=label_name)
-    fig.set_title(&#34;PLS&#34;)
-    plt.show()
-
-def classification_scores(fitted_model, x, y_true, prefix = &#34;&#34;):
-    &#34;&#34;&#34;
-    compute classification metrics, including acc, f1, recall, specificity, sensitivity, mcc, auc
-
-    Args:
-        fitted_model (model): fitted model
-        x (pd.DataFrame): features
-        y_true (pd.Series): ground true lebel
-        prefix (str): score prefix
-
-    Returns:
-        dict: python dict for scores
-    &#34;&#34;&#34;
-    y_pred_prob = fitted_model.predict_proba(x)
-    y_pred= np.argmax(y_pred_prob, axis =1)
-
-    confusion_scores = metrics.classification_report(y_true, y_pred, output_dict=True)
-    
-    if len(confusion_scores) == 5:
-        if &#34;1&#34; in confusion_scores:
-            result = confusion_scores[&#34;1&#34;]
-            result[&#34;sensitivity&#34;] = confusion_scores[&#34;1&#34;][&#34;recall&#34;]
-            result[&#34;specificity&#34;] = confusion_scores[&#34;0&#34;][&#34;recall&#34;]
-            #sensitivity = confusion_scores[&#34;1&#34;][&#34;recall&#34;]
-            #specificity = confusion_scores[&#34;0&#34;][&#34;recall&#34;]
-
-        if &#34;1.0&#34; in confusion_scores:
-            result = confusion_scores[&#34;1.0&#34;]
-            result[&#34;sensitivity&#34;] = confusion_scores[&#34;1.0&#34;][&#34;recall&#34;]
-            result[&#34;specificity&#34;] = confusion_scores[&#34;0.0&#34;][&#34;recall&#34;]
-            #sensitivity = confusion_scores[&#34;1.0&#34;][&#34;recall&#34;]
-            #specificity = confusion_scores[&#34;0.0&#34;][&#34;recall&#34;]
-
-    result[&#34;mcc&#34;] = metrics.get_scorer(&#34;matthews_corrcoef&#34;)(fitted_model, x, y_true)
-    result[&#34;auc&#34;] = metrics.get_scorer(&#34;roc_auc&#34;)(fitted_model, x, y_true)
-
-    prefix_result = {}
-    for score in result:
-        prefix_result[prefix + score] = result[score]
-
-    return prefix_result
+    # Correlation heatmap
+    if y.dtype == &#34;O&#34;:
+        corr_heatmap_plot(prefix=prefix,
+                          save_path=save_path,
+                          save_fig=save_fig,
+                          show_fig=show_fig).make_figure(x)
+    else:
+        corr_heatmap_plot(prefix=prefix,
+                          save_path=save_path,
+                          save_fig=save_fig,
+                          show_fig=show_fig).make_figure(x, y)
 
 
-
-def classification_summary(y_true, y_pred_prob, title=&#34;&#34;):
+def classification_summary(y_true,
+                           y_pred_prob,
+                           target_label=None,
+                           prefix=&#34;&#34;,
+                           save_path=&#34;./output/images/&#34;,
+                           save_fig=True,
+                           show_fig=True):
     &#34;&#34;&#34;
     Give a classification summary, including:    
         1. recall, precision, f1 and accuracy.    
@@ -168,67 +716,78 @@ def classification_summary(y_true, y_pred_prob, title=&#34;&#34;):
             y_true (pandas.Series or a 1D array): Bool, the label
             y_pred_prob (pandas.Series or a 1D array): float in [0, 1]. prediction from model
     Todo:
-        1. support to multi-class classification and regression
+        1. support to multi-class classification(on going)
+        2. the label matching between y_true and y_pred
+        3. support to regression
     &#34;&#34;&#34;
-    y_pred = np.round(y_pred_prob)
-
-    print(&#34;\n&#34;, title)
+    y_pred = y_pred_prob.idxmax(axis=1)
+    print(&#34;\n&#34;, prefix)
     print(metrics.classification_report(y_true, y_pred))
 
-    confusion_scores = metrics.classification_report(y_true,
-                                                     y_pred,
-                                                     output_dict=True)
-    if len(confusion_scores) == 5:
-        if &#34;1&#34; in confusion_scores:
-            sensitivity = confusion_scores[&#34;1&#34;][&#34;recall&#34;]
-            specificity = confusion_scores[&#34;0&#34;][&#34;recall&#34;]
-        if &#34;1.0&#34; in confusion_scores:
-            sensitivity = confusion_scores[&#34;1.0&#34;][&#34;recall&#34;]
-            specificity = confusion_scores[&#34;0.0&#34;][&#34;recall&#34;]
+    if not target_label is None:
+        # binary classification
+        confusion_scores = metrics.classification_report(
+            y_true == target_label, y_pred == target_label, output_dict=True)
+        sensitivity = confusion_scores[&#34;True&#34;][&#34;recall&#34;]
+        specificity = confusion_scores[&#34;False&#34;][&#34;recall&#34;]
+
         print(&#34;sensitivity: {:.3f}&#34;.format(sensitivity))
         print(&#34;specificity: {:.3f}&#34;.format(specificity))
 
     # confusion matrix
-    metrics.ConfusionMatrixDisplay.from_predictions(y_true, y_pred)
-    plt.tight_layout()
-    plt.show()
+    confusion_matrix_plot(prefix=prefix,
+                          save_path=save_path,
+                          show_fig=show_fig,
+                          save_fig=save_fig).make_figure(y_true, y_pred)
 
-    # ROC curve
-    fpr, tpr, threshold = metrics.roc_curve(y_true, y_pred_prob)
-    roc_auc = metrics.auc(fpr, tpr)
+    # roc cuve
+    roc_plot(pos_label=target_label,
+             prefix=prefix,
+             save_path=save_path,
+             show_fig=show_fig,
+             save_fig=save_fig).make_figure(y_true, y_pred_prob)
 
-    plt.plot(fpr, tpr, &#39;b&#39;, label=&#39;AUC = %0.3f&#39; % roc_auc)
-    plt.plot([0, 1], [0, 1], &#39;r--&#39;)
-    plt.xlim([0, 1])
-    plt.ylim([0, 1])
-    plt.ylabel(&#39;True Positive Rate&#39;)
-    plt.xlabel(&#39;False Positive Rate&#39;)
-    plt.title(title + &#39; ROC curve&#39;)
-    plt.legend(loc=&#39;lower right&#39;)
 
-    plt.tight_layout()
-    plt.show()
+def regression_summary(y_true: pd.Series,
+                       y_pred: pd.Series,
+                       x: pd.DataFrame = None,
+                       prefix=&#34;&#34;,
+                       save_path=&#34;./output/images/&#34;,
+                       save_fig=True,
+                       show_fig=True):
     &#34;&#34;&#34;
-    fig, ax = plt.subplots(1, 2)
-    # confusion matrix
-    metrics.ConfusionMatrixDisplay.from_predictions(y_true, y_pred, ax = ax[0])
-    
-    # ROC curve
-    fpr, tpr, threshold = metrics.roc_curve(y_true, y_pred_prob)
-    roc_auc = metrics.auc(fpr, tpr)
-    
-    ax[1].plot(fpr, tpr, &#39;b&#39;, label = &#39;AUC = %0.2f&#39; % roc_auc)
-    ax[1].plot([0, 1], [0, 1],&#39;r--&#39;)
-    ax[1].set_xlim([0, 1])
-    ax[1].set_ylim([0, 1])
-    ax[1].set_ylabel(&#39;True Positive Rate&#39;)
-    ax[1].set_xlabel(&#39;False Positive Rate&#39;)
-    ax[1].set_title(title+&#39; ROC curve&#39;)
-    ax[1].legend(loc = &#39;lower right&#39;)
-    
-    plt.tight_layout()
-    plt.show()
-    &#34;&#34;&#34;</code></pre>
+    1. compute rmse, r square and mape if y is all positive.    
+    2. feature pca residual plot if x is not None.
+
+    Args:
+        y_true (pd.Series): Ground true
+        y_pred (pd.Series): The estimates from model.
+        x (pd.DataFrame, optional): features. If not None, it will be used to plot a feature pca residual plot. Defaults to None.
+        prefix (str, optional): prefix of figure title. Defaults to &#34;&#34;.
+        save_path (str, optional): The export path of the figure. Defaults to &#34;./output/images/&#34;.
+        save_fig (bool, optional): To export the figure or not. Defaults to True.
+        show_fig (bool, optional): To show the figure before export or not. Defaults to True.
+    &#34;&#34;&#34;
+    residual = y_true - y_pred
+
+    print(&#34;\n&#34;, prefix, &#34; performance:&#34;)
+    print(&#34;    r2     : {:.3f}&#34;.format(
+        metrics.root_mean_squared_error(y_true, y_pred)))
+    print(&#34;    rmse   : {:.3f}&#34;.format(metrics.r2_score(y_true, y_pred)))
+    print(&#34;    mae    : {:.3f}&#34;.format(
+        metrics.mean_absolute_error(y_true, y_pred)))
+    if (y_true &gt; 0).all():
+        print(&#34;    mape   : {:.3f}&#34;.format(
+            metrics.mean_absolute_percentage_error(y_true, y_pred)))
+    print(&#34;    support: {:.3f}&#34;.format(len(y_true)))
+
+    if not x is None:
+        pca_plot(n_pc=2,
+                 discrete_legend=False,
+                 prefix=prefix + &#34; Residual&#34;,
+                 save_path=save_path,
+                 save_fig=save_fig,
+                 show_fig=show_fig).make_figure(x, residual)</code></pre>
 </details>
 </section>
 <section>
@@ -238,76 +797,8 @@ def classification_summary(y_true, y_pred_prob, title=&#34;&#34;):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="PineBioML.report.utils.classification_scores"><code class="name flex">
-<span>def <span class="ident">classification_scores</span></span>(<span>fitted_model, x, y_true, prefix='')</span>
-</code></dt>
-<dd>
-<div class="desc"><p>compute classification metrics, including acc, f1, recall, specificity, sensitivity, mcc, auc</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>fitted_model</code></strong> :&ensp;<code>model</code></dt>
-<dd>fitted model</dd>
-<dt><strong><code>x</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
-<dd>features</dd>
-<dt><strong><code>y_true</code></strong> :&ensp;<code>pd.Series</code></dt>
-<dd>ground true lebel</dd>
-<dt><strong><code>prefix</code></strong> :&ensp;<code>str</code></dt>
-<dd>score prefix</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>dict</code></dt>
-<dd>python dict for scores</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def classification_scores(fitted_model, x, y_true, prefix = &#34;&#34;):
-    &#34;&#34;&#34;
-    compute classification metrics, including acc, f1, recall, specificity, sensitivity, mcc, auc
-
-    Args:
-        fitted_model (model): fitted model
-        x (pd.DataFrame): features
-        y_true (pd.Series): ground true lebel
-        prefix (str): score prefix
-
-    Returns:
-        dict: python dict for scores
-    &#34;&#34;&#34;
-    y_pred_prob = fitted_model.predict_proba(x)
-    y_pred= np.argmax(y_pred_prob, axis =1)
-
-    confusion_scores = metrics.classification_report(y_true, y_pred, output_dict=True)
-    
-    if len(confusion_scores) == 5:
-        if &#34;1&#34; in confusion_scores:
-            result = confusion_scores[&#34;1&#34;]
-            result[&#34;sensitivity&#34;] = confusion_scores[&#34;1&#34;][&#34;recall&#34;]
-            result[&#34;specificity&#34;] = confusion_scores[&#34;0&#34;][&#34;recall&#34;]
-            #sensitivity = confusion_scores[&#34;1&#34;][&#34;recall&#34;]
-            #specificity = confusion_scores[&#34;0&#34;][&#34;recall&#34;]
-
-        if &#34;1.0&#34; in confusion_scores:
-            result = confusion_scores[&#34;1.0&#34;]
-            result[&#34;sensitivity&#34;] = confusion_scores[&#34;1.0&#34;][&#34;recall&#34;]
-            result[&#34;specificity&#34;] = confusion_scores[&#34;0.0&#34;][&#34;recall&#34;]
-            #sensitivity = confusion_scores[&#34;1.0&#34;][&#34;recall&#34;]
-            #specificity = confusion_scores[&#34;0.0&#34;][&#34;recall&#34;]
-
-    result[&#34;mcc&#34;] = metrics.get_scorer(&#34;matthews_corrcoef&#34;)(fitted_model, x, y_true)
-    result[&#34;auc&#34;] = metrics.get_scorer(&#34;roc_auc&#34;)(fitted_model, x, y_true)
-
-    prefix_result = {}
-    for score in result:
-        prefix_result[prefix + score] = result[score]
-
-    return prefix_result</code></pre>
-</details>
-</dd>
 <dt id="PineBioML.report.utils.classification_summary"><code class="name flex">
-<span>def <span class="ident">classification_summary</span></span>(<span>y_true, y_pred_prob, title='')</span>
+<span>def <span class="ident">classification_summary</span></span>(<span>y_true, y_pred_prob, target_label=None, prefix='', save_path='./output/images/', save_fig=True, show_fig=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Give a classification summary, including:
@@ -327,13 +818,21 @@ def classification_summary(y_true, y_pred_prob, title=&#34;&#34;):
 </dl>
 <h2 id="todo">Todo</h2>
 <ol>
-<li>support to multi-class classification and regression</li>
+<li>support to multi-class classification(on going)</li>
+<li>the label matching between y_true and y_pred</li>
+<li>support to regression</li>
 </ol></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def classification_summary(y_true, y_pred_prob, title=&#34;&#34;):
+<pre><code class="python">def classification_summary(y_true,
+                           y_pred_prob,
+                           target_label=None,
+                           prefix=&#34;&#34;,
+                           save_path=&#34;./output/images/&#34;,
+                           save_fig=True,
+                           show_fig=True):
     &#34;&#34;&#34;
     Give a classification summary, including:    
         1. recall, precision, f1 and accuracy.    
@@ -344,175 +843,1709 @@ def classification_summary(y_true, y_pred_prob, title=&#34;&#34;):
             y_true (pandas.Series or a 1D array): Bool, the label
             y_pred_prob (pandas.Series or a 1D array): float in [0, 1]. prediction from model
     Todo:
-        1. support to multi-class classification and regression
+        1. support to multi-class classification(on going)
+        2. the label matching between y_true and y_pred
+        3. support to regression
     &#34;&#34;&#34;
-    y_pred = np.round(y_pred_prob)
-
-    print(&#34;\n&#34;, title)
+    y_pred = y_pred_prob.idxmax(axis=1)
+    print(&#34;\n&#34;, prefix)
     print(metrics.classification_report(y_true, y_pred))
 
-    confusion_scores = metrics.classification_report(y_true,
-                                                     y_pred,
-                                                     output_dict=True)
-    if len(confusion_scores) == 5:
-        if &#34;1&#34; in confusion_scores:
-            sensitivity = confusion_scores[&#34;1&#34;][&#34;recall&#34;]
-            specificity = confusion_scores[&#34;0&#34;][&#34;recall&#34;]
-        if &#34;1.0&#34; in confusion_scores:
-            sensitivity = confusion_scores[&#34;1.0&#34;][&#34;recall&#34;]
-            specificity = confusion_scores[&#34;0.0&#34;][&#34;recall&#34;]
+    if not target_label is None:
+        # binary classification
+        confusion_scores = metrics.classification_report(
+            y_true == target_label, y_pred == target_label, output_dict=True)
+        sensitivity = confusion_scores[&#34;True&#34;][&#34;recall&#34;]
+        specificity = confusion_scores[&#34;False&#34;][&#34;recall&#34;]
+
         print(&#34;sensitivity: {:.3f}&#34;.format(sensitivity))
         print(&#34;specificity: {:.3f}&#34;.format(specificity))
 
     # confusion matrix
-    metrics.ConfusionMatrixDisplay.from_predictions(y_true, y_pred)
-    plt.tight_layout()
-    plt.show()
+    confusion_matrix_plot(prefix=prefix,
+                          save_path=save_path,
+                          show_fig=show_fig,
+                          save_fig=save_fig).make_figure(y_true, y_pred)
 
-    # ROC curve
-    fpr, tpr, threshold = metrics.roc_curve(y_true, y_pred_prob)
-    roc_auc = metrics.auc(fpr, tpr)
-
-    plt.plot(fpr, tpr, &#39;b&#39;, label=&#39;AUC = %0.3f&#39; % roc_auc)
-    plt.plot([0, 1], [0, 1], &#39;r--&#39;)
-    plt.xlim([0, 1])
-    plt.ylim([0, 1])
-    plt.ylabel(&#39;True Positive Rate&#39;)
-    plt.xlabel(&#39;False Positive Rate&#39;)
-    plt.title(title + &#39; ROC curve&#39;)
-    plt.legend(loc=&#39;lower right&#39;)
-
-    plt.tight_layout()
-    plt.show()
-    &#34;&#34;&#34;
-    fig, ax = plt.subplots(1, 2)
-    # confusion matrix
-    metrics.ConfusionMatrixDisplay.from_predictions(y_true, y_pred, ax = ax[0])
-    
-    # ROC curve
-    fpr, tpr, threshold = metrics.roc_curve(y_true, y_pred_prob)
-    roc_auc = metrics.auc(fpr, tpr)
-    
-    ax[1].plot(fpr, tpr, &#39;b&#39;, label = &#39;AUC = %0.2f&#39; % roc_auc)
-    ax[1].plot([0, 1], [0, 1],&#39;r--&#39;)
-    ax[1].set_xlim([0, 1])
-    ax[1].set_ylim([0, 1])
-    ax[1].set_ylabel(&#39;True Positive Rate&#39;)
-    ax[1].set_xlabel(&#39;False Positive Rate&#39;)
-    ax[1].set_title(title+&#39; ROC curve&#39;)
-    ax[1].legend(loc = &#39;lower right&#39;)
-    
-    plt.tight_layout()
-    plt.show()
-    &#34;&#34;&#34;</code></pre>
+    # roc cuve
+    roc_plot(pos_label=target_label,
+             prefix=prefix,
+             save_path=save_path,
+             show_fig=show_fig,
+             save_fig=save_fig).make_figure(y_true, y_pred_prob)</code></pre>
 </details>
 </dd>
 <dt id="PineBioML.report.utils.data_overview"><code class="name flex">
-<span>def <span class="ident">data_overview</span></span>(<span>input_x, y, label_name='y', title='')</span>
+<span>def <span class="ident">data_overview</span></span>(<span>input_x: pandas.core.frame.DataFrame, y: pandas.core.series.Series, is_classification: bool = True, discrete_legend=True, n_pc=4, prefix='', save_fig=True, save_path='./output/images/', show_fig=True)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Give a data overview, including:
+<div class="desc"><p>Make a glance to data. Specifically it will:
 <br>
-1. raw data boxplot, pairplot.
+1. make a pca plot.
 <br>
-2. pca pairt plot.
+2. make a pls plot.
 <br>
-3. corelation heatmap.
+3. make a Umap plot. <br>
+4. make a correlation heatmap.
 </p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>input_x</code></strong> :&ensp;<code>pandas.DataFrame</code></dt>
-<dd>the data</dd>
-<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
-<dd>label</dd>
-<dt><strong><code>label_name</code></strong> :&ensp;<code>str</code></dt>
-<dd>the name of y</dd>
-<dt><strong><code>title</code></strong> :&ensp;<code>str</code></dt>
-<dd>the name of data</dd>
+<dt><strong><code>input_x</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>the input feature (or the explanatory variables). </dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>pd.Series</code></dt>
+<dd>the target variable (or the response variable).</dd>
+<dt><strong><code>is_classification</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>whether the task to fit y is a classification task or a regression task. Defaults to True.</dd>
+<dt><strong><code>discrete_legend</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>whether to use a discrete legend, otherwise a color bar will be used. If is_classification is True, then discrete_legend will forced to be Ture. Defaults to True.</dd>
+<dt><strong><code>prefix</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>the name or the description to the task. It will be add into the title and the export figure name. Defaults to "".</dd>
+<dt><strong><code>save_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>To export the figure or not. Defaults to True.</dd>
+<dt><strong><code>save_path</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>The export path of the figure. Defaults to "./output/images/".</dd>
+<dt><strong><code>show_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>To show the figure before export or not. Defaults to True.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def data_overview(input_x, y, label_name=&#34;y&#34;, title=&#34;&#34;):
+<pre><code class="python">def data_overview(input_x: pd.DataFrame,
+                  y: pd.Series,
+                  is_classification: bool = True,
+                  discrete_legend=True,
+                  n_pc=4,
+                  prefix=&#34;&#34;,
+                  save_fig=True,
+                  save_path=&#34;./output/images/&#34;,
+                  show_fig=True):
     &#34;&#34;&#34;
-    Give a data overview, including:    
-        1. raw data boxplot, pairplot.        
-        2. pca pairt plot.     
-        3. corelation heatmap.    
+    Make a glance to data. Specifically it will:    
+        1. make a pca plot.    
+        2. make a pls plot.    
+        3. make a Umap plot.   
+        4. make a correlation heatmap.     
 
     Args:
-            input_x (pandas.DataFrame): the data
-            y (pandas.Series or a 1D array): label
-            label_name (str): the name of y
-            title (str): the name of data
+        input_x (pd.DataFrame): the input feature (or the explanatory variables). 
+        y (pd.Series): the target variable (or the response variable).
+        is_classification (bool, optional): whether the task to fit y is a classification task or a regression task. Defaults to True.
+        discrete_legend (bool, optional): whether to use a discrete legend, otherwise a color bar will be used. If is_classification is True, then discrete_legend will forced to be Ture. Defaults to True.
+        prefix (str, optional): the name or the description to the task. It will be add into the title and the export figure name. Defaults to &#34;&#34;.
+        save_fig (bool, optional): To export the figure or not. Defaults to True.
+        save_path (str, optional): The export path of the figure. Defaults to &#34;./output/images/&#34;.
+        show_fig (bool, optional): To show the figure before export or not. Defaults to True.
     &#34;&#34;&#34;
 
     x = input_x.copy()
+    if is_classification:
+        discrete_legend = True
 
     # PCA
-    print(&#34;start PCA&#34;)
-    pcs = PCA(4).fit_transform((x - x.mean()) / x.std())
-    # turn into pandas dataframe format
-    pcs = pd.DataFrame(pcs,
-                       index=x.index,
-                       columns=[&#34;pc_&#34; + str(i + 1) for i in range(4)])
+    pca_plot(n_pc=n_pc,
+             discrete_legend=discrete_legend,
+             prefix=prefix,
+             save_path=save_path,
+             save_fig=save_fig,
+             show_fig=show_fig).make_figure(x, y)
 
     # PLS
-    print(&#34;start PLS&#34;)
-    pls = PLSRegression().fit(x, y)
-    plscs = pls.transform(x)
-    plscs = pd.DataFrame(plscs,
-                         index=x.index,
-                         columns=[&#34;pls componet 1&#34;, &#34;pls componet 2&#34;])
+    pls_plot(is_classification=is_classification,
+             discrete_legend=discrete_legend,
+             prefix=prefix,
+             save_path=save_path,
+             save_fig=save_fig,
+             show_fig=show_fig).make_figure(x, y)
 
     # UMAP
-    print(&#34;start UMAP&#34;)
-    umapcs = UMAP(n_neighbors=round(np.log2(x.shape[0])),
-                  n_components=2).fit_transform(x)
-    umapcs = pd.DataFrame(umapcs,
-                          index=x.index,
-                          columns=[&#34;umap dimension 1&#34;, &#34;umap dimension 2&#34;])
+    umap_plot(discrete_legend=discrete_legend,
+              prefix=prefix,
+              save_path=save_path,
+              save_fig=save_fig,
+              show_fig=show_fig).make_figure(x, y)
 
-    x[label_name] = y
-    pcs[label_name] = y
-    plscs[label_name] = y
-    umapcs[label_name] = y
+    # Correlation heatmap
+    if y.dtype == &#34;O&#34;:
+        corr_heatmap_plot(prefix=prefix,
+                          save_path=save_path,
+                          save_fig=save_fig,
+                          show_fig=show_fig).make_figure(x)
+    else:
+        corr_heatmap_plot(prefix=prefix,
+                          save_path=save_path,
+                          save_fig=save_fig,
+                          show_fig=show_fig).make_figure(x, y)</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.report.utils.regression_summary"><code class="name flex">
+<span>def <span class="ident">regression_summary</span></span>(<span>y_true: pandas.core.series.Series, y_pred: pandas.core.series.Series, x: pandas.core.frame.DataFrame = None, prefix='', save_path='./output/images/', save_fig=True, show_fig=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><ol>
+<li>compute rmse, r square and mape if y is all positive.
+</li>
+<li>feature pca residual plot if x is not None.</li>
+</ol>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>y_true</code></strong> :&ensp;<code>pd.Series</code></dt>
+<dd>Ground true</dd>
+<dt><strong><code>y_pred</code></strong> :&ensp;<code>pd.Series</code></dt>
+<dd>The estimates from model.</dd>
+<dt><strong><code>x</code></strong> :&ensp;<code>pd.DataFrame</code>, optional</dt>
+<dd>features. If not None, it will be used to plot a feature pca residual plot. Defaults to None.</dd>
+<dt><strong><code>prefix</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>prefix of figure title. Defaults to "".</dd>
+<dt><strong><code>save_path</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>The export path of the figure. Defaults to "./output/images/".</dd>
+<dt><strong><code>save_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>To export the figure or not. Defaults to True.</dd>
+<dt><strong><code>show_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>To show the figure before export or not. Defaults to True.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def regression_summary(y_true: pd.Series,
+                       y_pred: pd.Series,
+                       x: pd.DataFrame = None,
+                       prefix=&#34;&#34;,
+                       save_path=&#34;./output/images/&#34;,
+                       save_fig=True,
+                       show_fig=True):
+    &#34;&#34;&#34;
+    1. compute rmse, r square and mape if y is all positive.    
+    2. feature pca residual plot if x is not None.
 
-    # plotting
-    ### correlation heatmap
-    fig = heatmap(x.corr(), vmin=-1, vmax=1,
-                  cmap=&#39;RdBu&#39;).set_title(title + &#34; Variable Correlation&#34;)
-    plt.tight_layout()
-    plt.show()
+    Args:
+        y_true (pd.Series): Ground true
+        y_pred (pd.Series): The estimates from model.
+        x (pd.DataFrame, optional): features. If not None, it will be used to plot a feature pca residual plot. Defaults to None.
+        prefix (str, optional): prefix of figure title. Defaults to &#34;&#34;.
+        save_path (str, optional): The export path of the figure. Defaults to &#34;./output/images/&#34;.
+        save_fig (bool, optional): To export the figure or not. Defaults to True.
+        show_fig (bool, optional): To show the figure before export or not. Defaults to True.
+    &#34;&#34;&#34;
+    residual = y_true - y_pred
 
-    ### pca pair plot
-    print(title + &#34; PCA Scatter plot&#34;)
-    # plot up to 12 principle complenent
-    fig = pairplot(pcs, hue=label_name)
-    #sns.scatterplot(pcs[[&#34;pc_1&#34;, &#34;pc_2&#34;, label_name]], hue=label_name)
-    plt.show()
+    print(&#34;\n&#34;, prefix, &#34; performance:&#34;)
+    print(&#34;    r2     : {:.3f}&#34;.format(
+        metrics.root_mean_squared_error(y_true, y_pred)))
+    print(&#34;    rmse   : {:.3f}&#34;.format(metrics.r2_score(y_true, y_pred)))
+    print(&#34;    mae    : {:.3f}&#34;.format(
+        metrics.mean_absolute_error(y_true, y_pred)))
+    if (y_true &gt; 0).all():
+        print(&#34;    mape   : {:.3f}&#34;.format(
+            metrics.mean_absolute_percentage_error(y_true, y_pred)))
+    print(&#34;    support: {:.3f}&#34;.format(len(y_true)))
 
-    ### Umap
-    fig = scatterplot(data=umapcs,
-                      x=&#34;umap dimension 1&#34;,
-                      y=&#34;umap dimension 2&#34;,
-                      hue=label_name)
-    fig.set_title(&#34;umap&#34;)
-    plt.show()
-
-    ### PLS
-    fig = scatterplot(data=plscs,
-                      x=&#34;pls componet 1&#34;,
-                      y=&#34;pls componet 2&#34;,
-                      hue=label_name)
-    fig.set_title(&#34;PLS&#34;)
-    plt.show()</code></pre>
+    if not x is None:
+        pca_plot(n_pc=2,
+                 discrete_legend=False,
+                 prefix=prefix + &#34; Residual&#34;,
+                 save_path=save_path,
+                 save_fig=save_fig,
+                 show_fig=show_fig).make_figure(x, residual)</code></pre>
 </details>
 </dd>
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="PineBioML.report.utils.basic_plot"><code class="flex name class">
+<span>class <span class="ident">basic_plot</span></span>
+<span>(</span><span>prefix: str = '', save_path: str = './', save_fig: bool = False, show_fig: bool = True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>the base class of plots.
+<br>
+Using make_figure(x, y) to generate a figure.
+</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>prefix</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to "".</dd>
+<dt><strong><code>save_path</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>the path to export the figure. Defaults to "./".</dd>
+<dt><strong><code>save_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>whether to export the figure or not. Defaults to False.</dd>
+<dt><strong><code>show_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>whether to show the figure or not. Defaults to True.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class basic_plot(ABC):
+    &#34;&#34;&#34;
+    the base class of plots.    
+    Using make_figure(x, y) to generate a figure.    
+
+    &#34;&#34;&#34;
+
+    def __init__(self,
+                 prefix: str = &#34;&#34;,
+                 save_path: str = &#34;./&#34;,
+                 save_fig: bool = False,
+                 show_fig: bool = True):
+        &#34;&#34;&#34;
+
+        Args:
+            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to &#34;&#34;.
+            save_path (str, optional): the path to export the figure. Defaults to &#34;./&#34;.
+            save_fig (bool, optional): whether to export the figure or not. Defaults to False.
+            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
+        &#34;&#34;&#34;
+
+        self.prefix = prefix
+        self.save_path = save_path
+        self.save_fig = save_fig
+        self.show_fig = show_fig
+
+    @abstractmethod
+    def save_name(self):
+        pass
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = {
+            &#34;matplotlib document&#34;: &#34;https://matplotlib.org/&#34;,
+            &#34;seaborn document&#34;: &#34;https://seaborn.pydata.org/&#34;
+        }
+
+        return refer
+
+    @abstractmethod
+    def draw(self, x: pd.DataFrame, y: pd.Series = None):
+        &#34;&#34;&#34;
+        How and what to draw should be implemented in here.    
+
+        Args:
+            x (pd.DataFrame): feature
+            y (pd.Series, optional): label. Defaults to None.
+        &#34;&#34;&#34;
+        pass
+
+    def make_figure(self, x: pd.DataFrame, y: pd.Series = None):
+        &#34;&#34;&#34;
+        1. draw(x, y)    
+        2. To save or to show the result.
+
+        Args:
+            x (pd.DataFrame): features
+            y (pd.Series, optional): label. Defaults to None.
+        &#34;&#34;&#34;
+
+        self.draw(x, y)
+
+        if self.save_fig:
+            plt.savefig(self.save_path + self.save_name())
+        if self.show_fig:
+            plt.show()
+        else:
+            plt.clf()</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>abc.ABC</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="PineBioML.report.utils.confusion_matrix_plot" href="#PineBioML.report.utils.confusion_matrix_plot">confusion_matrix_plot</a></li>
+<li><a title="PineBioML.report.utils.corr_heatmap_plot" href="#PineBioML.report.utils.corr_heatmap_plot">corr_heatmap_plot</a></li>
+<li><a title="PineBioML.report.utils.pca_plot" href="#PineBioML.report.utils.pca_plot">pca_plot</a></li>
+<li><a title="PineBioML.report.utils.pls_plot" href="#PineBioML.report.utils.pls_plot">pls_plot</a></li>
+<li><a title="PineBioML.report.utils.roc_plot" href="#PineBioML.report.utils.roc_plot">roc_plot</a></li>
+<li><a title="PineBioML.report.utils.umap_plot" href="#PineBioML.report.utils.umap_plot">umap_plot</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="PineBioML.report.utils.basic_plot.draw"><code class="name flex">
+<span>def <span class="ident">draw</span></span>(<span>self, x: pandas.core.frame.DataFrame, y: pandas.core.series.Series = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>How and what to draw should be implemented in here.
+</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>feature</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>pd.Series</code>, optional</dt>
+<dd>label. Defaults to None.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def draw(self, x: pd.DataFrame, y: pd.Series = None):
+    &#34;&#34;&#34;
+    How and what to draw should be implemented in here.    
+
+    Args:
+        x (pd.DataFrame): feature
+        y (pd.Series, optional): label. Defaults to None.
+    &#34;&#34;&#34;
+    pass</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.report.utils.basic_plot.make_figure"><code class="name flex">
+<span>def <span class="ident">make_figure</span></span>(<span>self, x: pandas.core.frame.DataFrame, y: pandas.core.series.Series = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><ol>
+<li>draw(x, y)
+</li>
+<li>To save or to show the result.</li>
+</ol>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>features</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>pd.Series</code>, optional</dt>
+<dd>label. Defaults to None.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_figure(self, x: pd.DataFrame, y: pd.Series = None):
+    &#34;&#34;&#34;
+    1. draw(x, y)    
+    2. To save or to show the result.
+
+    Args:
+        x (pd.DataFrame): features
+        y (pd.Series, optional): label. Defaults to None.
+    &#34;&#34;&#34;
+
+    self.draw(x, y)
+
+    if self.save_fig:
+        plt.savefig(self.save_path + self.save_name())
+    if self.show_fig:
+        plt.show()
+    else:
+        plt.clf()</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.report.utils.basic_plot.reference"><code class="name flex">
+<span>def <span class="ident">reference</span></span>(<span>self) ‑> dict[str, str]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This function will return reference of this method in python dict.
+<br>
+If you want to access it in PineBioML api document, then click on the
+&gt;Expand source code
+</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dict[str, str]</code></dt>
+<dd>a dict of reference.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def reference(self) -&gt; dict[str, str]:
+    &#34;&#34;&#34;
+    This function will return reference of this method in python dict.    
+    If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+    Returns:
+        dict[str, str]: a dict of reference.
+    &#34;&#34;&#34;
+    refer = {
+        &#34;matplotlib document&#34;: &#34;https://matplotlib.org/&#34;,
+        &#34;seaborn document&#34;: &#34;https://seaborn.pydata.org/&#34;
+    }
+
+    return refer</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.report.utils.basic_plot.save_name"><code class="name flex">
+<span>def <span class="ident">save_name</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def save_name(self):
+    pass</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="PineBioML.report.utils.confusion_matrix_plot"><code class="flex name class">
+<span>class <span class="ident">confusion_matrix_plot</span></span>
+<span>(</span><span>prefix='', save_path='./output/images/', save_fig=True, show_fig=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>plot confusion matrix of given ground true label and predictions.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>prefix</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to "".</dd>
+<dt><strong><code>save_path</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>the path to export the figure. Defaults to "./output/images/".</dd>
+<dt><strong><code>save_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>whether to export the figure or not. Defaults to True.</dd>
+<dt><strong><code>show_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>whether to show the figure or not. Defaults to True.</dd>
+</dl>
+<h2 id="todo">Todo</h2>
+<p>value normalize by y_true and crowding problem in multi-class classification.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class confusion_matrix_plot(basic_plot):
+    &#34;&#34;&#34;
+    plot confusion matrix of given ground true label and predictions.
+    &#34;&#34;&#34;
+
+    def __init__(self,
+                 prefix=&#34;&#34;,
+                 save_path=&#34;./output/images/&#34;,
+                 save_fig=True,
+                 show_fig=True):
+        &#34;&#34;&#34;
+
+        Args:
+            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to &#34;&#34;.
+            save_path (str, optional): the path to export the figure. Defaults to &#34;./output/images/&#34;.
+            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
+            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
+
+        Todo:
+            value normalize by y_true and crowding problem in multi-class classification.
+        &#34;&#34;&#34;
+        super().__init__(prefix=prefix,
+                         save_path=save_path,
+                         save_fig=save_fig,
+                         show_fig=show_fig)
+        self.name = &#34;Confusion Matrix&#34;
+        self.normalize = None
+
+    def save_name(self):
+        return &#34;{} {}&#34;.format(self.prefix, self.name)
+
+    def draw(self, y_true: pd.Series, y_pred: pd.Series):
+        &#34;&#34;&#34;
+        plot the confusion matrix using y_true and y_pred.
+
+        Args:
+            y_true (pd.Series): Ground true
+            y_pred (pd.Series): prediction from an estimator.
+        &#34;&#34;&#34;
+
+        metrics.ConfusionMatrixDisplay.from_predictions(
+            y_true,
+            y_pred,
+            normalize=self.normalize,
+            xticks_rotation=&#34;vertical&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="PineBioML.report.utils.basic_plot" href="#PineBioML.report.utils.basic_plot">basic_plot</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="PineBioML.report.utils.confusion_matrix_plot.draw"><code class="name flex">
+<span>def <span class="ident">draw</span></span>(<span>self, y_true: pandas.core.series.Series, y_pred: pandas.core.series.Series)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>plot the confusion matrix using y_true and y_pred.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>y_true</code></strong> :&ensp;<code>pd.Series</code></dt>
+<dd>Ground true</dd>
+<dt><strong><code>y_pred</code></strong> :&ensp;<code>pd.Series</code></dt>
+<dd>prediction from an estimator.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def draw(self, y_true: pd.Series, y_pred: pd.Series):
+    &#34;&#34;&#34;
+    plot the confusion matrix using y_true and y_pred.
+
+    Args:
+        y_true (pd.Series): Ground true
+        y_pred (pd.Series): prediction from an estimator.
+    &#34;&#34;&#34;
+
+    metrics.ConfusionMatrixDisplay.from_predictions(
+        y_true,
+        y_pred,
+        normalize=self.normalize,
+        xticks_rotation=&#34;vertical&#34;)</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.report.utils.confusion_matrix_plot.save_name"><code class="name flex">
+<span>def <span class="ident">save_name</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save_name(self):
+    return &#34;{} {}&#34;.format(self.prefix, self.name)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="PineBioML.report.utils.basic_plot" href="#PineBioML.report.utils.basic_plot">basic_plot</a></b></code>:
+<ul class="hlist">
+<li><code><a title="PineBioML.report.utils.basic_plot.make_figure" href="#PineBioML.report.utils.basic_plot.make_figure">make_figure</a></code></li>
+<li><code><a title="PineBioML.report.utils.basic_plot.reference" href="#PineBioML.report.utils.basic_plot.reference">reference</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="PineBioML.report.utils.corr_heatmap_plot"><code class="flex name class">
+<span>class <span class="ident">corr_heatmap_plot</span></span>
+<span>(</span><span>prefix='', save_path='./output/images/', save_fig=True, show_fig=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>plot correlation coefficients of given data in heatmap.
+</p>
+<p>Using corr_heatmap_plot().make_figure(x) or corr_heatmap_plot().make_figure(x, y) to generate a figure.
+</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>prefix</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to "".</dd>
+<dt><strong><code>save_path</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>the path to export the figure. Defaults to "./output/images/".</dd>
+<dt><strong><code>save_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>whether to export the figure or not. Defaults to True.</dd>
+<dt><strong><code>show_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>whether to show the figure or not. Defaults to True.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class corr_heatmap_plot(basic_plot):
+    &#34;&#34;&#34;
+    plot correlation coefficients of given data in heatmap.    
+
+    Using corr_heatmap_plot().make_figure(x) or corr_heatmap_plot().make_figure(x, y) to generate a figure.    
+    &#34;&#34;&#34;
+
+    def __init__(self,
+                 prefix=&#34;&#34;,
+                 save_path=&#34;./output/images/&#34;,
+                 save_fig=True,
+                 show_fig=True):
+        &#34;&#34;&#34;
+
+        Args:
+            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to &#34;&#34;.
+            save_path (str, optional): the path to export the figure. Defaults to &#34;./output/images/&#34;.
+            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
+            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
+        &#34;&#34;&#34;
+        super().__init__(prefix=prefix,
+                         save_path=save_path,
+                         save_fig=save_fig,
+                         show_fig=show_fig)
+        self.name = &#34;Correlation Heatmap&#34;
+
+    def save_name(self):
+        return &#34;{} {} plot&#34;.format(self.prefix, self.name)
+
+    def draw(self, x: pd.DataFrame, y: pd.Series = None):
+        &#34;&#34;&#34;
+        what we do here is:    
+            1. add y into x as a new column if y is not None.    
+            2. compute correlation between x&#39;s columns.
+            3. drawint the result in heatmap.
+
+        Args:
+            x (pd.DataFrame): feature
+            y (pd.Series, optional): Label. Defaults to None.
+        &#34;&#34;&#34;
+
+        data = x.copy()
+        if y is None:
+            y_name = None
+        else:
+            # add y into the DataFrame for coloring the data points
+            y_name = &#34;y&#34; if y.name is None else y.name
+            data[y_name] = y
+
+        plot = heatmap(data.corr(), vmin=-1, vmax=1, cmap=&#39;RdBu&#39;)
+
+        plot.set_title(&#34;{} {}&#34;.format(self.prefix, self.name))</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="PineBioML.report.utils.basic_plot" href="#PineBioML.report.utils.basic_plot">basic_plot</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="PineBioML.report.utils.corr_heatmap_plot.draw"><code class="name flex">
+<span>def <span class="ident">draw</span></span>(<span>self, x: pandas.core.frame.DataFrame, y: pandas.core.series.Series = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>what we do here is:
+<br>
+1. add y into x as a new column if y is not None.
+<br>
+2. compute correlation between x's columns.
+3. drawint the result in heatmap.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>feature</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>pd.Series</code>, optional</dt>
+<dd>Label. Defaults to None.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def draw(self, x: pd.DataFrame, y: pd.Series = None):
+    &#34;&#34;&#34;
+    what we do here is:    
+        1. add y into x as a new column if y is not None.    
+        2. compute correlation between x&#39;s columns.
+        3. drawint the result in heatmap.
+
+    Args:
+        x (pd.DataFrame): feature
+        y (pd.Series, optional): Label. Defaults to None.
+    &#34;&#34;&#34;
+
+    data = x.copy()
+    if y is None:
+        y_name = None
+    else:
+        # add y into the DataFrame for coloring the data points
+        y_name = &#34;y&#34; if y.name is None else y.name
+        data[y_name] = y
+
+    plot = heatmap(data.corr(), vmin=-1, vmax=1, cmap=&#39;RdBu&#39;)
+
+    plot.set_title(&#34;{} {}&#34;.format(self.prefix, self.name))</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.report.utils.corr_heatmap_plot.save_name"><code class="name flex">
+<span>def <span class="ident">save_name</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save_name(self):
+    return &#34;{} {} plot&#34;.format(self.prefix, self.name)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="PineBioML.report.utils.basic_plot" href="#PineBioML.report.utils.basic_plot">basic_plot</a></b></code>:
+<ul class="hlist">
+<li><code><a title="PineBioML.report.utils.basic_plot.make_figure" href="#PineBioML.report.utils.basic_plot.make_figure">make_figure</a></code></li>
+<li><code><a title="PineBioML.report.utils.basic_plot.reference" href="#PineBioML.report.utils.basic_plot.reference">reference</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="PineBioML.report.utils.pca_plot"><code class="flex name class">
+<span>class <span class="ident">pca_plot</span></span>
+<span>(</span><span>n_pc: int = 4, discrete_legend: bool = True, prefix: str = '', save_path: str = './output/images/', save_fig: bool = True, show_fig: bool = True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calling pca_plot().make_figure(x) or pca_plot().make_figure(x, y) to draw a pca plot of x with n_pc components.
+</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>n_pc</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>number of precipal compoment to plot. Defaults to 4.</dd>
+<dt><strong><code>discrete_legend</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>To color the plot based on y in discrete hue or continuous color bar. If y is continuous, then you should set it to False. Defaults to True.</dd>
+<dt><strong><code>prefix</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to "".</dd>
+<dt><strong><code>save_path</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>the path to export the figure. Defaults to "./output/images/".</dd>
+<dt><strong><code>save_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>whether to export the figure or not. Defaults to True.</dd>
+<dt><strong><code>show_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>whether to show the figure or not. Defaults to True.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class pca_plot(basic_plot):
+    &#34;&#34;&#34;
+    Calling pca_plot().make_figure(x) or pca_plot().make_figure(x, y) to draw a pca plot of x with n_pc components.    
+
+    &#34;&#34;&#34;
+
+    def __init__(self,
+                 n_pc: int = 4,
+                 discrete_legend: bool = True,
+                 prefix: str = &#34;&#34;,
+                 save_path: str = &#34;./output/images/&#34;,
+                 save_fig: bool = True,
+                 show_fig: bool = True):
+        &#34;&#34;&#34;
+
+        Args:
+            n_pc (int, optional): number of precipal compoment to plot. Defaults to 4.
+            discrete_legend (bool, optional): To color the plot based on y in discrete hue or continuous color bar. If y is continuous, then you should set it to False. Defaults to True.
+            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to &#34;&#34;.
+            save_path (str, optional): the path to export the figure. Defaults to &#34;./output/images/&#34;.
+            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
+            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
+        &#34;&#34;&#34;
+        super().__init__(prefix=prefix,
+                         save_path=save_path,
+                         save_fig=save_fig,
+                         show_fig=show_fig)
+        self.n_pc = n_pc
+        self.discrete_legend = discrete_legend
+        self.name = &#34;PCA&#34;
+
+    def save_name(self) -&gt; str:
+        &#34;&#34;&#34;
+        Returns:
+            str: {prefix} PCA plot
+        &#34;&#34;&#34;
+        return &#34;{} {} plot&#34;.format(self.prefix, self.name)
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = super().reference()
+        refer[
+            self.name +
+            &#34; document&#34;] = &#34;https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html&#34;
+
+        return refer
+
+    def draw(self, x: pd.DataFrame, y: pd.Series = None):
+        &#34;&#34;&#34;
+        Using x to draw a pca plot. The difference between pca_plot().draw(x) and pca_plot().draw(x, y) is that:    
+         - pca_plot().draw(x) will give a normal pca plot.    
+         - pca_plot().draw(x, y) will coloring the points on the figure based on y. Set discrete_legend to True if y is continuous, False otherwise.    
+
+        What we do here is:    
+            1. standardize x    
+            2. fit a PCA(n_pc) on x and storing the result in pd.DataFrame    
+            3. Decide how to color the plots by various cases of y and discrete_legend.    
+
+        Args:
+            x (pd.DataFrame): feature    
+            y (pd.Series, optional): label. Defaults to None.    
+        &#34;&#34;&#34;
+
+        # calculate pca and store in pd.DataFrame
+        pcs = PCA(self.n_pc).fit_transform((x - x.mean()) / (x.std() + 1e-4))
+        pcs = pd.DataFrame(
+            pcs,
+            index=x.index,
+            columns=[&#34;pc_&#34; + str(i + 1) for i in range(self.n_pc)])
+
+        if y is None:
+            y_name = None
+        else:
+            # add y into the DataFrame for coloring the data points
+            y_name = &#34;y&#34; if y.name is None else y.name
+            pcs[y_name] = y
+
+        if self.discrete_legend:
+            # discrete legend
+            plot = pairplot(data=pcs, hue=y_name)
+        elif not y is None:
+            # color bar
+            cmap = color_palette(&#39;ch:&#39;, as_cmap=True)
+            sm = plt.cm.ScalarMappable(cmap=cmap, norm=Normalize())
+            sm.set_array([])
+            plot = pairplot(data=pcs, hue=y_name)
+            plot.legend.remove()
+
+            cbar = plt.colorbar(sm, ax=plot.axes)
+            cbar.set_label(y_name)
+        else:
+            # vanilla
+            plot = pairplot(data=pcs)
+
+        plot.figure.suptitle(&#34;{} {} Scatter plot&#34;.format(
+            self.prefix, self.name),
+                             y=1.01)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="PineBioML.report.utils.basic_plot" href="#PineBioML.report.utils.basic_plot">basic_plot</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="PineBioML.report.utils.pca_plot.draw"><code class="name flex">
+<span>def <span class="ident">draw</span></span>(<span>self, x: pandas.core.frame.DataFrame, y: pandas.core.series.Series = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Using x to draw a pca plot. The difference between pca_plot().draw(x) and pca_plot().draw(x, y) is that:
+<br>
+- pca_plot().draw(x) will give a normal pca plot.
+<br>
+- pca_plot().draw(x, y) will coloring the points on the figure based on y. Set discrete_legend to True if y is continuous, False otherwise.
+</p>
+<p>What we do here is:
+<br>
+1. standardize x
+<br>
+2. fit a PCA(n_pc) on x and storing the result in pd.DataFrame
+<br>
+3. Decide how to color the plots by various cases of y and discrete_legend.
+</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>feature
+</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>pd.Series</code>, optional</dt>
+<dd>label. Defaults to None.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def draw(self, x: pd.DataFrame, y: pd.Series = None):
+    &#34;&#34;&#34;
+    Using x to draw a pca plot. The difference between pca_plot().draw(x) and pca_plot().draw(x, y) is that:    
+     - pca_plot().draw(x) will give a normal pca plot.    
+     - pca_plot().draw(x, y) will coloring the points on the figure based on y. Set discrete_legend to True if y is continuous, False otherwise.    
+
+    What we do here is:    
+        1. standardize x    
+        2. fit a PCA(n_pc) on x and storing the result in pd.DataFrame    
+        3. Decide how to color the plots by various cases of y and discrete_legend.    
+
+    Args:
+        x (pd.DataFrame): feature    
+        y (pd.Series, optional): label. Defaults to None.    
+    &#34;&#34;&#34;
+
+    # calculate pca and store in pd.DataFrame
+    pcs = PCA(self.n_pc).fit_transform((x - x.mean()) / (x.std() + 1e-4))
+    pcs = pd.DataFrame(
+        pcs,
+        index=x.index,
+        columns=[&#34;pc_&#34; + str(i + 1) for i in range(self.n_pc)])
+
+    if y is None:
+        y_name = None
+    else:
+        # add y into the DataFrame for coloring the data points
+        y_name = &#34;y&#34; if y.name is None else y.name
+        pcs[y_name] = y
+
+    if self.discrete_legend:
+        # discrete legend
+        plot = pairplot(data=pcs, hue=y_name)
+    elif not y is None:
+        # color bar
+        cmap = color_palette(&#39;ch:&#39;, as_cmap=True)
+        sm = plt.cm.ScalarMappable(cmap=cmap, norm=Normalize())
+        sm.set_array([])
+        plot = pairplot(data=pcs, hue=y_name)
+        plot.legend.remove()
+
+        cbar = plt.colorbar(sm, ax=plot.axes)
+        cbar.set_label(y_name)
+    else:
+        # vanilla
+        plot = pairplot(data=pcs)
+
+    plot.figure.suptitle(&#34;{} {} Scatter plot&#34;.format(
+        self.prefix, self.name),
+                         y=1.01)</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.report.utils.pca_plot.save_name"><code class="name flex">
+<span>def <span class="ident">save_name</span></span>(<span>self) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="returns">Returns</h2>
+<dl>
+<dt><code>str</code></dt>
+<dd>{prefix} PCA plot</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save_name(self) -&gt; str:
+    &#34;&#34;&#34;
+    Returns:
+        str: {prefix} PCA plot
+    &#34;&#34;&#34;
+    return &#34;{} {} plot&#34;.format(self.prefix, self.name)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="PineBioML.report.utils.basic_plot" href="#PineBioML.report.utils.basic_plot">basic_plot</a></b></code>:
+<ul class="hlist">
+<li><code><a title="PineBioML.report.utils.basic_plot.make_figure" href="#PineBioML.report.utils.basic_plot.make_figure">make_figure</a></code></li>
+<li><code><a title="PineBioML.report.utils.basic_plot.reference" href="#PineBioML.report.utils.basic_plot.reference">reference</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="PineBioML.report.utils.pls_plot"><code class="flex name class">
+<span>class <span class="ident">pls_plot</span></span>
+<span>(</span><span>is_classification: bool, discrete_legend: bool = True, prefix: str = '', save_path: str = './output/images/', save_fig: bool = True, show_fig: bool = True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>PLS-DA is a supervied method in dimension decomposition.
+<br>
+This function will plot the result of PLS-DA of given data.
+</p>
+<p>Using pls_plot().make_figure(x, y) to generate a figure.</p>
+<p>Warning: PLS-DA is a limited tool in multi-class classification and unlinear regression problem.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>is_classification</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If (x, y) is a classification task, then set is_classification to True.</dd>
+<dt><strong><code>discrete_legend</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>To color the plot based on y in discrete hue or continuous color bar. If y is continuous, then you should set it to False. Defaults to True.</dd>
+<dt><strong><code>prefix</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to "".</dd>
+<dt><strong><code>save_path</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>the path to export the figure. Defaults to "./output/images/".</dd>
+<dt><strong><code>save_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>whether to export the figure or not. Defaults to True.</dd>
+<dt><strong><code>show_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>whether to show the figure or not. Defaults to True.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class pls_plot(basic_plot):
+    &#34;&#34;&#34;
+    PLS-DA is a supervied method in dimension decomposition.    
+    This function will plot the result of PLS-DA of given data.    
+
+    Using pls_plot().make_figure(x, y) to generate a figure.
+
+    Warning: PLS-DA is a limited tool in multi-class classification and unlinear regression problem.
+
+    &#34;&#34;&#34;
+
+    def __init__(self,
+                 is_classification: bool,
+                 discrete_legend: bool = True,
+                 prefix: str = &#34;&#34;,
+                 save_path: str = &#34;./output/images/&#34;,
+                 save_fig: bool = True,
+                 show_fig: bool = True):
+        &#34;&#34;&#34;
+
+        Args:
+            is_classification (bool): If (x, y) is a classification task, then set is_classification to True.
+            discrete_legend (bool, optional): To color the plot based on y in discrete hue or continuous color bar. If y is continuous, then you should set it to False. Defaults to True.
+            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to &#34;&#34;.
+            save_path (str, optional): the path to export the figure. Defaults to &#34;./output/images/&#34;.
+            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
+            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
+        &#34;&#34;&#34;
+        super().__init__(prefix=prefix,
+                         save_path=save_path,
+                         save_fig=save_fig,
+                         show_fig=show_fig)
+        self.discrete_legend = discrete_legend
+        self.is_classification = is_classification
+        self.name = &#34;PLS&#34;
+
+    def save_name(self):
+        return &#34;{} {} plot&#34;.format(self.prefix, self.name)
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = super().reference()
+        refer[
+            self.name +
+            &#34; document&#34;] = &#34;https://scikit-learn.org/stable/modules/generated/sklearn.cross_decomposition.PLSRegression.html&#34;
+
+        return refer
+
+    def draw(self, x: pd.DataFrame, y: pd.Series):
+        &#34;&#34;&#34;
+        What we do here is:    
+            1. If is_classification =&gt; one-hot encode the y. 
+            2. Do PLS-DA
+            3. Decide how to color the plots by various cases of y and discrete_legend.    
+
+        Args:
+            x (pd.DataFrame): features 
+            y (pd.Series, optional): label.
+
+        Raises:
+            TypeError: _description_
+        &#34;&#34;&#34;
+        # one hot encoder for classification
+        if self.is_classification:
+            OneHot_y = OneHotEncoder(sparse_output=False).fit_transform(
+                y.to_numpy().reshape(-1, 1))
+            # fit pls regression
+            pls = PLSRegression(n_components=2).fit(x, OneHot_y)
+        else:
+            if y.dtype == &#34;O&#34;:
+                raise TypeError(
+                    &#34;the dtype of y can&#39;t be object while is_classification was setting to False, which means it is a regression task and y should be float or int.&#34;
+                )
+            # fit pls regression
+            pls = PLSRegression(n_components=2).fit(x, y)
+
+        # project x
+        plscs = pls.transform(x)
+        plscs = pd.DataFrame(
+            plscs,
+            index=x.index,
+            columns=[self.name + &#34; componet 1&#34;, self.name + &#34; componet 2&#34;])
+
+        if y is None:
+            y_name = None
+        else:
+            # add y into the DataFrame for coloring the data points
+            y_name = &#34;y&#34; if y.name is None else y.name
+            plscs[y_name] = y
+
+        if self.discrete_legend:
+            # discrete legend
+            plot = scatterplot(data=plscs,
+                               x=self.name + &#34; componet 1&#34;,
+                               y=self.name + &#34; componet 2&#34;,
+                               hue=y_name)
+            plt.legend(loc=&#39;center left&#39;, bbox_to_anchor=(1, 0.5))
+        elif not y is None:
+            # color bar
+            cmap = color_palette(&#39;ch:&#39;, as_cmap=True)
+            sm = plt.cm.ScalarMappable(cmap=cmap, norm=Normalize())
+            plot = scatterplot(data=plscs,
+                               x=self.name + &#34; componet 1&#34;,
+                               y=self.name + &#34; componet 2&#34;,
+                               hue=y_name,
+                               hue_norm=sm.norm,
+                               palette=cmap,
+                               legend=False)
+            cbar = plt.colorbar(sm, ax=plt.gca())
+            cbar.set_label(y_name)
+        else:
+            # vanilla
+            plot = scatterplot(data=plscs,
+                               x=self.name + &#34; componet 1&#34;,
+                               y=self.name + &#34; componet 2&#34;)
+
+        plot.set_title(&#34;{} {} Scatter plot&#34;.format(self.prefix, self.name))</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="PineBioML.report.utils.basic_plot" href="#PineBioML.report.utils.basic_plot">basic_plot</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="PineBioML.report.utils.pls_plot.draw"><code class="name flex">
+<span>def <span class="ident">draw</span></span>(<span>self, x: pandas.core.frame.DataFrame, y: pandas.core.series.Series)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>What we do here is:
+<br>
+1. If is_classification =&gt; one-hot encode the y.
+2. Do PLS-DA
+3. Decide how to color the plots by various cases of y and discrete_legend.
+</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>features </dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>pd.Series</code>, optional</dt>
+<dd>label.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>TypeError</code></dt>
+<dd><em>description</em></dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def draw(self, x: pd.DataFrame, y: pd.Series):
+    &#34;&#34;&#34;
+    What we do here is:    
+        1. If is_classification =&gt; one-hot encode the y. 
+        2. Do PLS-DA
+        3. Decide how to color the plots by various cases of y and discrete_legend.    
+
+    Args:
+        x (pd.DataFrame): features 
+        y (pd.Series, optional): label.
+
+    Raises:
+        TypeError: _description_
+    &#34;&#34;&#34;
+    # one hot encoder for classification
+    if self.is_classification:
+        OneHot_y = OneHotEncoder(sparse_output=False).fit_transform(
+            y.to_numpy().reshape(-1, 1))
+        # fit pls regression
+        pls = PLSRegression(n_components=2).fit(x, OneHot_y)
+    else:
+        if y.dtype == &#34;O&#34;:
+            raise TypeError(
+                &#34;the dtype of y can&#39;t be object while is_classification was setting to False, which means it is a regression task and y should be float or int.&#34;
+            )
+        # fit pls regression
+        pls = PLSRegression(n_components=2).fit(x, y)
+
+    # project x
+    plscs = pls.transform(x)
+    plscs = pd.DataFrame(
+        plscs,
+        index=x.index,
+        columns=[self.name + &#34; componet 1&#34;, self.name + &#34; componet 2&#34;])
+
+    if y is None:
+        y_name = None
+    else:
+        # add y into the DataFrame for coloring the data points
+        y_name = &#34;y&#34; if y.name is None else y.name
+        plscs[y_name] = y
+
+    if self.discrete_legend:
+        # discrete legend
+        plot = scatterplot(data=plscs,
+                           x=self.name + &#34; componet 1&#34;,
+                           y=self.name + &#34; componet 2&#34;,
+                           hue=y_name)
+        plt.legend(loc=&#39;center left&#39;, bbox_to_anchor=(1, 0.5))
+    elif not y is None:
+        # color bar
+        cmap = color_palette(&#39;ch:&#39;, as_cmap=True)
+        sm = plt.cm.ScalarMappable(cmap=cmap, norm=Normalize())
+        plot = scatterplot(data=plscs,
+                           x=self.name + &#34; componet 1&#34;,
+                           y=self.name + &#34; componet 2&#34;,
+                           hue=y_name,
+                           hue_norm=sm.norm,
+                           palette=cmap,
+                           legend=False)
+        cbar = plt.colorbar(sm, ax=plt.gca())
+        cbar.set_label(y_name)
+    else:
+        # vanilla
+        plot = scatterplot(data=plscs,
+                           x=self.name + &#34; componet 1&#34;,
+                           y=self.name + &#34; componet 2&#34;)
+
+    plot.set_title(&#34;{} {} Scatter plot&#34;.format(self.prefix, self.name))</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.report.utils.pls_plot.save_name"><code class="name flex">
+<span>def <span class="ident">save_name</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save_name(self):
+    return &#34;{} {} plot&#34;.format(self.prefix, self.name)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="PineBioML.report.utils.basic_plot" href="#PineBioML.report.utils.basic_plot">basic_plot</a></b></code>:
+<ul class="hlist">
+<li><code><a title="PineBioML.report.utils.basic_plot.make_figure" href="#PineBioML.report.utils.basic_plot.make_figure">make_figure</a></code></li>
+<li><code><a title="PineBioML.report.utils.basic_plot.reference" href="#PineBioML.report.utils.basic_plot.reference">reference</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="PineBioML.report.utils.roc_plot"><code class="flex name class">
+<span>class <span class="ident">roc_plot</span></span>
+<span>(</span><span>pos_label: Union[str, int, float] = None, prefix='', save_path='./output/images/', save_fig=True, show_fig=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Depends on how the number of class in y_true and, pos_label, this function will plot a roc curve or several curves of given data.
+</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>pos_label</code></strong> :&ensp;<code>Union[str, int, float]</code>, optional</dt>
+<dd>If not None, the result will be pos_label vs rest (ovr) roc curve. Defaults to None.</dd>
+<dt><strong><code>prefix</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to "".</dd>
+<dt><strong><code>save_path</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>the path to export the figure. Defaults to "./output/images/".</dd>
+<dt><strong><code>save_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>whether to export the figure or not. Defaults to True.</dd>
+<dt><strong><code>show_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>whether to show the figure or not. Defaults to True.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class roc_plot(basic_plot):
+    &#34;&#34;&#34;
+    Depends on how the number of class in y_true and, pos_label, this function will plot a roc curve or several curves of given data.    
+    &#34;&#34;&#34;
+
+    def __init__(self,
+                 pos_label: Union[str, int, float] = None,
+                 prefix=&#34;&#34;,
+                 save_path=&#34;./output/images/&#34;,
+                 save_fig=True,
+                 show_fig=True):
+        &#34;&#34;&#34;
+
+        Args:
+            pos_label (Union[str, int, float], optional): If not None, the result will be pos_label vs rest (ovr) roc curve. Defaults to None.
+            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to &#34;&#34;.
+            save_path (str, optional): the path to export the figure. Defaults to &#34;./output/images/&#34;.
+            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
+            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
+        &#34;&#34;&#34;
+        super().__init__(prefix=prefix,
+                         save_path=save_path,
+                         save_fig=save_fig,
+                         show_fig=show_fig)
+        self.name = &#34;ROC Curve&#34;
+        self.pos_label = pos_label
+
+    def save_name(self):
+        return &#34;{} {}&#34;.format(self.prefix, self.name)
+
+    def draw(self, y_true: pd.Series, y_pred_prob: pd.DataFrame):
+        &#34;&#34;&#34;
+        draw roc curve
+
+        Args:
+            y_true (pd.Series): Ground true
+            y_pred_prob (pd.DataFrame): The probability that model predicted for each class. y_pred_prob should have shape (n_samples, n_class)
+        &#34;&#34;&#34;
+
+        # ROC curve
+        if len(y_true.value_counts()) &lt;= 2:
+            # binary ROC curve
+            fpr, tpr, threshold = metrics.roc_curve(y_true,
+                                                    y_pred_prob.iloc[:, 1],
+                                                    pos_label=self.pos_label)
+            roc_auc = metrics.auc(fpr, tpr)
+            plt.plot(fpr, tpr, &#39;b&#39;, label=&#39;AUC = %0.3f&#39; % roc_auc)
+            plt.title(self.prefix + &#39;ROC curve&#39;)
+
+        else:
+            # one vs rest ROC curve
+            for label in y_pred_prob.columns:
+                label_prob = y_pred_prob[label]
+
+                fpr, tpr, threshold = metrics.roc_curve(
+                    y_true == label, label_prob)
+                roc_auc = metrics.auc(fpr, tpr)
+
+                plt.plot(fpr, tpr, label=str(label) + &#39; (AUC=%0.3f)&#39; % roc_auc)
+            plt.title(self.prefix + &#39;one vs rest ROC curves&#39;)
+
+        plt.plot([0, 1], [0, 1], &#39;r--&#39;)
+        plt.xlim([0, 1])
+        plt.ylim([0, 1])
+        plt.ylabel(&#39;True Positive Rate&#39;)
+        plt.xlabel(&#39;False Positive Rate&#39;)
+        plt.legend(loc=&#39;lower right&#39;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="PineBioML.report.utils.basic_plot" href="#PineBioML.report.utils.basic_plot">basic_plot</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="PineBioML.report.utils.roc_plot.draw"><code class="name flex">
+<span>def <span class="ident">draw</span></span>(<span>self, y_true: pandas.core.series.Series, y_pred_prob: pandas.core.frame.DataFrame)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>draw roc curve</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>y_true</code></strong> :&ensp;<code>pd.Series</code></dt>
+<dd>Ground true</dd>
+<dt><strong><code>y_pred_prob</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>The probability that model predicted for each class. y_pred_prob should have shape (n_samples, n_class)</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def draw(self, y_true: pd.Series, y_pred_prob: pd.DataFrame):
+    &#34;&#34;&#34;
+    draw roc curve
+
+    Args:
+        y_true (pd.Series): Ground true
+        y_pred_prob (pd.DataFrame): The probability that model predicted for each class. y_pred_prob should have shape (n_samples, n_class)
+    &#34;&#34;&#34;
+
+    # ROC curve
+    if len(y_true.value_counts()) &lt;= 2:
+        # binary ROC curve
+        fpr, tpr, threshold = metrics.roc_curve(y_true,
+                                                y_pred_prob.iloc[:, 1],
+                                                pos_label=self.pos_label)
+        roc_auc = metrics.auc(fpr, tpr)
+        plt.plot(fpr, tpr, &#39;b&#39;, label=&#39;AUC = %0.3f&#39; % roc_auc)
+        plt.title(self.prefix + &#39;ROC curve&#39;)
+
+    else:
+        # one vs rest ROC curve
+        for label in y_pred_prob.columns:
+            label_prob = y_pred_prob[label]
+
+            fpr, tpr, threshold = metrics.roc_curve(
+                y_true == label, label_prob)
+            roc_auc = metrics.auc(fpr, tpr)
+
+            plt.plot(fpr, tpr, label=str(label) + &#39; (AUC=%0.3f)&#39; % roc_auc)
+        plt.title(self.prefix + &#39;one vs rest ROC curves&#39;)
+
+    plt.plot([0, 1], [0, 1], &#39;r--&#39;)
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.ylabel(&#39;True Positive Rate&#39;)
+    plt.xlabel(&#39;False Positive Rate&#39;)
+    plt.legend(loc=&#39;lower right&#39;)</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.report.utils.roc_plot.save_name"><code class="name flex">
+<span>def <span class="ident">save_name</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save_name(self):
+    return &#34;{} {}&#34;.format(self.prefix, self.name)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="PineBioML.report.utils.basic_plot" href="#PineBioML.report.utils.basic_plot">basic_plot</a></b></code>:
+<ul class="hlist">
+<li><code><a title="PineBioML.report.utils.basic_plot.make_figure" href="#PineBioML.report.utils.basic_plot.make_figure">make_figure</a></code></li>
+<li><code><a title="PineBioML.report.utils.basic_plot.reference" href="#PineBioML.report.utils.basic_plot.reference">reference</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="PineBioML.report.utils.umap_plot"><code class="flex name class">
+<span>class <span class="ident">umap_plot</span></span>
+<span>(</span><span>discrete_legend=True, prefix='', save_path='./output/images/', save_fig=True, show_fig=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Umap is a unsupervissed method to reduce the number of dimension of given data. It's based on manifold learning and it has uncertainty.
+</p>
+<p>Using umap_plot().make_figure(x) or umap_plot().make_figure(x, y) to generate a Umap plot.
+</p>
+<p>Warning: Only the clustering tendency is reliable on the graph. </p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>discrete_legend</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>To color the plot based on y in discrete hue or continuous color bar. If y is continuous, then you should set it to False. Defaults to True.</dd>
+<dt><strong><code>prefix</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to "".</dd>
+<dt><strong><code>save_path</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>the path to export the figure. Defaults to "./output/images/".</dd>
+<dt><strong><code>save_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>whether to export the figure or not. Defaults to True.</dd>
+<dt><strong><code>show_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>whether to show the figure or not. Defaults to True.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class umap_plot(basic_plot):
+    &#34;&#34;&#34;
+    Umap is a unsupervissed method to reduce the number of dimension of given data. It&#39;s based on manifold learning and it has uncertainty.    
+
+    Using umap_plot().make_figure(x) or umap_plot().make_figure(x, y) to generate a Umap plot.    
+    
+    Warning: Only the clustering tendency is reliable on the graph. 
+    &#34;&#34;&#34;
+
+    def __init__(self,
+                 discrete_legend=True,
+                 prefix=&#34;&#34;,
+                 save_path=&#34;./output/images/&#34;,
+                 save_fig=True,
+                 show_fig=True):
+        &#34;&#34;&#34;
+
+        Args:
+            discrete_legend (bool, optional): To color the plot based on y in discrete hue or continuous color bar. If y is continuous, then you should set it to False. Defaults to True.
+            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to &#34;&#34;.
+            save_path (str, optional): the path to export the figure. Defaults to &#34;./output/images/&#34;.
+            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
+            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
+        &#34;&#34;&#34;
+        super().__init__(prefix=prefix,
+                         save_path=save_path,
+                         save_fig=save_fig,
+                         show_fig=show_fig)
+        self.discrete_legend = discrete_legend
+        self.name = &#34;UMAP&#34;
+
+    def save_name(self):
+        return &#34;{} {} plot&#34;.format(self.prefix, self.name)
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = super().reference()
+        refer[self.name +
+              &#34; document&#34;] = &#34;https://umap-learn.readthedocs.io/en/latest/&#34;
+        refer[
+            self.name +
+            &#34; publication&#34;] = &#34;https://joss.theoj.org/papers/10.21105/joss.00861&#34;
+
+        return refer
+
+    def draw(self, x: pd.DataFrame, y: pd.Series = None):
+        &#34;&#34;&#34;
+        Using Umap do transform x into 2D plane. The difference between umap_plot().draw(x) and umap_plot().draw(x, y) is that:    
+         - umap_plot().draw(x) will give a normal umap scatter plot.    
+         - umap_plot().draw(x, y) will coloring the points on the figure based on y. Set discrete_legend to True if y is continuous, False otherwise.    
+
+        What we do here is:    
+            1. standardize x    
+            2. fit a UMAP(n_neighbors=np.log2(n_sample) on x and storing the result in pd.DataFrame    
+            3. Decide how to color the plots by various cases of y and discrete_legend.    
+
+        Args:
+            x (pd.DataFrame): feature    
+            y (pd.Series, optional): label. Defaults to None.    
+        &#34;&#34;&#34;
+
+        # fit a umap for x, you can change n_neighbors to any other feasible value.
+        umapcs = UMAP(n_neighbors=round(np.log2(x.shape[0])),
+                      n_components=2).fit_transform(
+                          (x - x.mean()) / (x.std() + 1e-6))
+        umapcs = pd.DataFrame(
+            umapcs,
+            index=x.index,
+            columns=[self.name + &#34; dimension 1&#34;, self.name + &#34; dimension 2&#34;])
+
+        if y is None:
+            y_name = None
+        else:
+            # add y into the DataFrame for coloring the data points
+            y_name = &#34;y&#34; if y.name is None else y.name
+            umapcs[y_name] = y
+
+        if self.discrete_legend:
+            # discrete legend
+            plot = scatterplot(data=umapcs,
+                               x=self.name + &#34; dimension 1&#34;,
+                               y=self.name + &#34; dimension 2&#34;,
+                               hue=y_name)
+            plt.legend(loc=&#39;center left&#39;, bbox_to_anchor=(1, 0.5))
+        elif not y is None:
+            # color bar
+            cmap = color_palette(&#39;ch:&#39;, as_cmap=True)
+            sm = plt.cm.ScalarMappable(cmap=cmap, norm=Normalize())
+            plot = scatterplot(data=umapcs,
+                               x=self.name + &#34; dimension 1&#34;,
+                               y=self.name + &#34; dimension 2&#34;,
+                               hue=y_name,
+                               hue_norm=sm.norm,
+                               palette=cmap,
+                               legend=False)
+            cbar = plt.colorbar(sm, ax=plt.gca())
+            cbar.set_label(y_name)
+        else:
+            # vanilla
+            plot = scatterplot(data=umapcs,
+                               x=self.name + &#34; dimension 1&#34;,
+                               y=self.name + &#34; dimension 2&#34;)
+
+        plot.set_title(&#34;{} {} Scatter plot&#34;.format(self.prefix, self.name))</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="PineBioML.report.utils.basic_plot" href="#PineBioML.report.utils.basic_plot">basic_plot</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="PineBioML.report.utils.umap_plot.draw"><code class="name flex">
+<span>def <span class="ident">draw</span></span>(<span>self, x: pandas.core.frame.DataFrame, y: pandas.core.series.Series = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Using Umap do transform x into 2D plane. The difference between umap_plot().draw(x) and umap_plot().draw(x, y) is that:
+<br>
+- umap_plot().draw(x) will give a normal umap scatter plot.
+<br>
+- umap_plot().draw(x, y) will coloring the points on the figure based on y. Set discrete_legend to True if y is continuous, False otherwise.
+</p>
+<p>What we do here is:
+<br>
+1. standardize x
+<br>
+2. fit a UMAP(n_neighbors=np.log2(n_sample) on x and storing the result in pd.DataFrame
+<br>
+3. Decide how to color the plots by various cases of y and discrete_legend.
+</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>feature
+</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>pd.Series</code>, optional</dt>
+<dd>label. Defaults to None.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def draw(self, x: pd.DataFrame, y: pd.Series = None):
+    &#34;&#34;&#34;
+    Using Umap do transform x into 2D plane. The difference between umap_plot().draw(x) and umap_plot().draw(x, y) is that:    
+     - umap_plot().draw(x) will give a normal umap scatter plot.    
+     - umap_plot().draw(x, y) will coloring the points on the figure based on y. Set discrete_legend to True if y is continuous, False otherwise.    
+
+    What we do here is:    
+        1. standardize x    
+        2. fit a UMAP(n_neighbors=np.log2(n_sample) on x and storing the result in pd.DataFrame    
+        3. Decide how to color the plots by various cases of y and discrete_legend.    
+
+    Args:
+        x (pd.DataFrame): feature    
+        y (pd.Series, optional): label. Defaults to None.    
+    &#34;&#34;&#34;
+
+    # fit a umap for x, you can change n_neighbors to any other feasible value.
+    umapcs = UMAP(n_neighbors=round(np.log2(x.shape[0])),
+                  n_components=2).fit_transform(
+                      (x - x.mean()) / (x.std() + 1e-6))
+    umapcs = pd.DataFrame(
+        umapcs,
+        index=x.index,
+        columns=[self.name + &#34; dimension 1&#34;, self.name + &#34; dimension 2&#34;])
+
+    if y is None:
+        y_name = None
+    else:
+        # add y into the DataFrame for coloring the data points
+        y_name = &#34;y&#34; if y.name is None else y.name
+        umapcs[y_name] = y
+
+    if self.discrete_legend:
+        # discrete legend
+        plot = scatterplot(data=umapcs,
+                           x=self.name + &#34; dimension 1&#34;,
+                           y=self.name + &#34; dimension 2&#34;,
+                           hue=y_name)
+        plt.legend(loc=&#39;center left&#39;, bbox_to_anchor=(1, 0.5))
+    elif not y is None:
+        # color bar
+        cmap = color_palette(&#39;ch:&#39;, as_cmap=True)
+        sm = plt.cm.ScalarMappable(cmap=cmap, norm=Normalize())
+        plot = scatterplot(data=umapcs,
+                           x=self.name + &#34; dimension 1&#34;,
+                           y=self.name + &#34; dimension 2&#34;,
+                           hue=y_name,
+                           hue_norm=sm.norm,
+                           palette=cmap,
+                           legend=False)
+        cbar = plt.colorbar(sm, ax=plt.gca())
+        cbar.set_label(y_name)
+    else:
+        # vanilla
+        plot = scatterplot(data=umapcs,
+                           x=self.name + &#34; dimension 1&#34;,
+                           y=self.name + &#34; dimension 2&#34;)
+
+    plot.set_title(&#34;{} {} Scatter plot&#34;.format(self.prefix, self.name))</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.report.utils.umap_plot.save_name"><code class="name flex">
+<span>def <span class="ident">save_name</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save_name(self):
+    return &#34;{} {} plot&#34;.format(self.prefix, self.name)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="PineBioML.report.utils.basic_plot" href="#PineBioML.report.utils.basic_plot">basic_plot</a></b></code>:
+<ul class="hlist">
+<li><code><a title="PineBioML.report.utils.basic_plot.make_figure" href="#PineBioML.report.utils.basic_plot.make_figure">make_figure</a></code></li>
+<li><code><a title="PineBioML.report.utils.basic_plot.reference" href="#PineBioML.report.utils.basic_plot.reference">reference</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -528,9 +2561,64 @@ def classification_summary(y_true, y_pred_prob, title=&#34;&#34;):
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="PineBioML.report.utils.classification_scores" href="#PineBioML.report.utils.classification_scores">classification_scores</a></code></li>
 <li><code><a title="PineBioML.report.utils.classification_summary" href="#PineBioML.report.utils.classification_summary">classification_summary</a></code></li>
 <li><code><a title="PineBioML.report.utils.data_overview" href="#PineBioML.report.utils.data_overview">data_overview</a></code></li>
+<li><code><a title="PineBioML.report.utils.regression_summary" href="#PineBioML.report.utils.regression_summary">regression_summary</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="PineBioML.report.utils.basic_plot" href="#PineBioML.report.utils.basic_plot">basic_plot</a></code></h4>
+<ul class="">
+<li><code><a title="PineBioML.report.utils.basic_plot.draw" href="#PineBioML.report.utils.basic_plot.draw">draw</a></code></li>
+<li><code><a title="PineBioML.report.utils.basic_plot.make_figure" href="#PineBioML.report.utils.basic_plot.make_figure">make_figure</a></code></li>
+<li><code><a title="PineBioML.report.utils.basic_plot.reference" href="#PineBioML.report.utils.basic_plot.reference">reference</a></code></li>
+<li><code><a title="PineBioML.report.utils.basic_plot.save_name" href="#PineBioML.report.utils.basic_plot.save_name">save_name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="PineBioML.report.utils.confusion_matrix_plot" href="#PineBioML.report.utils.confusion_matrix_plot">confusion_matrix_plot</a></code></h4>
+<ul class="">
+<li><code><a title="PineBioML.report.utils.confusion_matrix_plot.draw" href="#PineBioML.report.utils.confusion_matrix_plot.draw">draw</a></code></li>
+<li><code><a title="PineBioML.report.utils.confusion_matrix_plot.save_name" href="#PineBioML.report.utils.confusion_matrix_plot.save_name">save_name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="PineBioML.report.utils.corr_heatmap_plot" href="#PineBioML.report.utils.corr_heatmap_plot">corr_heatmap_plot</a></code></h4>
+<ul class="">
+<li><code><a title="PineBioML.report.utils.corr_heatmap_plot.draw" href="#PineBioML.report.utils.corr_heatmap_plot.draw">draw</a></code></li>
+<li><code><a title="PineBioML.report.utils.corr_heatmap_plot.save_name" href="#PineBioML.report.utils.corr_heatmap_plot.save_name">save_name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="PineBioML.report.utils.pca_plot" href="#PineBioML.report.utils.pca_plot">pca_plot</a></code></h4>
+<ul class="">
+<li><code><a title="PineBioML.report.utils.pca_plot.draw" href="#PineBioML.report.utils.pca_plot.draw">draw</a></code></li>
+<li><code><a title="PineBioML.report.utils.pca_plot.save_name" href="#PineBioML.report.utils.pca_plot.save_name">save_name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="PineBioML.report.utils.pls_plot" href="#PineBioML.report.utils.pls_plot">pls_plot</a></code></h4>
+<ul class="">
+<li><code><a title="PineBioML.report.utils.pls_plot.draw" href="#PineBioML.report.utils.pls_plot.draw">draw</a></code></li>
+<li><code><a title="PineBioML.report.utils.pls_plot.save_name" href="#PineBioML.report.utils.pls_plot.save_name">save_name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="PineBioML.report.utils.roc_plot" href="#PineBioML.report.utils.roc_plot">roc_plot</a></code></h4>
+<ul class="">
+<li><code><a title="PineBioML.report.utils.roc_plot.draw" href="#PineBioML.report.utils.roc_plot.draw">draw</a></code></li>
+<li><code><a title="PineBioML.report.utils.roc_plot.save_name" href="#PineBioML.report.utils.roc_plot.save_name">save_name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="PineBioML.report.utils.umap_plot" href="#PineBioML.report.utils.umap_plot">umap_plot</a></code></h4>
+<ul class="">
+<li><code><a title="PineBioML.report.utils.umap_plot.draw" href="#PineBioML.report.utils.umap_plot.draw">draw</a></code></li>
+<li><code><a title="PineBioML.report.utils.umap_plot.save_name" href="#PineBioML.report.utils.umap_plot.save_name">save_name</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

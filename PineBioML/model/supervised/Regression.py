@@ -1,5 +1,6 @@
 from . import Basic_tuner
 from abc import abstractmethod
+from typing import Literal
 
 from joblib import parallel_backend
 
@@ -15,12 +16,14 @@ from lightgbm import LGBMRegressor
 import numpy as np
 from statsmodels.regression.linear_model import OLS
 
-# ToDo: optuna pruner
-#       see section Acticating Pruners in https://optuna.readthedocs.io/en/stable/tutorial/10_key_features/003_efficient_optimization_algorithms.html
 # Todo: Now loss(not metrics) only support mse, we need more like mae, mape, hinge... etc
 
 
 class Regression_tuner(Basic_tuner):
+    """
+    A subclass of Basic_tuner for regression task.
+    
+    """
 
     def __init__(self,
                  n_try,
@@ -37,12 +40,44 @@ class Regression_tuner(Basic_tuner):
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed)
+        """
+        Args:
+            n_try (int): The number of trials optuna should try.
+            n_cv (int): The number of folds to execute cross validation evaluation in iteration of optuna optimization.
+            target (str): The target of optuna optimization. Notice that is different from the training loss of model.
+            validate_penalty (bool): True to penalty the overfitting by difference between training score and cv score.
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna's hyperparameter sampling. Defaults to None.
+        """
 
-    def is_regression(self):
+    def is_regression(self) -> bool:
+        """
+        Yes, it is for regression.
+
+        Returns:
+            bool: True
+        """
         return True
 
+    def reference(self) -> dict[str, str]:
+        """
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    >Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        """
+        return super().reference()
+
     @abstractmethod
-    def name(self):
+    def name(self) -> str:
+        """
+        To be determined.
+
+        Returns:
+            str: Name of this tuner.
+        """
         pass
 
     @abstractmethod
@@ -77,11 +112,13 @@ class ElasticNet_tuner(Regression_tuner):
                  validate_penalty=True):
         """
         Args:
-            n_try (int, optional): Times to try. Defaults to 25.    
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "mse" (mse score).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+            n_try (int, optional): The number of trials optuna should try. Defaults to 25.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mse".
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna's hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
         """
         super().__init__(n_try=n_try,
                          n_cv=n_cv,
@@ -93,6 +130,21 @@ class ElasticNet_tuner(Regression_tuner):
 
     def name(self):
         return "ElasticNet"
+
+    def reference(self) -> dict[str, str]:
+        """
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    >Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        """
+        refer = super().reference()
+        refer[
+            self.name() +
+            " document"] = "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html"
+
+        return refer
 
     def create_model(self, trial, default=False):
         if default:
@@ -140,11 +192,13 @@ class RandomForest_tuner(Regression_tuner):
 
         Args:
             using_oob (bool, optional): Using out of bag score as validation. Defaults to True.
-            n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "mse" (mse score).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+            n_try (int, optional): The number of trials optuna should try. Defaults to 50.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mse".
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna's hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
         """
         super().__init__(n_try=n_try,
                          n_cv=n_cv,
@@ -158,6 +212,24 @@ class RandomForest_tuner(Regression_tuner):
 
     def name(self):
         return "RandomForest"
+
+    def reference(self) -> dict[str, str]:
+        """
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    >Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        """
+        refer = super().reference()
+        refer[
+            self.name() +
+            " document"] = "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html"
+        refer[
+            self.name() +
+            " publication"] = "https://www.stat.berkeley.edu/~breiman/randomforest2001.pdf"
+
+        return refer
 
     def create_model(self, trial, default=False):
         if default:
@@ -248,7 +320,7 @@ class SVM_tuner(Regression_tuner):
     """
 
     def __init__(self,
-                 kernel="rbf",
+                 kernel: Literal["linear", "poly", "rbf", "sigmoid"] = "rbf",
                  n_try=25,
                  n_cv=5,
                  target="mse",
@@ -258,12 +330,14 @@ class SVM_tuner(Regression_tuner):
                  validate_penalty=True):
         """
         Args:
-            kernel (str, optional): This will be passed to the attribute of SVR: "kernel". Defaults to "rbf".
-            n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "mse" (mse score).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+            kernel (Literal[&quot;linear&quot;, &quot;poly&quot;, &quot;rbf&quot;, &quot;sigmoid&quot;], optional): This will be passed to the attribute of SVC: "kernel". Defaults to "rbf".
+            n_try (int, optional): The number of trials optuna should try. Defaults to 25.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mse".
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna's hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
         """
         super().__init__(n_try=n_try,
                          n_cv=n_cv,
@@ -272,10 +346,31 @@ class SVM_tuner(Regression_tuner):
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
                          validate_penalty=validate_penalty)
-        self.kernel = kernel  # rbf, linear, poly, sigmoid
+        self.kernel = kernel
 
     def name(self):
         return self.kernel + "-SVM"
+
+    def reference(self) -> dict[str, str]:
+        """
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    >Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        """
+        refer = super().reference()
+        refer[
+            self.name() +
+            " document"] = "https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html"
+        refer[
+            self.name() +
+            " sklearn backend"] = "http://www.csie.ntu.edu.tw/~cjlin/papers/libsvm.pdf"
+        refer[
+            self.name() +
+            " publication"] = "https://citeseerx.ist.psu.edu/doc_view/pid/42e5ed832d4310ce4378c44d05570439df28a393"
+
+        return refer
 
     def create_model(self, trial, default=False):
         if default:
@@ -313,7 +408,7 @@ class XGBoost_tuner(Regression_tuner):
     """
 
     def __init__(self,
-                 n_try=100,
+                 n_try=75,
                  n_cv=5,
                  target="mse",
                  kernel_seed=None,
@@ -323,11 +418,13 @@ class XGBoost_tuner(Regression_tuner):
         """
 
         Args:
-            n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "mse" (mse score).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+            n_try (int, optional): The number of trials optuna should try. Defaults to 75.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mse".
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna's hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
         
         """
         super().__init__(n_try=n_try,
@@ -340,6 +437,23 @@ class XGBoost_tuner(Regression_tuner):
 
     def name(self):
         return "XGBoost"
+
+    def reference(self) -> dict[str, str]:
+        """
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    >Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        """
+        refer = super().reference()
+        refer[self.name() +
+              " document"] = "https://xgboost.readthedocs.io/en/stable/"
+        refer[
+            self.name() +
+            " publication"] = "https://dl.acm.org/doi/10.1145/2939672.2939785"
+
+        return refer
 
     def create_model(self, trial, default=False):
         if default:
@@ -399,7 +513,7 @@ class LighGBM_tuner(Regression_tuner):
     """
 
     def __init__(self,
-                 n_try=100,
+                 n_try=75,
                  n_cv=5,
                  target="mse",
                  kernel_seed=None,
@@ -409,11 +523,13 @@ class LighGBM_tuner(Regression_tuner):
         """
 
         Args:
-            n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "mse" (mse score).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+            n_try (int, optional): The number of trials optuna should try. Defaults to 75.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mse".
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna's hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.        
         
         """
         super().__init__(n_try=n_try,
@@ -426,6 +542,24 @@ class LighGBM_tuner(Regression_tuner):
 
     def name(self):
         return "LightGBM"
+
+    def reference(self) -> dict[str, str]:
+        """
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    >Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        """
+        refer = super().reference()
+        refer[
+            self.name() +
+            " document"] = "https://lightgbm.readthedocs.io/en/latest/index.html"
+        refer[
+            self.name() +
+            " publication"] = "https://proceedings.neurips.cc/paper_files/paper/2017/file/6449f44a102fde848669bdd9eb6b76fa-Paper.pdf"
+
+        return refer
 
     def create_model(self, trial, default=False):
         if default:
@@ -495,7 +629,7 @@ class AdaBoost_tuner(Regression_tuner):
     """
 
     def __init__(self,
-                 n_try=50,
+                 n_try=25,
                  n_cv=5,
                  target="mse",
                  kernel_seed=None,
@@ -504,11 +638,13 @@ class AdaBoost_tuner(Regression_tuner):
                  validate_penalty=True):
         """
         Args:
-            n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "mse" (negative mse).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+            n_try (int, optional): The number of trials optuna should try. Defaults to 25.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mse".
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna's hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
         """
         super().__init__(n_try=n_try,
                          n_cv=n_cv,
@@ -520,6 +656,27 @@ class AdaBoost_tuner(Regression_tuner):
 
     def name(self):
         return "AdaBoost"
+
+    def reference(self) -> dict[str, str]:
+        """
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    >Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        """
+        refer = super().reference()
+        refer[
+            self.name() +
+            " document"] = "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostRegressor.html"
+        refer[
+            self.name() +
+            " publication: original version"] = "https://www.ee.columbia.edu/~sfchang/course/svia-F03/papers/freund95decisiontheoretic-adaboost.pdf"
+        refer[
+            self.name() +
+            " publication: implemented version"] = "Drucker, 'Improving Regressors using Boosting Techniques', 1997"
+
+        return refer
 
     def create_model(self, trial, default=False):
         if default:
@@ -560,11 +717,13 @@ class DecisionTree_tuner(Regression_tuner):
                  validate_penalty=True):
         """
         Args:
-            n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "mse" (negative mse).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+            n_try (int, optional): The number of trials optuna should try. Defaults to 25.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mse".
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna's hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
         """
         super().__init__(n_try=n_try,
                          n_cv=n_cv,
@@ -576,6 +735,24 @@ class DecisionTree_tuner(Regression_tuner):
 
     def name(self):
         return "DecisionTree"
+
+    def reference(self) -> dict[str, str]:
+        """
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    >Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        """
+        refer = super().reference()
+        refer[
+            self.name() +
+            " document"] = "https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html"
+        refer[
+            self.name() +
+            " publication"] = "https://www.taylorfrancis.com/books/mono/10.1201/9781315139470/classification-regression-trees-leo-breiman-jerome-friedman-olshen-charles-stone"
+
+        return refer
 
     def create_model(self, trial, default=False):
         if default:

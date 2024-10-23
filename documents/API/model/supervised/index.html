@@ -30,68 +30,127 @@
 import optuna
 from abc import ABC, abstractmethod
 from sklearn.model_selection import StratifiedKFold
+from sklearn.utils.class_weight import compute_sample_weight
+from sklearn.preprocessing import LabelEncoder
 from optuna.samplers import TPESampler
 from numpy.random import RandomState, randint
-from pandas import Series, DataFrame
+from pandas import Series
+
+from sklearn.exceptions import ConvergenceWarning
 
 optuna.logging.set_verbosity(optuna.logging.WARNING)
+ConvergenceWarning(&#39;ignore&#39;)
 
 
 class Basic_tuner(ABC):
     &#34;&#34;&#34;
-    The base class of tuner.    
-    To conserve the reproducibility and to reduce the hyper parameter overfitting along the process of hyper parameter tuning. 
-    We first using valid_seed to randomly initialize a tape of integers and it will sequentially be used in optuna trials.    
+    The base class of tuner. A tuner is a wrapper of optuna + models    
+    What the tuners do:    
+        1. interface of optuna and models with sklearn api style    
+        2. randomity management.    
+        3. providing a uniform interface to regression and classiciation(binary and multi-class)    
+
+    To conserve the reproducibility and to reduce the hyper parameter overfitting along the process of hyper parameter tuning,    
+    we first using valid_seed to randomly initialize a tape of integers and it will sequentially be used in optuna trials.    
+
 
     &#34;&#34;&#34;
 
-    def __init__(self, n_try, target, kernel_seed, valid_seed, optuna_seed,
-                 validate_penalty):
+    def __init__(self,
+                 n_try: int,
+                 n_cv: int,
+                 target: str,
+                 validate_penalty: bool,
+                 kernel_seed: int = None,
+                 valid_seed: int = None,
+                 optuna_seed: int = None):
         &#34;&#34;&#34;
-        
+
         Args:
-            n_try (int): Times to try.    
-            target (str): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics.    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int): random seed for optuna.    
+            n_try (int): The number of trials optuna should try.
+            n_cv (int): The number of folds to execute cross validation evaluation in iteration of optuna optimization.
+            target (str): The target of optuna optimization. Notice that is different from the training loss of model.
+            validate_penalty (bool): True to penalty the overfitting by difference between training score and cv score.
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
+
+        ToDo:
+            1. transfer the initialization of seed tape from __init__ to fit.    
+            2. optuna pruner: See the section Acticating Pruners in https://optuna.readthedocs.io/en/stable/tutorial/10_key_features/003_efficient_optimization_algorithms.html
+            3. Winner&#39;s curse
+
         &#34;&#34;&#34;
+        self.y_mapping = LabelEncoder()
+
         self.validate_penalty = validate_penalty
 
-        self.n_cv = 5
+        self.n_cv = n_cv
         self.n_try = n_try
 
-        if kernel_seed:
-            self.kernel_seed = kernel_seed
-        else:
+        # initialize the random seeds
+        if kernel_seed is None:
             self.kernel_seed = randint(16384)
-
-        if valid_seed:
-            self.valid_seed = valid_seed
         else:
+            self.kernel_seed = kernel_seed
+
+        if valid_seed is None:
             self.valid_seed = randint(16384)
-
-        if optuna_seed:
-            self.optuna_seed = optuna_seed
         else:
-            self.optuna_seed = randint(16384)
+            self.valid_seed = valid_seed
 
-        # The tape for cross validation random seed along optuna trial.
+        if optuna_seed is None:
+            self.optuna_seed = randint(16384)
+        else:
+            self.optuna_seed = optuna_seed
+
+        # The random seed tapes for cross validation along the optuna&#39;s optimization trials.
         self.valid_seed_tape = RandomState(self.valid_seed).randint(low=0,
                                                                     high=16384,
                                                                     size=n_try)
         self.kernel_seed_tape = RandomState(self.kernel_seed).randint(
             low=0, high=16384, size=n_try)
 
-        # If the tuning target is not in discrete_target, the kernel will not be required to return in prob which is costy fro some method like svm.
-        self.discrete_target = [&#34;accuracy&#34;, &#34;f1&#34;, &#34;matthews_corrcoef&#34;]
-        self.eval_prob = not target in self.discrete_target
         # Get the scorer
-        self.metric = metrics.get_scorer(target)
+        self.metric = self.get_scorer(target)
 
         self.optuna_model = None
         self.default_model = None
         self.best_model = None
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refers = {
+            &#34;optuna publication&#34;:
+            &#34;https://dl.acm.org/doi/10.1145/3292500.3330701&#34;,
+            &#34;optuna document&#34;: &#34;https://optuna.org/&#34;,
+            &#34;sklearn publication&#34;:
+            &#34;https://dl.acm.org/doi/10.5555/1953048.2078195&#34;
+        }
+
+        return refers
+
+    @abstractmethod
+    def name(self) -&gt; str:
+        &#34;&#34;&#34;
+        Returns:
+            str: Name of this tuner.
+        &#34;&#34;&#34;
+        pass
+
+    @abstractmethod
+    def is_regression(self) -&gt; bool:
+        &#34;&#34;&#34;
+        Returns:
+            bool: True if the task of tuner is a regression task.
+        &#34;&#34;&#34;
+        pass
 
     @abstractmethod
     def create_model(self, trial, default):
@@ -100,14 +159,14 @@ class Basic_tuner(ABC):
 
         Args:
             trial (optuna.trial.Trial): optuna trial in this call.
-            default (bool): To use default hyper parameter
+            default (bool): set True to use default hyper parameter
             
         Returns :
             sklearn.base.BaseEstimator: A sklearn style model object.
         &#34;&#34;&#34;
         pass
 
-    def evaluate(self, trial, default=False):
+    def evaluate(self, trial, default=False) -&gt; float:
         &#34;&#34;&#34;
         To evaluate the score of this trial. you should call create_model instead of creating model manually in this function.
         
@@ -115,48 +174,67 @@ class Basic_tuner(ABC):
             trial (optuna.trial.Trial): optuna trial in this call.
             default (bool): To use default hyper parameter. This argument will be passed to creat_model
         Returns :
-            float: The score.
+            float: The score. Decided by optimization target.
         &#34;&#34;&#34;
+        # create the model using from this trial
         classifier_obj = self.create_model(trial, default)
 
+        # create cross validation
         cv = StratifiedKFold(n_splits=self.n_cv,
                              shuffle=True,
                              random_state=self.valid_seed_tape[trial.number])
 
+        # do cv
         score = []
         for i, (train_ind, test_ind) in enumerate(cv.split(self.x, self.y)):
+            # train test split
             x_train = self.x.iloc[train_ind]
             y_train = self.y.iloc[train_ind]
             x_test = self.x.iloc[test_ind]
             y_test = self.y.iloc[test_ind]
 
-            classifier_obj.fit(x_train, y_train)
+            # sample_weight for imbalanced class.
+            if self.is_regression():
+                sample_weight = None
+            else:
+                sample_weight = compute_sample_weight(class_weight=&#34;balanced&#34;,
+                                                      y=y_train)
 
+            # fit the model on training fold
+            classifier_obj.fit(x_train, y_train, sample_weight=sample_weight)
+
+            # evaluate on testing fold
             test_score = self.metric(classifier_obj, x_test, y_test)
             train_score = self.metric(classifier_obj, x_train, y_train)
+
             if self.validate_penalty:
                 score.append(test_score + 0.1 * (test_score - train_score))
             else:
                 score.append(test_score)
 
-            #score.append(test_score)
+        # averaging cv scores
         score = sum(score) / self.n_cv
+        #print(score)
         return score
 
-    def tune(self, x, y):
+    def tune(self, x, y) -&gt; None:
         &#34;&#34;&#34;
-        this function should tune the hyperparameters of a given kernel.
+        this function tunes the hyperparameters of a given kernel.
         
         Args:
             x (pandas.DataFrame or 2D-array): feature to extract information from.
-            y (pandas.Series or 1D-array): ground true.
+            y (pandas.Series or 1D-array): The property we interested in.
 
-        Returns :
-            sklearn.base.BaseEstimator: A sklearn style model object which has the best hyperparameters.
         &#34;&#34;&#34;
+        # input data
         self.x = x
         self.y = y
+
+        # the total number of samples
         self.n_sample = x.shape[0]
+
+        # check task
+        self.check_task()
 
         # Make the sampler behave in a deterministic way.
         sampler = TPESampler(seed=self.optuna_seed)
@@ -165,21 +243,23 @@ class Basic_tuner(ABC):
         print(
             &#34;optuna seed {self.optuna_seed}  |  validation seed {self.valid_seed}  |  model seed {self.kernel_seed}&#34;
             .format(self=self))
-        print(&#34;    start tuning. it will take a while.&#34;)
+        print(&#34;    {} start tuning. it will take a while.&#34;.format(self.name()))
         # using optuna tuning hyper parameter
-        self.study.optimize(self.evaluate, n_trials=self.n_try)
+        self.study.optimize(self.evaluate,
+                            n_trials=self.n_try,
+                            show_progress_bar=False)
         self.optuna_model = self.create_model(self.study.best_trial,
                                               default=False)
 
         # using default hyper parameter
         # the best_trial here is only a placeholder. It&#39;s not functional.
-        default_performance = self.evaluate(self.study.best_trial,
-                                            default=True)
+        self.default_performance = self.evaluate(self.study.best_trial,
+                                                 default=True)
         self.default_model = self.create_model(self.study.best_trial,
                                                default=True)
         #print(&#34;    default performance: {:.3f}  |  best performance: {:.3f}&#34;.
-        #      format(default_performance, self.study.best_trial.value))
-        if default_performance &gt; self.study.best_trial.value:
+        #      format(self.default_performance, self.study.best_trial.value))
+        if self.default_performance &gt; self.study.best_trial.value:
             # default better
             print(&#34;    default is better.&#34;)
             self.best_model = self.default_model
@@ -189,26 +269,36 @@ class Basic_tuner(ABC):
                   self.study.best_trial.number)
             self.best_model = self.optuna_model
 
-        print(self.best_model, &#34;\n&#34;)
-        return self.best_model
-
-    def fit(self, x, y):
+    def fit(self, x, y, retune=True):
         &#34;&#34;&#34;
-        The sklearn.base.BaseEstimator fit api.
+        The sklearn.base.BaseEstimator fit api.    
+        Set retune to True to retune the model using the given x and y, else using the previously tuned model to fit on given x and y.
 
         Args:
             x (pandas.DataFrame or 2D-array): feature to extract information from.
             y (pandas.Series or 1D-array): ground true.
+            retune (bool): True to retune the model using given x and y, else using the tuned model to fit on given x, y.
         &#34;&#34;&#34;
         self.label_name = y.name
 
+        # label encoding
+        if not self.is_regression():
+            y = Series(self.y_mapping.fit_transform(y),
+                       index=y.index,
+                       name=y.name)
+
         # tune the model.
-        self.tune(x, y)
+        if retune:
+            self.tune(x, y)
 
         # fit the model.
-        self.best_model.fit(x, y)
+        if self.is_regression():
+            sample_weight = None
+        else:
+            sample_weight = compute_sample_weight(class_weight=&#34;balanced&#34;, y=y)
+        self.best_model.fit(x, y, sample_weight=sample_weight)
 
-        return self.best_model
+        return self
 
     def predict(self, x):
         &#34;&#34;&#34;
@@ -221,23 +311,135 @@ class Basic_tuner(ABC):
             1D-array: prediction
         &#34;&#34;&#34;
         # using the model.
-        y_pred = Series(self.best_model.predict(x),
-                        index=x.index,
-                        name=self.label_name)
+        y_pred = self.best_model.predict(x)
+        # label decoding
+        if not self.is_regression():
+            y_pred = self.y_mapping.inverse_transform(y_pred)
+        y_pred = Series(y_pred, index=x.index, name=self.label_name)
 
         return y_pred
 
-    def predict_proba(self, x):
+    def get_scorer(self, scorer_name: str):
         &#34;&#34;&#34;
-        The sklearn.base.BaseEstimator predict_prob api.
+        A lazy function to call sklearn scorers.    
 
         Args:
-            x (pandas.DataFrame or 2D-array): feature to extract information from.
+            scorer_name (str): abbreviation or formal name of sklearn scorers.
 
         Returns:
-            1D-array: prediction in prob
+            scorer: A callable object that returns score.
         &#34;&#34;&#34;
-        return self.best_model.predict_proba(x)</code></pre>
+
+        ### polymorphism
+        scorer_name = scorer_name.lower().replace(&#34;-&#34;, &#34;_&#34;).replace(&#34; &#34;, &#34;_&#34;)
+
+        ### common abbreviation
+        nicknames = {
+            &#34;acc&#34;: &#34;accuracy&#34;,
+            &#34;auc&#34;: &#34;roc_auc&#34;,
+            &#34;f1_score&#34;: &#34;f1&#34;,
+            &#34;macro_f1&#34;: &#34;f1_macro&#34;,
+            &#34;mcc&#34;: &#34;matthews_corrcoef&#34;,
+            &#34;log_loss&#34;: &#34;neg_log_loss&#34;,
+            &#34;cross_entropy&#34;: &#34;neg_log_loss&#34;,
+            &#34;ce&#34;: &#34;neg_log_loss&#34;,
+            &#34;bce&#34;: &#34;neg_log_loss&#34;,
+            &#34;mse&#34;: &#34;neg_mean_squared_error&#34;,
+            &#34;mean_squared_error&#34;: &#34;neg_mean_squared_error&#34;,
+            &#34;mae&#34;: &#34;neg_mean_absolute_error&#34;,
+            &#34;mean_absolute_error&#34;: &#34;neg_mean_absolute_error&#34;,
+            &#34;mape&#34;: &#34;neg_mean_absolute_percentage_error&#34;,
+            &#34;mean_absolute_percentage_error&#34;:
+            &#34;neg_mean_absolute_percentage_error&#34;,
+            &#34;rmse&#34;: &#34;neg_root_mean_squared_error&#34;,
+            &#34;root_mean_squared_error&#34;: &#34;neg_root_mean_squared_error&#34;,
+            &#34;qwk&#34;: &#34;quadratic_weighted_kappa&#34;,
+            &#34;kappa&#34;: &#34;cohen_kappa&#34;
+        }
+        if scorer_name in nicknames:
+            scorer_name = nicknames[scorer_name]
+
+        self.metric_name = scorer_name
+
+        # get the scorer
+        ### kappa
+        if scorer_name == &#34;quadratic_weighted_kappa&#34;:
+            return metrics.make_scorer(metrics.cohen_kappa_score,
+                                       weights=&#34;quadratic&#34;,
+                                       response_method=&#34;predict&#34;,
+                                       greater_is_better=True)
+        elif scorer_name == &#34;cohen_kappa&#34;:
+            return metrics.make_scorer(metrics.cohen_kappa_score,
+                                       weights=None,
+                                       response_method=&#34;predict&#34;,
+                                       greater_is_better=True)
+        ### others
+        return metrics.get_scorer(scorer_name)
+
+    def check_task(self) -&gt; bool:
+        &#34;&#34;&#34;
+        Uh....  this functions will do    
+            1. some check for mis-using of method and types.    
+            2. sparsing the task and target.    
+
+        It will be nasty and full of dirty code. Make yourself at home.    
+        
+
+        Raises:
+            ValueError: Check auc score only be used in binary classification
+
+        Returns:
+            bool: _description_
+        &#34;&#34;&#34;
+        # Check auc score only be used in binary classification
+        is_auc = self.metric_name == &#34;roc_auc&#34;
+        is_binary = len(self.y.value_counts()) == 2
+        if is_auc and not is_binary:
+            # roc_auc only can be used on binary classification. Do not try ovr, ovo. forget them.
+            raise ValueError(
+                &#34;auc only support binary classification, but more than 2 values are detected in y. Try &#39;f1_macro&#39;&#34;
+            )
+
+        # Sparse the metric
+        scorer_kargs = {}
+        for arguments in self.metric.__str__()[12:-1].split(&#34;, &#34;)[1:]:
+            if &#34;(&#34; in arguments:  # for roc auc scorer: response_method=(&#39;decision_function&#39;, &#39;predict_proba&#39;)
+                scorer_kargs[&#34;response_method&#34;] = &#34;predict_proba&#34;
+            else:
+                arg = arguments.split(&#34;=&#34;)
+                if len(arg) == 2:
+                    scorer_kargs[arg[0]] = arg[1]
+
+        ### Response method
+        self.metric_using_proba = scorer_kargs[&#34;response_method&#34;].find(
+            &#34;_proba&#34;) != -1
+        scorer_kargs.pop(&#34;response_method&#34;)
+
+        ### Greater is better
+        if &#39;greater_is_better&#39; in scorer_kargs:
+            self.metric_great_better = not scorer_kargs[
+                &#34;greater_is_better&#34;] == &#34;False&#34;
+            scorer_kargs.pop(&#39;greater_is_better&#39;)
+        else:
+            self.metric_great_better = True
+
+        ### pos_label for f1 socres
+        if &#34;pos_label&#34; in scorer_kargs:
+            scorer_kargs.pop(&#34;pos_label&#34;)
+
+        self.scorer_kargs = scorer_kargs
+
+        return True
+
+    def plot(self):
+        from plotly import io
+        fig = optuna.visualization.plot_optimization_history(
+            self.study, target_name=self.metric_name)
+        fig.add_hline(y=self.default_performance,
+                      line_dash=&#34;dot&#34;,
+                      annotation_text=&#34;Default setting&#34;,
+                      annotation_position=&#34;bottom right&#34;)
+        io.show(fig)</code></pre>
 </details>
 </section>
 <section>
@@ -272,7 +474,7 @@ the specified dtype in the "half-open" interval [<code>low</code>, <code>high</c
 <code>high</code> is None (the default), then results are from [0, <code>low</code>).</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>New code should use the <code>~numpy.random.Generator.randint</code>
+<p>New code should use the <code>~numpy.random.Generator.integers</code>
 method of a <code>~numpy.random.Generator</code> instance instead;
 please see the :ref:<code>random-quick-start</code>.</p>
 </div>
@@ -346,88 +548,160 @@ array([[ 8,  6,  9,  7], # random
 <dl>
 <dt id="PineBioML.model.supervised.Basic_tuner"><code class="flex name class">
 <span>class <span class="ident">Basic_tuner</span></span>
-<span>(</span><span>n_try, target, kernel_seed, valid_seed, optuna_seed, validate_penalty)</span>
+<span>(</span><span>n_try: int, n_cv: int, target: str, validate_penalty: bool, kernel_seed: int = None, valid_seed: int = None, optuna_seed: int = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>The base class of tuner.
+<div class="desc"><p>The base class of tuner. A tuner is a wrapper of optuna + models
 <br>
-To conserve the reproducibility and to reduce the hyper parameter overfitting along the process of hyper parameter tuning.
-We first using valid_seed to randomly initialize a tape of integers and it will sequentially be used in optuna trials.
+What the tuners do:
+<br>
+1. interface of optuna and models with sklearn api style
+<br>
+2. randomity management.
+<br>
+3. providing a uniform interface to regression and classiciation(binary and multi-class)
+</p>
+<p>To conserve the reproducibility and to reduce the hyper parameter overfitting along the process of hyper parameter tuning,
+<br>
+we first using valid_seed to randomly initialize a tape of integers and it will sequentially be used in optuna trials.
 </p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>n_try</code></strong> :&ensp;<code>int</code></dt>
-<dd>Times to try.
-</dd>
+<dd>The number of trials optuna should try.</dd>
+<dt><strong><code>n_cv</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of folds to execute cross validation evaluation in iteration of optuna optimization.</dd>
 <dt><strong><code>target</code></strong> :&ensp;<code>str</code></dt>
-<dd>The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics.
-</dd>
-<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code></dt>
-<dd>random seed for model kernel. </dd>
-<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code></dt>
-<dd>random seed for cross validation</dd>
-<dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code></dt>
-<dd>random seed for optuna.</dd>
-</dl></div>
+<dd>The target of optuna optimization. Notice that is different from the training loss of model.</dd>
+<dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code></dt>
+<dd>True to penalty the overfitting by difference between training score and cv score.</dd>
+<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for model. Defaults to None.</dd>
+<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for cross validation. Defaults to None.</dd>
+<dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for optuna's hyperparameter sampling. Defaults to None.</dd>
+</dl>
+<h2 id="todo">Todo</h2>
+<ol>
+<li>transfer the initialization of seed tape from <strong>init</strong> to fit.
+</li>
+<li>optuna pruner: See the section Acticating Pruners in <a href="https://optuna.readthedocs.io/en/stable/tutorial/10_key_features/003_efficient_optimization_algorithms.html">https://optuna.readthedocs.io/en/stable/tutorial/10_key_features/003_efficient_optimization_algorithms.html</a></li>
+<li>Winner's curse</li>
+</ol></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Basic_tuner(ABC):
     &#34;&#34;&#34;
-    The base class of tuner.    
-    To conserve the reproducibility and to reduce the hyper parameter overfitting along the process of hyper parameter tuning. 
-    We first using valid_seed to randomly initialize a tape of integers and it will sequentially be used in optuna trials.    
+    The base class of tuner. A tuner is a wrapper of optuna + models    
+    What the tuners do:    
+        1. interface of optuna and models with sklearn api style    
+        2. randomity management.    
+        3. providing a uniform interface to regression and classiciation(binary and multi-class)    
+
+    To conserve the reproducibility and to reduce the hyper parameter overfitting along the process of hyper parameter tuning,    
+    we first using valid_seed to randomly initialize a tape of integers and it will sequentially be used in optuna trials.    
+
 
     &#34;&#34;&#34;
 
-    def __init__(self, n_try, target, kernel_seed, valid_seed, optuna_seed,
-                 validate_penalty):
+    def __init__(self,
+                 n_try: int,
+                 n_cv: int,
+                 target: str,
+                 validate_penalty: bool,
+                 kernel_seed: int = None,
+                 valid_seed: int = None,
+                 optuna_seed: int = None):
         &#34;&#34;&#34;
-        
+
         Args:
-            n_try (int): Times to try.    
-            target (str): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics.    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int): random seed for optuna.    
+            n_try (int): The number of trials optuna should try.
+            n_cv (int): The number of folds to execute cross validation evaluation in iteration of optuna optimization.
+            target (str): The target of optuna optimization. Notice that is different from the training loss of model.
+            validate_penalty (bool): True to penalty the overfitting by difference between training score and cv score.
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
+
+        ToDo:
+            1. transfer the initialization of seed tape from __init__ to fit.    
+            2. optuna pruner: See the section Acticating Pruners in https://optuna.readthedocs.io/en/stable/tutorial/10_key_features/003_efficient_optimization_algorithms.html
+            3. Winner&#39;s curse
+
         &#34;&#34;&#34;
+        self.y_mapping = LabelEncoder()
+
         self.validate_penalty = validate_penalty
 
-        self.n_cv = 5
+        self.n_cv = n_cv
         self.n_try = n_try
 
-        if kernel_seed:
-            self.kernel_seed = kernel_seed
-        else:
+        # initialize the random seeds
+        if kernel_seed is None:
             self.kernel_seed = randint(16384)
-
-        if valid_seed:
-            self.valid_seed = valid_seed
         else:
+            self.kernel_seed = kernel_seed
+
+        if valid_seed is None:
             self.valid_seed = randint(16384)
-
-        if optuna_seed:
-            self.optuna_seed = optuna_seed
         else:
-            self.optuna_seed = randint(16384)
+            self.valid_seed = valid_seed
 
-        # The tape for cross validation random seed along optuna trial.
+        if optuna_seed is None:
+            self.optuna_seed = randint(16384)
+        else:
+            self.optuna_seed = optuna_seed
+
+        # The random seed tapes for cross validation along the optuna&#39;s optimization trials.
         self.valid_seed_tape = RandomState(self.valid_seed).randint(low=0,
                                                                     high=16384,
                                                                     size=n_try)
         self.kernel_seed_tape = RandomState(self.kernel_seed).randint(
             low=0, high=16384, size=n_try)
 
-        # If the tuning target is not in discrete_target, the kernel will not be required to return in prob which is costy fro some method like svm.
-        self.discrete_target = [&#34;accuracy&#34;, &#34;f1&#34;, &#34;matthews_corrcoef&#34;]
-        self.eval_prob = not target in self.discrete_target
         # Get the scorer
-        self.metric = metrics.get_scorer(target)
+        self.metric = self.get_scorer(target)
 
         self.optuna_model = None
         self.default_model = None
         self.best_model = None
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refers = {
+            &#34;optuna publication&#34;:
+            &#34;https://dl.acm.org/doi/10.1145/3292500.3330701&#34;,
+            &#34;optuna document&#34;: &#34;https://optuna.org/&#34;,
+            &#34;sklearn publication&#34;:
+            &#34;https://dl.acm.org/doi/10.5555/1953048.2078195&#34;
+        }
+
+        return refers
+
+    @abstractmethod
+    def name(self) -&gt; str:
+        &#34;&#34;&#34;
+        Returns:
+            str: Name of this tuner.
+        &#34;&#34;&#34;
+        pass
+
+    @abstractmethod
+    def is_regression(self) -&gt; bool:
+        &#34;&#34;&#34;
+        Returns:
+            bool: True if the task of tuner is a regression task.
+        &#34;&#34;&#34;
+        pass
 
     @abstractmethod
     def create_model(self, trial, default):
@@ -436,14 +710,14 @@ We first using valid_seed to randomly initialize a tape of integers and it will 
 
         Args:
             trial (optuna.trial.Trial): optuna trial in this call.
-            default (bool): To use default hyper parameter
+            default (bool): set True to use default hyper parameter
             
         Returns :
             sklearn.base.BaseEstimator: A sklearn style model object.
         &#34;&#34;&#34;
         pass
 
-    def evaluate(self, trial, default=False):
+    def evaluate(self, trial, default=False) -&gt; float:
         &#34;&#34;&#34;
         To evaluate the score of this trial. you should call create_model instead of creating model manually in this function.
         
@@ -451,48 +725,67 @@ We first using valid_seed to randomly initialize a tape of integers and it will 
             trial (optuna.trial.Trial): optuna trial in this call.
             default (bool): To use default hyper parameter. This argument will be passed to creat_model
         Returns :
-            float: The score.
+            float: The score. Decided by optimization target.
         &#34;&#34;&#34;
+        # create the model using from this trial
         classifier_obj = self.create_model(trial, default)
 
+        # create cross validation
         cv = StratifiedKFold(n_splits=self.n_cv,
                              shuffle=True,
                              random_state=self.valid_seed_tape[trial.number])
 
+        # do cv
         score = []
         for i, (train_ind, test_ind) in enumerate(cv.split(self.x, self.y)):
+            # train test split
             x_train = self.x.iloc[train_ind]
             y_train = self.y.iloc[train_ind]
             x_test = self.x.iloc[test_ind]
             y_test = self.y.iloc[test_ind]
 
-            classifier_obj.fit(x_train, y_train)
+            # sample_weight for imbalanced class.
+            if self.is_regression():
+                sample_weight = None
+            else:
+                sample_weight = compute_sample_weight(class_weight=&#34;balanced&#34;,
+                                                      y=y_train)
 
+            # fit the model on training fold
+            classifier_obj.fit(x_train, y_train, sample_weight=sample_weight)
+
+            # evaluate on testing fold
             test_score = self.metric(classifier_obj, x_test, y_test)
             train_score = self.metric(classifier_obj, x_train, y_train)
+
             if self.validate_penalty:
                 score.append(test_score + 0.1 * (test_score - train_score))
             else:
                 score.append(test_score)
 
-            #score.append(test_score)
+        # averaging cv scores
         score = sum(score) / self.n_cv
+        #print(score)
         return score
 
-    def tune(self, x, y):
+    def tune(self, x, y) -&gt; None:
         &#34;&#34;&#34;
-        this function should tune the hyperparameters of a given kernel.
+        this function tunes the hyperparameters of a given kernel.
         
         Args:
             x (pandas.DataFrame or 2D-array): feature to extract information from.
-            y (pandas.Series or 1D-array): ground true.
+            y (pandas.Series or 1D-array): The property we interested in.
 
-        Returns :
-            sklearn.base.BaseEstimator: A sklearn style model object which has the best hyperparameters.
         &#34;&#34;&#34;
+        # input data
         self.x = x
         self.y = y
+
+        # the total number of samples
         self.n_sample = x.shape[0]
+
+        # check task
+        self.check_task()
 
         # Make the sampler behave in a deterministic way.
         sampler = TPESampler(seed=self.optuna_seed)
@@ -501,21 +794,23 @@ We first using valid_seed to randomly initialize a tape of integers and it will 
         print(
             &#34;optuna seed {self.optuna_seed}  |  validation seed {self.valid_seed}  |  model seed {self.kernel_seed}&#34;
             .format(self=self))
-        print(&#34;    start tuning. it will take a while.&#34;)
+        print(&#34;    {} start tuning. it will take a while.&#34;.format(self.name()))
         # using optuna tuning hyper parameter
-        self.study.optimize(self.evaluate, n_trials=self.n_try)
+        self.study.optimize(self.evaluate,
+                            n_trials=self.n_try,
+                            show_progress_bar=False)
         self.optuna_model = self.create_model(self.study.best_trial,
                                               default=False)
 
         # using default hyper parameter
         # the best_trial here is only a placeholder. It&#39;s not functional.
-        default_performance = self.evaluate(self.study.best_trial,
-                                            default=True)
+        self.default_performance = self.evaluate(self.study.best_trial,
+                                                 default=True)
         self.default_model = self.create_model(self.study.best_trial,
                                                default=True)
         #print(&#34;    default performance: {:.3f}  |  best performance: {:.3f}&#34;.
-        #      format(default_performance, self.study.best_trial.value))
-        if default_performance &gt; self.study.best_trial.value:
+        #      format(self.default_performance, self.study.best_trial.value))
+        if self.default_performance &gt; self.study.best_trial.value:
             # default better
             print(&#34;    default is better.&#34;)
             self.best_model = self.default_model
@@ -525,26 +820,36 @@ We first using valid_seed to randomly initialize a tape of integers and it will 
                   self.study.best_trial.number)
             self.best_model = self.optuna_model
 
-        print(self.best_model, &#34;\n&#34;)
-        return self.best_model
-
-    def fit(self, x, y):
+    def fit(self, x, y, retune=True):
         &#34;&#34;&#34;
-        The sklearn.base.BaseEstimator fit api.
+        The sklearn.base.BaseEstimator fit api.    
+        Set retune to True to retune the model using the given x and y, else using the previously tuned model to fit on given x and y.
 
         Args:
             x (pandas.DataFrame or 2D-array): feature to extract information from.
             y (pandas.Series or 1D-array): ground true.
+            retune (bool): True to retune the model using given x and y, else using the tuned model to fit on given x, y.
         &#34;&#34;&#34;
         self.label_name = y.name
 
+        # label encoding
+        if not self.is_regression():
+            y = Series(self.y_mapping.fit_transform(y),
+                       index=y.index,
+                       name=y.name)
+
         # tune the model.
-        self.tune(x, y)
+        if retune:
+            self.tune(x, y)
 
         # fit the model.
-        self.best_model.fit(x, y)
+        if self.is_regression():
+            sample_weight = None
+        else:
+            sample_weight = compute_sample_weight(class_weight=&#34;balanced&#34;, y=y)
+        self.best_model.fit(x, y, sample_weight=sample_weight)
 
-        return self.best_model
+        return self
 
     def predict(self, x):
         &#34;&#34;&#34;
@@ -557,23 +862,135 @@ We first using valid_seed to randomly initialize a tape of integers and it will 
             1D-array: prediction
         &#34;&#34;&#34;
         # using the model.
-        y_pred = Series(self.best_model.predict(x),
-                        index=x.index,
-                        name=self.label_name)
+        y_pred = self.best_model.predict(x)
+        # label decoding
+        if not self.is_regression():
+            y_pred = self.y_mapping.inverse_transform(y_pred)
+        y_pred = Series(y_pred, index=x.index, name=self.label_name)
 
         return y_pred
 
-    def predict_proba(self, x):
+    def get_scorer(self, scorer_name: str):
         &#34;&#34;&#34;
-        The sklearn.base.BaseEstimator predict_prob api.
+        A lazy function to call sklearn scorers.    
 
         Args:
-            x (pandas.DataFrame or 2D-array): feature to extract information from.
+            scorer_name (str): abbreviation or formal name of sklearn scorers.
 
         Returns:
-            1D-array: prediction in prob
+            scorer: A callable object that returns score.
         &#34;&#34;&#34;
-        return self.best_model.predict_proba(x)</code></pre>
+
+        ### polymorphism
+        scorer_name = scorer_name.lower().replace(&#34;-&#34;, &#34;_&#34;).replace(&#34; &#34;, &#34;_&#34;)
+
+        ### common abbreviation
+        nicknames = {
+            &#34;acc&#34;: &#34;accuracy&#34;,
+            &#34;auc&#34;: &#34;roc_auc&#34;,
+            &#34;f1_score&#34;: &#34;f1&#34;,
+            &#34;macro_f1&#34;: &#34;f1_macro&#34;,
+            &#34;mcc&#34;: &#34;matthews_corrcoef&#34;,
+            &#34;log_loss&#34;: &#34;neg_log_loss&#34;,
+            &#34;cross_entropy&#34;: &#34;neg_log_loss&#34;,
+            &#34;ce&#34;: &#34;neg_log_loss&#34;,
+            &#34;bce&#34;: &#34;neg_log_loss&#34;,
+            &#34;mse&#34;: &#34;neg_mean_squared_error&#34;,
+            &#34;mean_squared_error&#34;: &#34;neg_mean_squared_error&#34;,
+            &#34;mae&#34;: &#34;neg_mean_absolute_error&#34;,
+            &#34;mean_absolute_error&#34;: &#34;neg_mean_absolute_error&#34;,
+            &#34;mape&#34;: &#34;neg_mean_absolute_percentage_error&#34;,
+            &#34;mean_absolute_percentage_error&#34;:
+            &#34;neg_mean_absolute_percentage_error&#34;,
+            &#34;rmse&#34;: &#34;neg_root_mean_squared_error&#34;,
+            &#34;root_mean_squared_error&#34;: &#34;neg_root_mean_squared_error&#34;,
+            &#34;qwk&#34;: &#34;quadratic_weighted_kappa&#34;,
+            &#34;kappa&#34;: &#34;cohen_kappa&#34;
+        }
+        if scorer_name in nicknames:
+            scorer_name = nicknames[scorer_name]
+
+        self.metric_name = scorer_name
+
+        # get the scorer
+        ### kappa
+        if scorer_name == &#34;quadratic_weighted_kappa&#34;:
+            return metrics.make_scorer(metrics.cohen_kappa_score,
+                                       weights=&#34;quadratic&#34;,
+                                       response_method=&#34;predict&#34;,
+                                       greater_is_better=True)
+        elif scorer_name == &#34;cohen_kappa&#34;:
+            return metrics.make_scorer(metrics.cohen_kappa_score,
+                                       weights=None,
+                                       response_method=&#34;predict&#34;,
+                                       greater_is_better=True)
+        ### others
+        return metrics.get_scorer(scorer_name)
+
+    def check_task(self) -&gt; bool:
+        &#34;&#34;&#34;
+        Uh....  this functions will do    
+            1. some check for mis-using of method and types.    
+            2. sparsing the task and target.    
+
+        It will be nasty and full of dirty code. Make yourself at home.    
+        
+
+        Raises:
+            ValueError: Check auc score only be used in binary classification
+
+        Returns:
+            bool: _description_
+        &#34;&#34;&#34;
+        # Check auc score only be used in binary classification
+        is_auc = self.metric_name == &#34;roc_auc&#34;
+        is_binary = len(self.y.value_counts()) == 2
+        if is_auc and not is_binary:
+            # roc_auc only can be used on binary classification. Do not try ovr, ovo. forget them.
+            raise ValueError(
+                &#34;auc only support binary classification, but more than 2 values are detected in y. Try &#39;f1_macro&#39;&#34;
+            )
+
+        # Sparse the metric
+        scorer_kargs = {}
+        for arguments in self.metric.__str__()[12:-1].split(&#34;, &#34;)[1:]:
+            if &#34;(&#34; in arguments:  # for roc auc scorer: response_method=(&#39;decision_function&#39;, &#39;predict_proba&#39;)
+                scorer_kargs[&#34;response_method&#34;] = &#34;predict_proba&#34;
+            else:
+                arg = arguments.split(&#34;=&#34;)
+                if len(arg) == 2:
+                    scorer_kargs[arg[0]] = arg[1]
+
+        ### Response method
+        self.metric_using_proba = scorer_kargs[&#34;response_method&#34;].find(
+            &#34;_proba&#34;) != -1
+        scorer_kargs.pop(&#34;response_method&#34;)
+
+        ### Greater is better
+        if &#39;greater_is_better&#39; in scorer_kargs:
+            self.metric_great_better = not scorer_kargs[
+                &#34;greater_is_better&#34;] == &#34;False&#34;
+            scorer_kargs.pop(&#39;greater_is_better&#39;)
+        else:
+            self.metric_great_better = True
+
+        ### pos_label for f1 socres
+        if &#34;pos_label&#34; in scorer_kargs:
+            scorer_kargs.pop(&#34;pos_label&#34;)
+
+        self.scorer_kargs = scorer_kargs
+
+        return True
+
+    def plot(self):
+        from plotly import io
+        fig = optuna.visualization.plot_optimization_history(
+            self.study, target_name=self.metric_name)
+        fig.add_hline(y=self.default_performance,
+                      line_dash=&#34;dot&#34;,
+                      annotation_text=&#34;Default setting&#34;,
+                      annotation_position=&#34;bottom right&#34;)
+        io.show(fig)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -581,24 +998,94 @@ We first using valid_seed to randomly initialize a tape of integers and it will 
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li><a title="PineBioML.model.supervised.Classification.AdaBoost_tuner" href="Classification.html#PineBioML.model.supervised.Classification.AdaBoost_tuner">AdaBoost_tuner</a></li>
-<li><a title="PineBioML.model.supervised.Classification.CatBoost_tuner" href="Classification.html#PineBioML.model.supervised.Classification.CatBoost_tuner">CatBoost_tuner</a></li>
-<li><a title="PineBioML.model.supervised.Classification.DecisionTree_tuner" href="Classification.html#PineBioML.model.supervised.Classification.DecisionTree_tuner">DecisionTree_tuner</a></li>
-<li><a title="PineBioML.model.supervised.Classification.ElasticLogit_tuner" href="Classification.html#PineBioML.model.supervised.Classification.ElasticLogit_tuner">ElasticLogit_tuner</a></li>
-<li><a title="PineBioML.model.supervised.Classification.LighGBM_tuner" href="Classification.html#PineBioML.model.supervised.Classification.LighGBM_tuner">LighGBM_tuner</a></li>
-<li><a title="PineBioML.model.supervised.Classification.RandomForest_tuner" href="Classification.html#PineBioML.model.supervised.Classification.RandomForest_tuner">RandomForest_tuner</a></li>
-<li><a title="PineBioML.model.supervised.Classification.SVM_tuner" href="Classification.html#PineBioML.model.supervised.Classification.SVM_tuner">SVM_tuner</a></li>
-<li><a title="PineBioML.model.supervised.Classification.XGBoost_tuner" href="Classification.html#PineBioML.model.supervised.Classification.XGBoost_tuner">XGBoost_tuner</a></li>
-<li><a title="PineBioML.model.supervised.Regression.AdaBoost_tuner" href="Regression.html#PineBioML.model.supervised.Regression.AdaBoost_tuner">AdaBoost_tuner</a></li>
-<li><a title="PineBioML.model.supervised.Regression.DecisionTree_tuner" href="Regression.html#PineBioML.model.supervised.Regression.DecisionTree_tuner">DecisionTree_tuner</a></li>
-<li><a title="PineBioML.model.supervised.Regression.ElasticNet_tuner" href="Regression.html#PineBioML.model.supervised.Regression.ElasticNet_tuner">ElasticNet_tuner</a></li>
-<li><a title="PineBioML.model.supervised.Regression.LighGBM_tuner" href="Regression.html#PineBioML.model.supervised.Regression.LighGBM_tuner">LighGBM_tuner</a></li>
-<li><a title="PineBioML.model.supervised.Regression.RandomForest_tuner" href="Regression.html#PineBioML.model.supervised.Regression.RandomForest_tuner">RandomForest_tuner</a></li>
-<li><a title="PineBioML.model.supervised.Regression.SVM_tuner" href="Regression.html#PineBioML.model.supervised.Regression.SVM_tuner">SVM_tuner</a></li>
-<li><a title="PineBioML.model.supervised.Regression.XGBoost_tuner" href="Regression.html#PineBioML.model.supervised.Regression.XGBoost_tuner">XGBoost_tuner</a></li>
+<li><a title="PineBioML.model.supervised.Classification.Classification_tuner" href="Classification.html#PineBioML.model.supervised.Classification.Classification_tuner">Classification_tuner</a></li>
+<li><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="Regression.html#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
+<dt id="PineBioML.model.supervised.Basic_tuner.check_task"><code class="name flex">
+<span>def <span class="ident">check_task</span></span>(<span>self) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Uh....
+this functions will do
+<br>
+1. some check for mis-using of method and types.
+<br>
+2. sparsing the task and target.
+</p>
+<p>It will be nasty and full of dirty code. Make yourself at home.
+</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>Check auc score only be used in binary classification</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd><em>description</em></dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def check_task(self) -&gt; bool:
+    &#34;&#34;&#34;
+    Uh....  this functions will do    
+        1. some check for mis-using of method and types.    
+        2. sparsing the task and target.    
+
+    It will be nasty and full of dirty code. Make yourself at home.    
+    
+
+    Raises:
+        ValueError: Check auc score only be used in binary classification
+
+    Returns:
+        bool: _description_
+    &#34;&#34;&#34;
+    # Check auc score only be used in binary classification
+    is_auc = self.metric_name == &#34;roc_auc&#34;
+    is_binary = len(self.y.value_counts()) == 2
+    if is_auc and not is_binary:
+        # roc_auc only can be used on binary classification. Do not try ovr, ovo. forget them.
+        raise ValueError(
+            &#34;auc only support binary classification, but more than 2 values are detected in y. Try &#39;f1_macro&#39;&#34;
+        )
+
+    # Sparse the metric
+    scorer_kargs = {}
+    for arguments in self.metric.__str__()[12:-1].split(&#34;, &#34;)[1:]:
+        if &#34;(&#34; in arguments:  # for roc auc scorer: response_method=(&#39;decision_function&#39;, &#39;predict_proba&#39;)
+            scorer_kargs[&#34;response_method&#34;] = &#34;predict_proba&#34;
+        else:
+            arg = arguments.split(&#34;=&#34;)
+            if len(arg) == 2:
+                scorer_kargs[arg[0]] = arg[1]
+
+    ### Response method
+    self.metric_using_proba = scorer_kargs[&#34;response_method&#34;].find(
+        &#34;_proba&#34;) != -1
+    scorer_kargs.pop(&#34;response_method&#34;)
+
+    ### Greater is better
+    if &#39;greater_is_better&#39; in scorer_kargs:
+        self.metric_great_better = not scorer_kargs[
+            &#34;greater_is_better&#34;] == &#34;False&#34;
+        scorer_kargs.pop(&#39;greater_is_better&#39;)
+    else:
+        self.metric_great_better = True
+
+    ### pos_label for f1 socres
+    if &#34;pos_label&#34; in scorer_kargs:
+        scorer_kargs.pop(&#34;pos_label&#34;)
+
+    self.scorer_kargs = scorer_kargs
+
+    return True</code></pre>
+</details>
+</dd>
 <dt id="PineBioML.model.supervised.Basic_tuner.create_model"><code class="name flex">
 <span>def <span class="ident">create_model</span></span>(<span>self, trial, default)</span>
 </code></dt>
@@ -609,7 +1096,7 @@ We first using valid_seed to randomly initialize a tape of integers and it will 
 <dt><strong><code>trial</code></strong> :&ensp;<code>optuna.trial.Trial</code></dt>
 <dd>optuna trial in this call.</dd>
 <dt><strong><code>default</code></strong> :&ensp;<code>bool</code></dt>
-<dd>To use default hyper parameter</dd>
+<dd>set True to use default hyper parameter</dd>
 </dl>
 <p>Returns :
 sklearn.base.BaseEstimator: A sklearn style model object.</p></div>
@@ -624,7 +1111,7 @@ def create_model(self, trial, default):
 
     Args:
         trial (optuna.trial.Trial): optuna trial in this call.
-        default (bool): To use default hyper parameter
+        default (bool): set True to use default hyper parameter
         
     Returns :
         sklearn.base.BaseEstimator: A sklearn style model object.
@@ -633,7 +1120,7 @@ def create_model(self, trial, default):
 </details>
 </dd>
 <dt id="PineBioML.model.supervised.Basic_tuner.evaluate"><code class="name flex">
-<span>def <span class="ident">evaluate</span></span>(<span>self, trial, default=False)</span>
+<span>def <span class="ident">evaluate</span></span>(<span>self, trial, default=False) ‑> float</span>
 </code></dt>
 <dd>
 <div class="desc"><p>To evaluate the score of this trial. you should call create_model instead of creating model manually in this function.</p>
@@ -645,12 +1132,12 @@ def create_model(self, trial, default):
 <dd>To use default hyper parameter. This argument will be passed to creat_model</dd>
 </dl>
 <p>Returns :
-float: The score.</p></div>
+float: The score. Decided by optimization target.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def evaluate(self, trial, default=False):
+<pre><code class="python">def evaluate(self, trial, default=False) -&gt; float:
     &#34;&#34;&#34;
     To evaluate the score of this trial. you should call create_model instead of creating model manually in this function.
     
@@ -658,68 +1145,242 @@ float: The score.</p></div>
         trial (optuna.trial.Trial): optuna trial in this call.
         default (bool): To use default hyper parameter. This argument will be passed to creat_model
     Returns :
-        float: The score.
+        float: The score. Decided by optimization target.
     &#34;&#34;&#34;
+    # create the model using from this trial
     classifier_obj = self.create_model(trial, default)
 
+    # create cross validation
     cv = StratifiedKFold(n_splits=self.n_cv,
                          shuffle=True,
                          random_state=self.valid_seed_tape[trial.number])
 
+    # do cv
     score = []
     for i, (train_ind, test_ind) in enumerate(cv.split(self.x, self.y)):
+        # train test split
         x_train = self.x.iloc[train_ind]
         y_train = self.y.iloc[train_ind]
         x_test = self.x.iloc[test_ind]
         y_test = self.y.iloc[test_ind]
 
-        classifier_obj.fit(x_train, y_train)
+        # sample_weight for imbalanced class.
+        if self.is_regression():
+            sample_weight = None
+        else:
+            sample_weight = compute_sample_weight(class_weight=&#34;balanced&#34;,
+                                                  y=y_train)
 
+        # fit the model on training fold
+        classifier_obj.fit(x_train, y_train, sample_weight=sample_weight)
+
+        # evaluate on testing fold
         test_score = self.metric(classifier_obj, x_test, y_test)
         train_score = self.metric(classifier_obj, x_train, y_train)
+
         if self.validate_penalty:
             score.append(test_score + 0.1 * (test_score - train_score))
         else:
             score.append(test_score)
 
-        #score.append(test_score)
+    # averaging cv scores
     score = sum(score) / self.n_cv
+    #print(score)
     return score</code></pre>
 </details>
 </dd>
 <dt id="PineBioML.model.supervised.Basic_tuner.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, x, y)</span>
+<span>def <span class="ident">fit</span></span>(<span>self, x, y, retune=True)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>The sklearn.base.BaseEstimator fit api.</p>
+<div class="desc"><p>The sklearn.base.BaseEstimator fit api.
+<br>
+Set retune to True to retune the model using the given x and y, else using the previously tuned model to fit on given x and y.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>2D-array</code></dt>
 <dd>feature to extract information from.</dd>
 <dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>1D-array</code></dt>
 <dd>ground true.</dd>
+<dt><strong><code>retune</code></strong> :&ensp;<code>bool</code></dt>
+<dd>True to retune the model using given x and y, else using the tuned model to fit on given x, y.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def fit(self, x, y):
+<pre><code class="python">def fit(self, x, y, retune=True):
     &#34;&#34;&#34;
-    The sklearn.base.BaseEstimator fit api.
+    The sklearn.base.BaseEstimator fit api.    
+    Set retune to True to retune the model using the given x and y, else using the previously tuned model to fit on given x and y.
 
     Args:
         x (pandas.DataFrame or 2D-array): feature to extract information from.
         y (pandas.Series or 1D-array): ground true.
+        retune (bool): True to retune the model using given x and y, else using the tuned model to fit on given x, y.
     &#34;&#34;&#34;
     self.label_name = y.name
 
+    # label encoding
+    if not self.is_regression():
+        y = Series(self.y_mapping.fit_transform(y),
+                   index=y.index,
+                   name=y.name)
+
     # tune the model.
-    self.tune(x, y)
+    if retune:
+        self.tune(x, y)
 
     # fit the model.
-    self.best_model.fit(x, y)
+    if self.is_regression():
+        sample_weight = None
+    else:
+        sample_weight = compute_sample_weight(class_weight=&#34;balanced&#34;, y=y)
+    self.best_model.fit(x, y, sample_weight=sample_weight)
 
-    return self.best_model</code></pre>
+    return self</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.model.supervised.Basic_tuner.get_scorer"><code class="name flex">
+<span>def <span class="ident">get_scorer</span></span>(<span>self, scorer_name: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A lazy function to call sklearn scorers.
+</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>scorer_name</code></strong> :&ensp;<code>str</code></dt>
+<dd>abbreviation or formal name of sklearn scorers.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>scorer</code></dt>
+<dd>A callable object that returns score.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_scorer(self, scorer_name: str):
+    &#34;&#34;&#34;
+    A lazy function to call sklearn scorers.    
+
+    Args:
+        scorer_name (str): abbreviation or formal name of sklearn scorers.
+
+    Returns:
+        scorer: A callable object that returns score.
+    &#34;&#34;&#34;
+
+    ### polymorphism
+    scorer_name = scorer_name.lower().replace(&#34;-&#34;, &#34;_&#34;).replace(&#34; &#34;, &#34;_&#34;)
+
+    ### common abbreviation
+    nicknames = {
+        &#34;acc&#34;: &#34;accuracy&#34;,
+        &#34;auc&#34;: &#34;roc_auc&#34;,
+        &#34;f1_score&#34;: &#34;f1&#34;,
+        &#34;macro_f1&#34;: &#34;f1_macro&#34;,
+        &#34;mcc&#34;: &#34;matthews_corrcoef&#34;,
+        &#34;log_loss&#34;: &#34;neg_log_loss&#34;,
+        &#34;cross_entropy&#34;: &#34;neg_log_loss&#34;,
+        &#34;ce&#34;: &#34;neg_log_loss&#34;,
+        &#34;bce&#34;: &#34;neg_log_loss&#34;,
+        &#34;mse&#34;: &#34;neg_mean_squared_error&#34;,
+        &#34;mean_squared_error&#34;: &#34;neg_mean_squared_error&#34;,
+        &#34;mae&#34;: &#34;neg_mean_absolute_error&#34;,
+        &#34;mean_absolute_error&#34;: &#34;neg_mean_absolute_error&#34;,
+        &#34;mape&#34;: &#34;neg_mean_absolute_percentage_error&#34;,
+        &#34;mean_absolute_percentage_error&#34;:
+        &#34;neg_mean_absolute_percentage_error&#34;,
+        &#34;rmse&#34;: &#34;neg_root_mean_squared_error&#34;,
+        &#34;root_mean_squared_error&#34;: &#34;neg_root_mean_squared_error&#34;,
+        &#34;qwk&#34;: &#34;quadratic_weighted_kappa&#34;,
+        &#34;kappa&#34;: &#34;cohen_kappa&#34;
+    }
+    if scorer_name in nicknames:
+        scorer_name = nicknames[scorer_name]
+
+    self.metric_name = scorer_name
+
+    # get the scorer
+    ### kappa
+    if scorer_name == &#34;quadratic_weighted_kappa&#34;:
+        return metrics.make_scorer(metrics.cohen_kappa_score,
+                                   weights=&#34;quadratic&#34;,
+                                   response_method=&#34;predict&#34;,
+                                   greater_is_better=True)
+    elif scorer_name == &#34;cohen_kappa&#34;:
+        return metrics.make_scorer(metrics.cohen_kappa_score,
+                                   weights=None,
+                                   response_method=&#34;predict&#34;,
+                                   greater_is_better=True)
+    ### others
+    return metrics.get_scorer(scorer_name)</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.model.supervised.Basic_tuner.is_regression"><code class="name flex">
+<span>def <span class="ident">is_regression</span></span>(<span>self) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>True if the task of tuner is a regression task.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def is_regression(self) -&gt; bool:
+    &#34;&#34;&#34;
+    Returns:
+        bool: True if the task of tuner is a regression task.
+    &#34;&#34;&#34;
+    pass</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.model.supervised.Basic_tuner.name"><code class="name flex">
+<span>def <span class="ident">name</span></span>(<span>self) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="returns">Returns</h2>
+<dl>
+<dt><code>str</code></dt>
+<dd>Name of this tuner.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def name(self) -&gt; str:
+    &#34;&#34;&#34;
+    Returns:
+        str: Name of this tuner.
+    &#34;&#34;&#34;
+    pass</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.model.supervised.Basic_tuner.plot"><code class="name flex">
+<span>def <span class="ident">plot</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot(self):
+    from plotly import io
+    fig = optuna.visualization.plot_optimization_history(
+        self.study, target_name=self.metric_name)
+    fig.add_hline(y=self.default_performance,
+                  line_dash=&#34;dot&#34;,
+                  annotation_text=&#34;Default setting&#34;,
+                  annotation_position=&#34;bottom right&#34;)
+    io.show(fig)</code></pre>
 </details>
 </dd>
 <dt id="PineBioML.model.supervised.Basic_tuner.predict"><code class="name flex">
@@ -749,74 +1410,86 @@ float: The score.</p></div>
         1D-array: prediction
     &#34;&#34;&#34;
     # using the model.
-    y_pred = Series(self.best_model.predict(x),
-                    index=x.index,
-                    name=self.label_name)
+    y_pred = self.best_model.predict(x)
+    # label decoding
+    if not self.is_regression():
+        y_pred = self.y_mapping.inverse_transform(y_pred)
+    y_pred = Series(y_pred, index=x.index, name=self.label_name)
 
     return y_pred</code></pre>
 </details>
 </dd>
-<dt id="PineBioML.model.supervised.Basic_tuner.predict_proba"><code class="name flex">
-<span>def <span class="ident">predict_proba</span></span>(<span>self, x)</span>
+<dt id="PineBioML.model.supervised.Basic_tuner.reference"><code class="name flex">
+<span>def <span class="ident">reference</span></span>(<span>self) ‑> dict[str, str]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>The sklearn.base.BaseEstimator predict_prob api.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>2D-array</code></dt>
-<dd>feature to extract information from.</dd>
-</dl>
+<div class="desc"><p>This function will return reference of this method in python dict.
+<br>
+If you want to access it in PineBioML api document, then click on the
+&gt;Expand source code
+</p>
 <h2 id="returns">Returns</h2>
-<p>1D-array: prediction in prob</p></div>
+<dl>
+<dt><code>dict[str, str]</code></dt>
+<dd>a dict of reference.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def predict_proba(self, x):
+<pre><code class="python">def reference(self) -&gt; dict[str, str]:
     &#34;&#34;&#34;
-    The sklearn.base.BaseEstimator predict_prob api.
-
-    Args:
-        x (pandas.DataFrame or 2D-array): feature to extract information from.
+    This function will return reference of this method in python dict.    
+    If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
 
     Returns:
-        1D-array: prediction in prob
+        dict[str, str]: a dict of reference.
     &#34;&#34;&#34;
-    return self.best_model.predict_proba(x)</code></pre>
+    refers = {
+        &#34;optuna publication&#34;:
+        &#34;https://dl.acm.org/doi/10.1145/3292500.3330701&#34;,
+        &#34;optuna document&#34;: &#34;https://optuna.org/&#34;,
+        &#34;sklearn publication&#34;:
+        &#34;https://dl.acm.org/doi/10.5555/1953048.2078195&#34;
+    }
+
+    return refers</code></pre>
 </details>
 </dd>
 <dt id="PineBioML.model.supervised.Basic_tuner.tune"><code class="name flex">
-<span>def <span class="ident">tune</span></span>(<span>self, x, y)</span>
+<span>def <span class="ident">tune</span></span>(<span>self, x, y) ‑> None</span>
 </code></dt>
 <dd>
-<div class="desc"><p>this function should tune the hyperparameters of a given kernel.</p>
+<div class="desc"><p>this function tunes the hyperparameters of a given kernel.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>2D-array</code></dt>
 <dd>feature to extract information from.</dd>
 <dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>1D-array</code></dt>
-<dd>ground true.</dd>
-</dl>
-<p>Returns :
-sklearn.base.BaseEstimator: A sklearn style model object which has the best hyperparameters.</p></div>
+<dd>The property we interested in.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def tune(self, x, y):
+<pre><code class="python">def tune(self, x, y) -&gt; None:
     &#34;&#34;&#34;
-    this function should tune the hyperparameters of a given kernel.
+    this function tunes the hyperparameters of a given kernel.
     
     Args:
         x (pandas.DataFrame or 2D-array): feature to extract information from.
-        y (pandas.Series or 1D-array): ground true.
+        y (pandas.Series or 1D-array): The property we interested in.
 
-    Returns :
-        sklearn.base.BaseEstimator: A sklearn style model object which has the best hyperparameters.
     &#34;&#34;&#34;
+    # input data
     self.x = x
     self.y = y
+
+    # the total number of samples
     self.n_sample = x.shape[0]
+
+    # check task
+    self.check_task()
 
     # Make the sampler behave in a deterministic way.
     sampler = TPESampler(seed=self.optuna_seed)
@@ -825,21 +1498,23 @@ sklearn.base.BaseEstimator: A sklearn style model object which has the best hype
     print(
         &#34;optuna seed {self.optuna_seed}  |  validation seed {self.valid_seed}  |  model seed {self.kernel_seed}&#34;
         .format(self=self))
-    print(&#34;    start tuning. it will take a while.&#34;)
+    print(&#34;    {} start tuning. it will take a while.&#34;.format(self.name()))
     # using optuna tuning hyper parameter
-    self.study.optimize(self.evaluate, n_trials=self.n_try)
+    self.study.optimize(self.evaluate,
+                        n_trials=self.n_try,
+                        show_progress_bar=False)
     self.optuna_model = self.create_model(self.study.best_trial,
                                           default=False)
 
     # using default hyper parameter
     # the best_trial here is only a placeholder. It&#39;s not functional.
-    default_performance = self.evaluate(self.study.best_trial,
-                                        default=True)
+    self.default_performance = self.evaluate(self.study.best_trial,
+                                             default=True)
     self.default_model = self.create_model(self.study.best_trial,
                                            default=True)
     #print(&#34;    default performance: {:.3f}  |  best performance: {:.3f}&#34;.
-    #      format(default_performance, self.study.best_trial.value))
-    if default_performance &gt; self.study.best_trial.value:
+    #      format(self.default_performance, self.study.best_trial.value))
+    if self.default_performance &gt; self.study.best_trial.value:
         # default better
         print(&#34;    default is better.&#34;)
         self.best_model = self.default_model
@@ -847,10 +1522,7 @@ sklearn.base.BaseEstimator: A sklearn style model object which has the best hype
         # optuna better
         print(&#34;    optuna is better, best trial: &#34;,
               self.study.best_trial.number)
-        self.best_model = self.optuna_model
-
-    print(self.best_model, &#34;\n&#34;)
-    return self.best_model</code></pre>
+        self.best_model = self.optuna_model</code></pre>
 </details>
 </dd>
 </dl>
@@ -886,11 +1558,16 @@ sklearn.base.BaseEstimator: A sklearn style model object which has the best hype
 <li>
 <h4><code><a title="PineBioML.model.supervised.Basic_tuner" href="#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></code></h4>
 <ul class="two-column">
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.check_task" href="#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.create_model" href="#PineBioML.model.supervised.Basic_tuner.create_model">create_model</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.evaluate" href="#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.fit" href="#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.get_scorer" href="#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.is_regression" href="#PineBioML.model.supervised.Basic_tuner.is_regression">is_regression</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.name" href="#PineBioML.model.supervised.Basic_tuner.name">name</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.plot" href="#PineBioML.model.supervised.Basic_tuner.plot">plot</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.predict" href="#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict_proba" href="#PineBioML.model.supervised.Basic_tuner.predict_proba">predict_proba</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.reference" href="#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.tune" href="#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
 </ul>
 </li>
