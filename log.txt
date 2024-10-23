@@ -1,14 +1,45 @@
-2024/10/14 v1.1.2:
-    description:
-        1. RF tuner search range change: cpp :[1e-3, 1e-1] -> [1e-5, 1e-1]. the larger dataset needs smaller cpp.
-        2. Pine do not retune the model while doing cv evaluation.
-        3. pca_plot standardization add elpsilon to prevent zero std.
-        4. c4.5 selection add add elpsilon to prevent zero std.
-        5. tuner name for print.
-        6. add argument: return=True to function fit in sklearn estimator wrapper.
-        7. modified the scorer sparser for roc_auc's multiple response method
-        8. wrapper's argument name was wrong.
+2024/10/23 v1.2.0:
+    description:    
+        1. Document update    
+        2. Add reference: now you can call tuner.reference() to list major reference of that tuner.     
+        3. Add optuna optimize history plot
+        
 
+        bug:
+        1. feature bagging:
+             - contradicts to log domain in selection method (the negative output of pca)
+             - the variance of feature will change during bagging (variance matters)
+        2. Lasso logistic regression in grid search need to to modified. In temporary using binary search.
+        
+
+    On Going:
+        0. A reliable tutorial. (including mac) / Document reference
+        1. Pine monitor, progress bar and report. experiment setting visualization.
+        
+    ToDo:
+        0. threshold tuner
+        1. report and diagnose, Pine pipeline graph.
+        2. using pretty, beautiful, good-looking, precise packages:
+            a. pca
+            b. The only OPLS da reliable(compare to others), alive, python implement 
+               https://github.com/Omicometrics/pypls?tab=readme-ov-file 
+        3. barutoSHAP
+        4. multi objective optimize for optuna
+        n. add parameter dict(json or yaml-like)
+        n. interactive interface or GUI (maybe nicegui/ plotly)
+
+
+
+2024/10/14 v1.1.2:
+    description:    
+        1. RF tuner search range change: cpp :[1e-3, 1e-1] -> [1e-5, 1e-1]. the larger dataset needs smaller cpp.    
+        2. Pine do not retune the model while doing cv evaluation.    
+        3. pca_plot standardization add elpsilon to prevent zero std.    
+        4. c4.5 selection add add elpsilon to prevent zero std.    
+        5. tuner name for print.    
+        6. add argument: return=True to function fit in sklearn estimator wrapper.    
+        7. modified the scorer sparser for roc_auc's multiple response method    
+        8. wrapper's argument name was wrong.    
 
 
 2024/10/14 v1.1.1:

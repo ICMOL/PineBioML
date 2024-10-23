@@ -37,6 +37,24 @@ class Lasso_selection(SelectionPipeline):
         self.upper_init = 50
         self.name = "LassoLinear"
 
+    def reference(self) -> dict[str, str]:
+        """
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    >Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        """
+        refer = super().reference()
+        refer[
+            self.name() +
+            " document"] = "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html"
+        refer[
+            " publication 1"] = "https://projecteuclid.org/journals/annals-of-statistics/volume-37/issue-5A/High-dimensional-variable-selection/10.1214/08-AOS646.full"
+        refer[
+            " publication 2"] = "https://www.tandfonline.com/doi/abs/10.1198/016214506000000735?casa_token=5HDhtyCfh40AAAAA:4NxSU97CZubZVpReaQNsSBpqA10_xNhspTQobPnb_z2YXe3Wf-HBHV8OygbqUkmJQPt2Jmp7ZlJPWd0"
+        return refer
+
     def create_kernel(self, C):
         """
         Create diffirent kernel according to opjective.
@@ -117,6 +135,24 @@ class Lasso_bisection_selection(SelectionPipeline):
         self.upper_init = 1e+5
         self.lower_init = 1e-5
         self.name = "LassoLinear"
+
+    def reference(self) -> dict[str, str]:
+        """
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    >Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        """
+        refer = super().reference()
+        refer[
+            self.name() +
+            " document"] = "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html"
+        refer[
+            " publication 1"] = "https://projecteuclid.org/journals/annals-of-statistics/volume-37/issue-5A/High-dimensional-variable-selection/10.1214/08-AOS646.full"
+        refer[
+            " publication 2"] = "https://www.tandfonline.com/doi/abs/10.1198/016214506000000735?casa_token=5HDhtyCfh40AAAAA:4NxSU97CZubZVpReaQNsSBpqA10_xNhspTQobPnb_z2YXe3Wf-HBHV8OygbqUkmJQPt2Jmp7ZlJPWd0"
+        return refer
 
     def create_kernel(self, C):
         return Lasso(alpha=C)
@@ -206,6 +242,19 @@ class multi_Lasso_selection(SelectionPipeline):
         super().__init__(k=k)
         self.name = "multi_Lasso"
 
+    def reference(self) -> dict[str, str]:
+        """
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    >Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        """
+        refer = super().reference()
+        refer[
+            " Warning"] = "We do not have a reference and this method's effectivity has not been proven yet."
+        return refer
+
     def Select(self, x, y, n=5):
         """
         Select k//n features for n times, and then concatenate the results.
@@ -251,6 +300,22 @@ class SVM_selection(SelectionPipeline):
         super().__init__(k=k)
         self.kernel = LinearSVR(random_state=142)
         self.name = "SVM"
+
+    def reference(self) -> dict[str, str]:
+        """
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    >Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        """
+        refer = super().reference()
+        refer[
+            self.name() +
+            " document"] = "https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html"
+        refer[
+            " publication - section 3.2"] = "https://www.csie.ntu.edu.tw/~cjlin/papers/causality.pdf"
+        return refer
 
     def Scoring(self, x, y=None):
         """
@@ -378,6 +443,27 @@ class RF_selection(SelectionPipeline):
                                             random_state=142)
         self.name = "RandomForest_" + self.strategy
 
+    def reference(self) -> dict[str, str]:
+        """
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    >Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        """
+        refer = super().reference()
+        refer[self.name() + " document"] = ""
+        refer[
+            " publication cons"] = "https://link.springer.com/article/10.1186/1471-2105-8-25"
+        refer[
+            " publication pros 1"] = "https://link.springer.com/article/10.1186/1471-2105-10-213"
+        refer[
+            " publication pros 2"] = "https://www.sciencedirect.com/science/article/pii/S0167947307003076"
+        refer[
+            " publication survey"] = "https://www.cs.cmu.edu/~qyj/papersA08/11-rfbook.pdf"
+
+        return refer
+
     def Scoring(self, x, y=None):
         """
         Using random forest to scoring (gini impurity / entropy) features.
@@ -413,6 +499,20 @@ class XGboost_selection(SelectionPipeline):
 
         self.kernel = xgb.XGBRegressor(random_state=142, subsample=0.7)
         self.name = "XGboost"
+
+    def reference(self) -> dict[str, str]:
+        """
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    >Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        """
+        refer = super().reference()
+        refer[
+            self.name() +
+            " document"] = "https://xgboost.readthedocs.io/en/stable/python/python_api.html#xgboost.XGBRegressor.feature_importances_"
+        return refer
 
     def Scoring(self, x, y=None):
         """
@@ -454,6 +554,20 @@ class Lightgbm_selection(SelectionPipeline):
                                          subsample_freq=1,
                                          verbosity=-1)
         self.name = "Lightgbm"
+
+    def reference(self) -> dict[str, str]:
+        """
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    >Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        """
+        refer = super().reference()
+        refer[
+            self.name() +
+            " document"] = "https://lightgbm.readthedocs.io/en/latest/Parameters.html#saved_feature_importance_type"
+        return refer
 
     def Scoring(self, x, y=None):
         """
@@ -497,6 +611,20 @@ class AdaBoost_selection(SelectionPipeline):
         )
         self.name = "AdaBoost" + str(n_iter)
 
+    def reference(self) -> dict[str, str]:
+        """
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    >Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        """
+        refer = super().reference()
+        refer[
+            self.name() +
+            " document"] = "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html#sklearn.ensemble.AdaBoostClassifier.feature_importances_"
+        return refer
+
     def Scoring(self, x, y=None):
         """
         Using AdaBoost to scoring (gini impurity / entropy) features.
@@ -539,6 +667,20 @@ class essemble_selector(SelectionPipeline):
             "XGboost": XGboost_selection(k=k),
             "Lightgbm": Lightgbm_selection(k=k)
         }
+
+    def reference(self) -> dict[str, str]:
+        """
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    >Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        """
+        refer = super().reference()
+        refer[
+            self.name() +
+            " WARNING"] = "This method has no reference yet. That means the effectivity has not been proven yet. It somehow works in experience."
+        return refer
 
     def Select(self, x, y):
         """

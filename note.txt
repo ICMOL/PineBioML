@@ -24,6 +24,10 @@ tsai
 https://timeseriesai.github.io/tsai/
 A state-of-the-art deep learning library for time series and sequential data
 
+awesome MLops
+https://github.com/visenger/awesome-mlops
+
+
 # competitor
 pycaret
 https://pycaret.org/

@@ -27,76 +27,189 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">from . import Basic_tuner
+from abc import abstractmethod
+from typing import Literal
 
-from sklearn.model_selection import StratifiedKFold, cross_val_score
+from joblib import parallel_backend
+
+from sklearn.model_selection import StratifiedKFold
 from sklearn.utils.class_weight import compute_sample_weight
-
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
+from statsmodels.discrete.discrete_model import Logit
 from sklearn.linear_model import LogisticRegression
 from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
 from catboost import CatBoostClassifier, Pool
-import numpy as np
-from statsmodels.discrete.discrete_model import Logit
 
-# ToDo: multi class support
-# ToDo: optuna pruner
-#       see section Acticating Pruners in https://optuna.readthedocs.io/en/stable/tutorial/10_key_features/003_efficient_optimization_algorithms.html
+import numpy as np
+from pandas import DataFrame
+
+
+class Classification_tuner(Basic_tuner):
+    &#34;&#34;&#34;
+    A subclass of Basic_tuner for classification task.
+
+    &#34;&#34;&#34;
+
+    def __init__(self,
+                 n_try,
+                 n_cv,
+                 target,
+                 validate_penalty,
+                 kernel_seed=None,
+                 valid_seed=None,
+                 optuna_seed=None):
+        super().__init__(n_try=n_try,
+                         n_cv=n_cv,
+                         target=target,
+                         validate_penalty=validate_penalty,
+                         kernel_seed=kernel_seed,
+                         valid_seed=valid_seed,
+                         optuna_seed=optuna_seed)
+        &#34;&#34;&#34;
+
+        Args:
+            n_try (int): The number of trials optuna should try.
+            n_cv (int): The number of folds to execute cross validation evaluation in iteration of optuna optimization.
+            target (str): The target of optuna optimization. Notice that is different from the training loss of model.
+            validate_penalty (bool): True to penalty the overfitting by difference between training score and cv score.
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
+        &#34;&#34;&#34;
+
+    def is_regression(self) -&gt; bool:
+        &#34;&#34;&#34;
+        No, this is not a regresion tuner or for regresion task.
+        Returns:
+            bool: False
+        &#34;&#34;&#34;
+
+        return False
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        return super().reference()
+
+    @abstractmethod
+    def name(self) -&gt; str:
+        &#34;&#34;&#34;
+        To be determined.
+
+        Returns:
+            str: Name of this tuner.
+        &#34;&#34;&#34;
+        pass
+
+    @abstractmethod
+    def create_model(self, trial, default):
+        &#34;&#34;&#34;
+        Create model based on default setting or optuna trial
+
+        Args:
+            trial (optuna.trial.Trial): optuna trial in this call.
+            default (bool): To use default hyper parameter
+            
+        Returns :
+            sklearn.base.BaseEstimator: A sklearn style model object.
+        &#34;&#34;&#34;
+        pass
+
+    def predict_proba(self, x):
+        &#34;&#34;&#34;
+        The sklearn.base.BaseEstimator predict_prob api.
+
+        Args:
+            x (pandas.DataFrame): feature to extract information from.
+
+        Returns:
+            pd.DataFrame: prediction in prob, an array with shape (n_samples, n_classes)
+        &#34;&#34;&#34;
+        return DataFrame(self.best_model.predict_proba(x),
+                         index=x.index,
+                         columns=self.y_mapping.classes_)
 
 
 # linear model, elasticnet
-class ElasticLogit_tuner(Basic_tuner):
+class ElasticLogit_tuner(Classification_tuner):
     &#34;&#34;&#34;
     Tuning a elasic net logistic regression.    
     [sklearn.linear_model.LogisticRegression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression), reminds the choice of the algorithm depends on the penalty chosen and on (multinomial) multiclass support.    
     &#34;&#34;&#34;
 
     def __init__(self,
-                 kernel=&#34;saga&#34;,
                  n_try=25,
-                 target=&#34;matthews_corrcoef&#34;,
-                 kernel_seed=None,
-                 valid_seed=None,
-                 optuna_seed=71,
+                 n_cv=5,
+                 target=&#34;mcc&#34;,
+                 kernel_seed: int = None,
+                 valid_seed: int = None,
+                 optuna_seed: int = None,
                  validate_penalty=True):
         &#34;&#34;&#34;
+
         Args:
-            kernel (str, optional): It will be passed to &#34;solver&#34; of sklearn.linear_model.LogisticRegression . Defaults to &#34;saga&#34;.    
-            n_try (int, optional): Times to try. Defaults to 25.    
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;matthews_corrcoef&#34; (mcc score).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+            n_try (int, optional): The number of trials optuna should try. Defaults to 25.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mcc&#34;.
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
         &#34;&#34;&#34;
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
                          validate_penalty=validate_penalty)
 
-        # ‘saga’ fast convergence is only guaranteed on features with approximately the same scale. You should do a feature-wise (between sample) normalization before fitting.
-        self.kernel = kernel  # sage, lbfgs
+        # &#34;saga&#34; fast convergence is only guaranteed on features with approximately the same scale. You should do a feature-wise (between sample) normalization before fitting.
+        self.kernel = &#34;saga&#34;
         self.penalty = &#34;elasticnet&#34;
-        #print(&#34;Logistic Regression with: &#34;, self.penalty, &#34; penalty, &#34;, self.kernel, &#34; solver.&#34;)
+
+    def name(self):
+        return &#34;ElasticNetLogisticRegression&#34;
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = super().reference()
+        refer[
+            self.name() +
+            &#34; document&#34;] = &#34;https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html&#34;
+        return refer
 
     def create_model(self, trial, default=False):
         if default:
             parms = {
-                &#34;verbose&#34;: 0,
+                &#34;C&#34;: 1.0,
                 &#34;l1_ratio&#34;: 0.5,
                 &#34;penalty&#34;: self.penalty,
-                &#34;solver&#34;: self.kernel
+                &#34;solver&#34;: self.kernel,
+                &#34;random_state&#34;: self.kernel_seed_tape[trial.number],
+                &#34;verbose&#34;: 0
             }
         else:
             parms = {
                 &#34;C&#34;: trial.suggest_float(&#39;C&#39;, 1e-6, 1e+2, log=True),
                 &#34;l1_ratio&#34;: trial.suggest_float(&#39;l1_ratio&#39;, 0, 1),
                 &#34;penalty&#34;: self.penalty,
-                &#34;class_weight&#34;: &#34;balanced&#34;,
                 &#34;solver&#34;: self.kernel,
+                &#34;random_state&#34;: self.kernel_seed_tape[trial.number],
                 &#34;verbose&#34;: 0,
             }
         lg = LogisticRegression(**parms)
@@ -107,16 +220,24 @@ class ElasticLogit_tuner(Basic_tuner):
         It is the way I found to cram a sklearn regression result into the statsmodel regresion.    
         The only reason to do this is that statsmodel provides R-style summary.    
         &#34;&#34;&#34;
-        sm_logit = Logit(self.y, self.x).fit(
-            disp=False,
-            start_params=self.best_model.coef_.flatten(),
-            maxiter=0,
-            warn_convergence=False)
+        if len(self.best_model.classes_) &gt; 2:
+            # multi-class classification
+            # Todo
+            raise TypeError(
+                &#34;multi-class classification summary not support yet. Please tell me why do you need that in a multi-class classification task&#34;
+            )
+        else:
+            # binary classification
+            sm_logit = Logit(self.y, self.x).fit(
+                disp=False,
+                start_params=self.best_model.coef_.flatten(),
+                maxiter=0,
+                warn_convergence=False)
         print(sm_logit.summary())
 
 
 # RF
-class RandomForest_tuner(Basic_tuner):
+class RandomForest_tuner(Classification_tuner):
     &#34;&#34;&#34;
     Tuning a random forest model.    
     [sklearn.ensemble.RandomForestClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
@@ -125,22 +246,26 @@ class RandomForest_tuner(Basic_tuner):
     def __init__(self,
                  using_oob=True,
                  n_try=50,
-                 target=&#34;matthews_corrcoef&#34;,
+                 n_cv=5,
+                 target=&#34;mcc&#34;,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         &#34;&#34;&#34;
 
         Args:
             using_oob (bool, optional): Using out of bag score as validation. Defaults to True.
-            n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;neg_mean_squared_error&#34; (mcc score).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+            n_try (int, optional): The number of trials optuna should try. Defaults to 50.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mcc&#34;.
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
         &#34;&#34;&#34;
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
@@ -149,29 +274,44 @@ class RandomForest_tuner(Basic_tuner):
 
         self.using_oob = using_oob
 
+    def name(self):
+        return &#34;RandomForest&#34;
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = super().reference()
+        refer[
+            self.name() +
+            &#34; document&#34;] = &#34;https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html&#34;
+        refer[
+            self.name() +
+            &#34; publication&#34;] = &#34;https://www.stat.berkeley.edu/~breiman/randomforest2001.pdf&#34;
+
+        return refer
+
     def create_model(self, trial, default=False):
         if default:
             parms = {
                 &#34;bootstrap&#34;: self.using_oob,
                 &#34;oob_score&#34;: self.using_oob,
                 &#34;n_jobs&#34;: -1,
-                &#34;random_state&#34;: self.kernel_seed,
+                &#34;random_state&#34;: self.kernel_seed_tape[trial.number],
                 &#34;verbose&#34;: 0,
             }
         else:
             parms = {
                 &#34;n_estimators&#34;:
                 trial.suggest_int(&#39;n_estimators&#39;, 32, 1024, log=True),
-                &#34;max_depth&#34;:
-                trial.suggest_int(&#39;max_depth&#39;, 2, 16, log=True),
-                #&#34;min_samples_split&#34;:
-                #trial.suggest_int(&#39;min_samples_split&#39;, 2, 16, log=True),
                 &#34;min_samples_leaf&#34;:
-                trial.suggest_int(&#39;min_samples_leaf&#39;, 1, 16, log=True),
-                #&#34;min_weight_fraction_leaf&#34;:
-                #trial.suggest_float(&#39;min_weight_fraction_leaf&#39;, 1e-4, 1e-1, log=True),
+                trial.suggest_int(&#39;min_samples_leaf&#39;, 1, 32, log=True),
                 &#34;ccp_alpha&#34;:
-                trial.suggest_float(&#39;ccp_alpha&#39;, 1e-3, 1e-1, log=True),
+                trial.suggest_float(&#39;ccp_alpha&#39;, 1e-4, 1e-1, log=True),
                 &#34;max_samples&#34;:
                 trial.suggest_float(&#39;max_samples&#39;, 0.5, 0.9, log=True),
                 &#34;bootstrap&#34;:
@@ -184,8 +324,6 @@ class RandomForest_tuner(Basic_tuner):
                 self.kernel_seed_tape[trial.number],
                 &#34;verbose&#34;:
                 0,
-                &#34;class_weight&#34;:
-                &#34;balanced&#34;
             }
 
         rf = RandomForestClassifier(**parms)
@@ -205,56 +343,94 @@ class RandomForest_tuner(Basic_tuner):
 
         if self.using_oob:
             # oob predict
-            classifier_obj.fit(self.x, self.y)
-            y_pred = classifier_obj.oob_decision_function_[:, 1]
+            # there is a bug that default sklaern randomforest parallel_backend using thread where others use &#34;loky&#34;, see joblib.parallel_backend.
+            with parallel_backend(&#39;loky&#39;):
+                classifier_obj.fit(self.x,
+                                   self.y,
+                                   sample_weight=compute_sample_weight(
+                                       class_weight=&#34;balanced&#34;, y=self.y))
+
+            # oob prediction
+            y_pred = classifier_obj.oob_decision_function_
+            if self.metric_name == &#34;roc_auc&#34;:
+                # roc_auc can only be used on binary classification. Do not try ovr, ovo. forget them.
+                y_pred = y_pred[:, 1]
 
             # oob score
-            if not self.eval_prob:
-                # !!! some metrics (such as accuracy and F1) require discrete predictions.
-                # !!! If the score function raise an error about y_pred should not be float,
-                # !!! then please add the name of your metric(target) into Basic_tuner&#39;s &#34;discrete_target&#34; in ./__init__.py.
-                y_pred = y_pred &gt; 0.5
-            score = self.metric._score_func(self.y, y_pred)
+            ### manual scorer wraper.
+            if self.metric_using_proba:
+                score = self.metric._score_func(self.y, y_pred,
+                                                **self.scorer_kargs)
+            else:
+                # revert to class symbols.
+                y_pred = classifier_obj.classes_[y_pred.argmax(axis=-1)]
+                score = self.metric._score_func(self.y, y_pred,
+                                                **self.scorer_kargs)
+            if not self.metric_great_better:
+                # if not great is better, then multiply -1
+                score *= -1
         else:
             # cv score
-            score = cross_val_score(
-                classifier_obj,
-                self.x,
-                self.y,
-                cv=StratifiedKFold(
-                    n_splits=5,
-                    shuffle=True,
-                    random_state=self.valid_seed_tape[trial.number]),
-                scoring=self.metric)
-            score = score.mean()
+            cv = StratifiedKFold(
+                n_splits=self.n_cv,
+                shuffle=True,
+                random_state=self.valid_seed_tape[trial.number])
+
+            score = []
+            for i, (train_ind, test_ind) in enumerate(cv.split(self.x,
+                                                               self.y)):
+                x_train = self.x.iloc[train_ind]
+                y_train = self.y.iloc[train_ind]
+                x_test = self.x.iloc[test_ind]
+                y_test = self.y.iloc[test_ind]
+
+                with parallel_backend(&#39;loky&#39;):
+                    classifier_obj.fit(x_train,
+                                       y_train,
+                                       sample_weight=compute_sample_weight(
+                                           class_weight=&#34;balanced&#34;, y=y_train))
+
+                test_score = self.metric(classifier_obj, x_test, y_test)
+                train_score = self.metric(classifier_obj, x_train, y_train)
+                if self.validate_penalty:
+                    score.append(test_score + 0.1 * (test_score - train_score))
+                else:
+                    score.append(test_score)
+
+            score = sum(score) / self.n_cv
         return score
 
 
 # SVM
-class SVM_tuner(Basic_tuner):
+class SVM_tuner(Classification_tuner):
     &#34;&#34;&#34;
     Tuning a support vector machine.    
     [sklearn.svm.SVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html)
     &#34;&#34;&#34;
 
     def __init__(self,
-                 kernel=&#34;rbf&#34;,
+                 kernel: Literal[&#34;linear&#34;, &#34;poly&#34;, &#34;rbf&#34;, &#34;sigmoid&#34;] = &#34;rbf&#34;,
                  n_try=25,
-                 target=&#34;matthews_corrcoef&#34;,
+                 n_cv=5,
+                 target=&#34;mcc&#34;,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         &#34;&#34;&#34;
+
         Args:
-            kernel (str, optional): This will be passed to the attribute of SVC: &#34;kernel&#34;. Defaults to &#34;rbf&#34;.
-            n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;neg_mean_squared_error&#34; (mcc score).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+            kernel (Literal[&amp;quot;linear&amp;quot;, &amp;quot;poly&amp;quot;, &amp;quot;rbf&amp;quot;, &amp;quot;sigmoid&amp;quot;], optional): This will be passed to the attribute of SVC: &#34;kernel&#34;. Defaults to &#34;rbf&#34;.
+            n_try (int, optional): The number of trials optuna should try. Defaults to 25.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mcc&#34;.
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
         &#34;&#34;&#34;
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
@@ -262,11 +438,32 @@ class SVM_tuner(Basic_tuner):
                          validate_penalty=validate_penalty)
         self.kernel = kernel  # rbf, linear, poly, sigmoid
 
+    def name(self):
+        return self.kernel + &#34;-SVM&#34;
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = super().reference()
+        refer[
+            self.name() +
+            &#34; document&#34;] = &#34;https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html&#34;
+        refer[
+            self.name() +
+            &#34; publication&#34;] = &#34;https://citeseerx.ist.psu.edu/doc_view/pid/42e5ed832d4310ce4378c44d05570439df28a393&#34;
+
+        return refer
+
     def create_model(self, trial, default=False):
         if default:
             parms = {
                 &#34;kernel&#34;: self.kernel,
-                &#34;random_state&#34;: self.kernel_seed,
+                &#34;random_state&#34;: self.kernel_seed_tape[trial.number],
                 &#34;probability&#34;: True
             }
         else:
@@ -277,16 +474,14 @@ class SVM_tuner(Basic_tuner):
                                     1e-4 * np.sqrt(self.n_sample),
                                     1e+2 * np.sqrt(self.n_sample),
                                     log=True),
-                &#34;kernel&#34;:
-                self.kernel,
-                &#34;class_weight&#34;:
-                &#34;balanced&#34;,
                 &#34;gamma&#34;:
                 &#34;auto&#34;,
-                &#34;probability&#34;:
-                True,
+                &#34;kernel&#34;:
+                self.kernel,
                 &#34;random_state&#34;:
-                self.kernel_seed_tape[trial.number]
+                self.kernel_seed_tape[trial.number],
+                &#34;probability&#34;:
+                True
             }
         svm = SVC(**parms)
         return svm
@@ -294,7 +489,7 @@ class SVM_tuner(Basic_tuner):
 
 # Todo: learning rate and number of iteration adjustment
 # XGboost
-class XGBoost_tuner(Basic_tuner):
+class XGBoost_tuner(Classification_tuner):
     &#34;&#34;&#34;
     Tuning a XGBoost classifier model.    
     [xgboost.XGBClassifier](https://xgboost.readthedocs.io/en/stable/python/python_api.html)
@@ -307,34 +502,58 @@ class XGBoost_tuner(Basic_tuner):
     &#34;&#34;&#34;
 
     def __init__(self,
-                 n_try=200,
-                 target=&#34;matthews_corrcoef&#34;,
+                 n_try=75,
+                 n_cv=5,
+                 target=&#34;mcc&#34;,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         &#34;&#34;&#34;
 
         Args:
-            n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;neg_mean_squared_error&#34; (mcc score).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+            n_try (int, optional): The number of trials optuna should try. Defaults to 75.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mcc&#34;.
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
         
         &#34;&#34;&#34;
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
                          validate_penalty=validate_penalty)
 
+    def name(self):
+        return &#34;XGBoost&#34;
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = super().reference()
+        refer[self.name() +
+              &#34; document&#34;] = &#34;https://xgboost.readthedocs.io/en/stable/&#34;
+        refer[
+            self.name() +
+            &#34; publication&#34;] = &#34;https://dl.acm.org/doi/10.1145/2939672.2939785&#34;
+
+        return refer
+
     def create_model(self, trial, default=False):
         if default:
             parms = {
                 &#34;n_jobs&#34;: None,
-                &#34;random_state&#34;: self.kernel_seed,
+                &#34;random_state&#34;: self.kernel_seed_tape[trial.number],
                 &#34;verbosity&#34;: 0
             }
         else:
@@ -351,7 +570,7 @@ class XGBoost_tuner(Basic_tuner):
 
             parms = {
                 &#34;n_estimators&#34;:
-                trial.suggest_int(&#39;n_estimators&#39;, 16, 512, log=True),
+                trial.suggest_int(&#39;n_estimators&#39;, 16, 256, log=True),
                 &#34;max_depth&#34;:
                 trial.suggest_int(&#39;max_depth&#39;, 2, 16, log=True),
                 &#34;gamma&#34;:
@@ -362,8 +581,6 @@ class XGBoost_tuner(Basic_tuner):
                 sampling_rate,
                 &#34;colsample_bytree&#34;:
                 col_sampling_rate,
-                #&#34;min_child_weight&#34;:
-                #trial.suggest_float(&#39;min_child_weight&#39;, 1e-3, 1e+2, log=True),
                 &#34;reg_lambda&#34;:
                 trial.suggest_float(&#39;reg_lambda&#39;, 1e-2, 1e+1, log=True),
                 &#34;n_jobs&#34;:
@@ -377,45 +594,9 @@ class XGBoost_tuner(Basic_tuner):
         xgb = XGBClassifier(**parms)
         return xgb
 
-    def evaluate(self, trial, default=False):
-        &#34;&#34;&#34;
-        xgboost do not support class_weight.    
-        we use sample_weight as substitute.    
-
-        Args:
-            trial (optuna.trial.Trial): optuna trial in this call.
-            default (bool): To use default hyper parameter. This argument will be passed to creat_model
-        Returns:
-            float: The score.    
-        ToDo:
-            manage class_weight manually in baseclass. for consistency.    
-
-        &#34;&#34;&#34;
-        classifier_obj = self.create_model(trial, default)
-
-        cv = StratifiedKFold(n_splits=5,
-                             shuffle=True,
-                             random_state=self.valid_seed_tape[trial.number])
-
-        score = []
-        for i, (train_ind, test_ind) in enumerate(cv.split(self.x, self.y)):
-            x_train = self.x.iloc[train_ind]
-            y_train = self.y.iloc[train_ind]
-            x_test = self.x.iloc[test_ind]
-            y_test = self.y.iloc[test_ind]
-
-            classifier_obj.fit(x_train,
-                               y_train,
-                               sample_weight=compute_sample_weight(
-                                   class_weight=&#34;balanced&#34;, y=y_train))
-
-            score.append(self.metric(classifier_obj, x_test, y_test))
-        score = np.array(score).mean()
-        return score
-
 
 # lightGBM
-class LighGBM_tuner(Basic_tuner):
+class LighGBM_tuner(Classification_tuner):
     &#34;&#34;&#34;
     Tuning a LighGBM classifier model.    
     [lightgbm.LGBMClassifier](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html)     
@@ -425,28 +606,52 @@ class LighGBM_tuner(Basic_tuner):
     &#34;&#34;&#34;
 
     def __init__(self,
-                 n_try=200,
-                 target=&#34;matthews_corrcoef&#34;,
+                 n_try=75,
+                 n_cv=5,
+                 target=&#34;mcc&#34;,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         &#34;&#34;&#34;
 
         Args:
-            n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;neg_mean_squared_error&#34; (mcc score).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
-        
+            n_try (int, optional): The number of trials optuna should try. Defaults to 75.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mcc&#34;.
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.        
         &#34;&#34;&#34;
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
                          validate_penalty=validate_penalty)
+
+    def name(self):
+        return &#34;LightGBM&#34;
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = super().reference()
+        refer[
+            self.name() +
+            &#34; document&#34;] = &#34;https://lightgbm.readthedocs.io/en/latest/index.html&#34;
+        refer[
+            self.name() +
+            &#34; publication&#34;] = &#34;https://proceedings.neurips.cc/paper_files/paper/2017/file/6449f44a102fde848669bdd9eb6b76fa-Paper.pdf&#34;
+
+        return refer
 
     def create_model(self, trial, default=False):
         if default:
@@ -496,8 +701,6 @@ class LighGBM_tuner(Basic_tuner):
                 trial.suggest_float(&#39;reg_lambda&#39;, 5e-3, 1e+1, log=True),
                 &#34;n_jobs&#34;:
                 None,
-                &#34;class_weight&#34;:
-                &#34;balanced&#34;,
                 &#34;random_state&#34;:
                 self.kernel_seed_tape[trial.number],
                 &#34;verbosity&#34;:
@@ -509,33 +712,61 @@ class LighGBM_tuner(Basic_tuner):
 
 
 # Adaboost
-class AdaBoost_tuner(Basic_tuner):
+class AdaBoost_tuner(Classification_tuner):
     &#34;&#34;&#34;
     Tuning a AdaBoost calssifier.    
     [sklearn.ensemble.AdaBoostClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html)
     &#34;&#34;&#34;
 
     def __init__(self,
-                 n_try=50,
-                 target=&#34;matthews_corrcoef&#34;,
+                 n_try=25,
+                 n_cv=5,
+                 target=&#34;mcc&#34;,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         &#34;&#34;&#34;
         Args:
-            n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;neg_mean_squared_error&#34; (mcc score).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+            n_try (int, optional): The number of trials optuna should try. Defaults to 25.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mcc&#34;.
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
         &#34;&#34;&#34;
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
                          validate_penalty=validate_penalty)
+
+    def name(self):
+        return &#34;AdaBoost&#34;
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = super().reference()
+        refer[
+            self.name() +
+            &#34; document&#34;] = &#34;https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html&#34;
+        refer[
+            self.name() +
+            &#34; publication: original version&#34;] = &#34;https://www.ee.columbia.edu/~sfchang/course/svia-F03/papers/freund95decisiontheoretic-adaboost.pdf&#34;
+        refer[
+            self.name() +
+            &#34; publication: implemented version&#34;] = &#34;https://doi.org/10.4310/SII.2009.v2.n3.a8&#34;
+
+        return refer
 
     def create_model(self, trial, default=False):
         if default:
@@ -550,7 +781,7 @@ class AdaBoost_tuner(Basic_tuner):
                 &#34;learning_rate&#34;:
                 trial.suggest_float(&#39;learning_rate&#39;, 1e-2, 1, log=True),
                 &#34;algorithm&#34;:
-                trial.suggest_categorical(&#34;algorithm&#34;, [&#34;SAMME&#34;, &#34;SAMME.R&#34;]),
+                &#34;SAMME&#34;,
                 &#34;random_state&#34;:
                 self.kernel_seed_tape[trial.number]
             }
@@ -559,7 +790,7 @@ class AdaBoost_tuner(Basic_tuner):
 
 
 # DT
-class DecisionTree_tuner(Basic_tuner):
+class DecisionTree_tuner(Classification_tuner):
     &#34;&#34;&#34;
     Tuning a DecisionTree calssifier.    
     [sklearn.tree.DecisionTreeClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html)
@@ -567,25 +798,50 @@ class DecisionTree_tuner(Basic_tuner):
 
     def __init__(self,
                  n_try=25,
-                 target=&#34;matthews_corrcoef&#34;,
+                 n_cv=5,
+                 target=&#34;mcc&#34;,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         &#34;&#34;&#34;
         Args:
-            n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;neg_mean_squared_error&#34; (mcc score).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+            n_try (int, optional): The number of trials optuna should try. Defaults to 25.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mcc&#34;.
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
         &#34;&#34;&#34;
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
                          validate_penalty=validate_penalty)
+
+    def name(self):
+        return &#34;DecisionTree&#34;
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = super().reference()
+        refer[
+            self.name() +
+            &#34; document&#34;] = &#34;https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html&#34;
+        refer[
+            self.name() +
+            &#34; publication&#34;] = &#34;https://www.taylorfrancis.com/books/mono/10.1201/9781315139470/classification-regression-trees-leo-breiman-jerome-friedman-olshen-charles-stone&#34;
+
+        return refer
 
     def create_model(self, trial, default=False):
         if default:
@@ -604,15 +860,13 @@ class DecisionTree_tuner(Basic_tuner):
                 trial.suggest_float(&#39;ccp_alpha&#39;, 1e-3, 1e-1, log=True),
                 &#34;random_state&#34;:
                 self.kernel_seed_tape[trial.number],
-                &#34;class_weight&#34;:
-                &#34;balanced&#34;
             }
         DT = DecisionTreeClassifier(**parms)
         return DT
 
 
 # catboost
-class CatBoost_tuner(Basic_tuner):
+class CatBoost_tuner(Classification_tuner):
     &#34;&#34;&#34;
     Tuning a CatBoost classifier model.    
     [catboost.CatBoostClassifier](https://catboost.ai/en/docs/concepts/python-reference_catboostclassifier)     
@@ -622,28 +876,51 @@ class CatBoost_tuner(Basic_tuner):
     &#34;&#34;&#34;
 
     def __init__(self,
-                 n_try=200,
-                 target=&#34;matthews_corrcoef&#34;,
+                 n_try=75,
+                 n_cv=5,
+                 target=&#34;mcc&#34;,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         &#34;&#34;&#34;
 
         Args:
-            n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;neg_mean_squared_error&#34; (mcc score).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+            n_try (int, optional): The number of trials optuna should try. Defaults to 75.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mcc&#34;.
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
         
         &#34;&#34;&#34;
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
                          validate_penalty=validate_penalty)
+
+    def name(self):
+        return &#34;CatBoost&#34;
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = super().reference()
+        refer[self.name() + &#34; document&#34;] = &#34;https://catboost.ai/en/docs/&#34;
+        refer[
+            self.name() +
+            &#34; publication&#34;] = &#34;https://proceedings.neurips.cc/paper_files/paper/2018/file/14491b756b3a51daac41c24863285549-Paper.pdf&#34;
+
+        return refer
 
     def create_model(self, trial, default=False):
         if default:
@@ -686,8 +963,6 @@ class CatBoost_tuner(Basic_tuner):
                 &#34;subsample&#34;:
                 sampling_rate,
                 #&#34;use_best_model&#34;: True,
-                &#34;auto_class_weights&#34;:
-                &#34;Balanced&#34;,
                 &#34;random_seed&#34;:
                 self.kernel_seed_tape[trial.number],
                 &#34;verbose&#34;:
@@ -722,15 +997,17 @@ class CatBoost_tuner(Basic_tuner):
 
             x_test = self.x.iloc[test_ind]
             y_test = self.y.iloc[test_ind]
-            pool_test = Pool(x_test, y_test)
+            #pool_test = Pool(x_test, y_test)
 
             classifier_obj.fit(pool_train)  #, eval_set=pool_test
 
             train_score = self.metric(classifier_obj, x_train, y_train)
             test_score = self.metric(classifier_obj, x_test, y_test)
-            score.append(test_score + 0.1 * (test_score - train_score))
+            if self.validate_penalty:
+                score.append(test_score + 0.1 * (test_score - train_score))
+            else:
+                score.append(test_score)
 
-            #score.append(test_score)
         score = sum(score) / self.n_cv
         return score
 
@@ -751,7 +1028,7 @@ class CatBoost_tuner(Basic_tuner):
 <dl>
 <dt id="PineBioML.model.supervised.Classification.AdaBoost_tuner"><code class="flex name class">
 <span>class <span class="ident">AdaBoost_tuner</span></span>
-<span>(</span><span>n_try=50, target='matthews_corrcoef', kernel_seed=None, valid_seed=None, optuna_seed=71, validate_penalty=True)</span>
+<span>(</span><span>n_try=25, n_cv=5, target='mcc', kernel_seed=None, valid_seed=None, optuna_seed=None, validate_penalty=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Tuning a AdaBoost calssifier.
@@ -760,48 +1037,79 @@ class CatBoost_tuner(Basic_tuner):
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Times to try. Defaults to 50.</dd>
+<dd>The number of trials optuna should try. Defaults to 25.</dd>
+<dt><strong><code>n_cv</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.</dd>
 <dt><strong><code>target</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "neg_mean_squared_error" (mcc score).
-</dd>
-<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code></dt>
-<dd>random seed for model kernel. </dd>
-<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code></dt>
-<dd>random seed for cross validation</dd>
+<dd>The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mcc".</dd>
+<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for model. Defaults to None.</dd>
+<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for cross validation. Defaults to None.</dd>
 <dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>random seed for optuna. Defaults to 71.</dd>
+<dd>Random seed for optuna's hyperparameter sampling. Defaults to None.</dd>
+<dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>True to penalty the overfitting by difference between training score and cv score. Defaults to True.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class AdaBoost_tuner(Basic_tuner):
+<pre><code class="python">class AdaBoost_tuner(Classification_tuner):
     &#34;&#34;&#34;
     Tuning a AdaBoost calssifier.    
     [sklearn.ensemble.AdaBoostClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html)
     &#34;&#34;&#34;
 
     def __init__(self,
-                 n_try=50,
-                 target=&#34;matthews_corrcoef&#34;,
+                 n_try=25,
+                 n_cv=5,
+                 target=&#34;mcc&#34;,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         &#34;&#34;&#34;
         Args:
-            n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;neg_mean_squared_error&#34; (mcc score).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+            n_try (int, optional): The number of trials optuna should try. Defaults to 25.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mcc&#34;.
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
         &#34;&#34;&#34;
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
                          validate_penalty=validate_penalty)
+
+    def name(self):
+        return &#34;AdaBoost&#34;
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = super().reference()
+        refer[
+            self.name() +
+            &#34; document&#34;] = &#34;https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html&#34;
+        refer[
+            self.name() +
+            &#34; publication: original version&#34;] = &#34;https://www.ee.columbia.edu/~sfchang/course/svia-F03/papers/freund95decisiontheoretic-adaboost.pdf&#34;
+        refer[
+            self.name() +
+            &#34; publication: implemented version&#34;] = &#34;https://doi.org/10.4310/SII.2009.v2.n3.a8&#34;
+
+        return refer
 
     def create_model(self, trial, default=False):
         if default:
@@ -816,7 +1124,7 @@ class CatBoost_tuner(Basic_tuner):
                 &#34;learning_rate&#34;:
                 trial.suggest_float(&#39;learning_rate&#39;, 1e-2, 1, log=True),
                 &#34;algorithm&#34;:
-                trial.suggest_categorical(&#34;algorithm&#34;, [&#34;SAMME&#34;, &#34;SAMME.R&#34;]),
+                &#34;SAMME&#34;,
                 &#34;random_state&#34;:
                 self.kernel_seed_tape[trial.number]
             }
@@ -825,26 +1133,32 @@ class CatBoost_tuner(Basic_tuner):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="PineBioML.model.supervised.Classification.Classification_tuner" href="#PineBioML.model.supervised.Classification.Classification_tuner">Classification_tuner</a></li>
 <li><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></b></code>:
+<li><code><b><a title="PineBioML.model.supervised.Classification.Classification_tuner" href="#PineBioML.model.supervised.Classification.Classification_tuner">Classification_tuner</a></b></code>:
 <ul class="hlist">
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.create_model" href="index.html#PineBioML.model.supervised.Basic_tuner.create_model">create_model</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict_proba" href="index.html#PineBioML.model.supervised.Basic_tuner.predict_proba">predict_proba</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.check_task" href="index.html#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.create_model" href="#PineBioML.model.supervised.Classification.Classification_tuner.create_model">create_model</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.get_scorer" href="index.html#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.is_regression" href="#PineBioML.model.supervised.Classification.Classification_tuner.is_regression">is_regression</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.name" href="#PineBioML.model.supervised.Classification.Classification_tuner.name">name</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.predict_proba" href="#PineBioML.model.supervised.Classification.Classification_tuner.predict_proba">predict_proba</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.reference" href="index.html#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
 <dt id="PineBioML.model.supervised.Classification.CatBoost_tuner"><code class="flex name class">
 <span>class <span class="ident">CatBoost_tuner</span></span>
-<span>(</span><span>n_try=200, target='matthews_corrcoef', kernel_seed=None, valid_seed=None, optuna_seed=71, validate_penalty=True)</span>
+<span>(</span><span>n_try=75, n_cv=5, target='mcc', kernel_seed=None, valid_seed=None, optuna_seed=None, validate_penalty=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Tuning a CatBoost classifier model.
@@ -858,22 +1172,25 @@ class CatBoost_tuner(Basic_tuner):
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Times to try. Defaults to 50.</dd>
+<dd>The number of trials optuna should try. Defaults to 75.</dd>
+<dt><strong><code>n_cv</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.</dd>
 <dt><strong><code>target</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "neg_mean_squared_error" (mcc score).
-</dd>
-<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code></dt>
-<dd>random seed for model kernel. </dd>
-<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code></dt>
-<dd>random seed for cross validation</dd>
+<dd>The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mcc".</dd>
+<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for model. Defaults to None.</dd>
+<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for cross validation. Defaults to None.</dd>
 <dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>random seed for optuna. Defaults to 71.</dd>
+<dd>Random seed for optuna's hyperparameter sampling. Defaults to None.</dd>
+<dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>True to penalty the overfitting by difference between training score and cv score. Defaults to True.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class CatBoost_tuner(Basic_tuner):
+<pre><code class="python">class CatBoost_tuner(Classification_tuner):
     &#34;&#34;&#34;
     Tuning a CatBoost classifier model.    
     [catboost.CatBoostClassifier](https://catboost.ai/en/docs/concepts/python-reference_catboostclassifier)     
@@ -883,28 +1200,51 @@ class CatBoost_tuner(Basic_tuner):
     &#34;&#34;&#34;
 
     def __init__(self,
-                 n_try=200,
-                 target=&#34;matthews_corrcoef&#34;,
+                 n_try=75,
+                 n_cv=5,
+                 target=&#34;mcc&#34;,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         &#34;&#34;&#34;
 
         Args:
-            n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;neg_mean_squared_error&#34; (mcc score).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+            n_try (int, optional): The number of trials optuna should try. Defaults to 75.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mcc&#34;.
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
         
         &#34;&#34;&#34;
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
                          validate_penalty=validate_penalty)
+
+    def name(self):
+        return &#34;CatBoost&#34;
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = super().reference()
+        refer[self.name() + &#34; document&#34;] = &#34;https://catboost.ai/en/docs/&#34;
+        refer[
+            self.name() +
+            &#34; publication&#34;] = &#34;https://proceedings.neurips.cc/paper_files/paper/2018/file/14491b756b3a51daac41c24863285549-Paper.pdf&#34;
+
+        return refer
 
     def create_model(self, trial, default=False):
         if default:
@@ -947,8 +1287,6 @@ class CatBoost_tuner(Basic_tuner):
                 &#34;subsample&#34;:
                 sampling_rate,
                 #&#34;use_best_model&#34;: True,
-                &#34;auto_class_weights&#34;:
-                &#34;Balanced&#34;,
                 &#34;random_seed&#34;:
                 self.kernel_seed_tape[trial.number],
                 &#34;verbose&#34;:
@@ -983,20 +1321,23 @@ class CatBoost_tuner(Basic_tuner):
 
             x_test = self.x.iloc[test_ind]
             y_test = self.y.iloc[test_ind]
-            pool_test = Pool(x_test, y_test)
+            #pool_test = Pool(x_test, y_test)
 
             classifier_obj.fit(pool_train)  #, eval_set=pool_test
 
             train_score = self.metric(classifier_obj, x_train, y_train)
             test_score = self.metric(classifier_obj, x_test, y_test)
-            score.append(test_score + 0.1 * (test_score - train_score))
+            if self.validate_penalty:
+                score.append(test_score + 0.1 * (test_score - train_score))
+            else:
+                score.append(test_score)
 
-            #score.append(test_score)
         score = sum(score) / self.n_cv
         return score</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="PineBioML.model.supervised.Classification.Classification_tuner" href="#PineBioML.model.supervised.Classification.Classification_tuner">Classification_tuner</a></li>
 <li><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></li>
 <li>abc.ABC</li>
 </ul>
@@ -1047,15 +1388,17 @@ float: The score.</p></div>
 
         x_test = self.x.iloc[test_ind]
         y_test = self.y.iloc[test_ind]
-        pool_test = Pool(x_test, y_test)
+        #pool_test = Pool(x_test, y_test)
 
         classifier_obj.fit(pool_train)  #, eval_set=pool_test
 
         train_score = self.metric(classifier_obj, x_train, y_train)
         test_score = self.metric(classifier_obj, x_test, y_test)
-        score.append(test_score + 0.1 * (test_score - train_score))
+        if self.validate_penalty:
+            score.append(test_score + 0.1 * (test_score - train_score))
+        else:
+            score.append(test_score)
 
-        #score.append(test_score)
     score = sum(score) / self.n_cv
     return score</code></pre>
 </details>
@@ -1063,12 +1406,291 @@ float: The score.</p></div>
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
+<li><code><b><a title="PineBioML.model.supervised.Classification.Classification_tuner" href="#PineBioML.model.supervised.Classification.Classification_tuner">Classification_tuner</a></b></code>:
+<ul class="hlist">
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.check_task" href="index.html#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.create_model" href="#PineBioML.model.supervised.Classification.Classification_tuner.create_model">create_model</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.get_scorer" href="index.html#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.is_regression" href="#PineBioML.model.supervised.Classification.Classification_tuner.is_regression">is_regression</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.name" href="#PineBioML.model.supervised.Classification.Classification_tuner.name">name</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.predict_proba" href="#PineBioML.model.supervised.Classification.Classification_tuner.predict_proba">predict_proba</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.reference" href="index.html#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="PineBioML.model.supervised.Classification.Classification_tuner"><code class="flex name class">
+<span>class <span class="ident">Classification_tuner</span></span>
+<span>(</span><span>n_try, n_cv, target, validate_penalty, kernel_seed=None, valid_seed=None, optuna_seed=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A subclass of Basic_tuner for classification task.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>n_try</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of trials optuna should try.</dd>
+<dt><strong><code>n_cv</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of folds to execute cross validation evaluation in iteration of optuna optimization.</dd>
+<dt><strong><code>target</code></strong> :&ensp;<code>str</code></dt>
+<dd>The target of optuna optimization. Notice that is different from the training loss of model.</dd>
+<dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code></dt>
+<dd>True to penalty the overfitting by difference between training score and cv score.</dd>
+<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for model. Defaults to None.</dd>
+<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for cross validation. Defaults to None.</dd>
+<dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for optuna's hyperparameter sampling. Defaults to None.</dd>
+</dl>
+<h2 id="todo">Todo</h2>
+<ol>
+<li>transfer the initialization of seed tape from <strong>init</strong> to fit.
+</li>
+<li>optuna pruner: See the section Acticating Pruners in <a href="https://optuna.readthedocs.io/en/stable/tutorial/10_key_features/003_efficient_optimization_algorithms.html">https://optuna.readthedocs.io/en/stable/tutorial/10_key_features/003_efficient_optimization_algorithms.html</a></li>
+<li>Winner's curse</li>
+</ol></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Classification_tuner(Basic_tuner):
+    &#34;&#34;&#34;
+    A subclass of Basic_tuner for classification task.
+
+    &#34;&#34;&#34;
+
+    def __init__(self,
+                 n_try,
+                 n_cv,
+                 target,
+                 validate_penalty,
+                 kernel_seed=None,
+                 valid_seed=None,
+                 optuna_seed=None):
+        super().__init__(n_try=n_try,
+                         n_cv=n_cv,
+                         target=target,
+                         validate_penalty=validate_penalty,
+                         kernel_seed=kernel_seed,
+                         valid_seed=valid_seed,
+                         optuna_seed=optuna_seed)
+        &#34;&#34;&#34;
+
+        Args:
+            n_try (int): The number of trials optuna should try.
+            n_cv (int): The number of folds to execute cross validation evaluation in iteration of optuna optimization.
+            target (str): The target of optuna optimization. Notice that is different from the training loss of model.
+            validate_penalty (bool): True to penalty the overfitting by difference between training score and cv score.
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
+        &#34;&#34;&#34;
+
+    def is_regression(self) -&gt; bool:
+        &#34;&#34;&#34;
+        No, this is not a regresion tuner or for regresion task.
+        Returns:
+            bool: False
+        &#34;&#34;&#34;
+
+        return False
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        return super().reference()
+
+    @abstractmethod
+    def name(self) -&gt; str:
+        &#34;&#34;&#34;
+        To be determined.
+
+        Returns:
+            str: Name of this tuner.
+        &#34;&#34;&#34;
+        pass
+
+    @abstractmethod
+    def create_model(self, trial, default):
+        &#34;&#34;&#34;
+        Create model based on default setting or optuna trial
+
+        Args:
+            trial (optuna.trial.Trial): optuna trial in this call.
+            default (bool): To use default hyper parameter
+            
+        Returns :
+            sklearn.base.BaseEstimator: A sklearn style model object.
+        &#34;&#34;&#34;
+        pass
+
+    def predict_proba(self, x):
+        &#34;&#34;&#34;
+        The sklearn.base.BaseEstimator predict_prob api.
+
+        Args:
+            x (pandas.DataFrame): feature to extract information from.
+
+        Returns:
+            pd.DataFrame: prediction in prob, an array with shape (n_samples, n_classes)
+        &#34;&#34;&#34;
+        return DataFrame(self.best_model.predict_proba(x),
+                         index=x.index,
+                         columns=self.y_mapping.classes_)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="PineBioML.model.supervised.Classification.AdaBoost_tuner" href="#PineBioML.model.supervised.Classification.AdaBoost_tuner">AdaBoost_tuner</a></li>
+<li><a title="PineBioML.model.supervised.Classification.CatBoost_tuner" href="#PineBioML.model.supervised.Classification.CatBoost_tuner">CatBoost_tuner</a></li>
+<li><a title="PineBioML.model.supervised.Classification.DecisionTree_tuner" href="#PineBioML.model.supervised.Classification.DecisionTree_tuner">DecisionTree_tuner</a></li>
+<li><a title="PineBioML.model.supervised.Classification.ElasticLogit_tuner" href="#PineBioML.model.supervised.Classification.ElasticLogit_tuner">ElasticLogit_tuner</a></li>
+<li><a title="PineBioML.model.supervised.Classification.LighGBM_tuner" href="#PineBioML.model.supervised.Classification.LighGBM_tuner">LighGBM_tuner</a></li>
+<li><a title="PineBioML.model.supervised.Classification.RandomForest_tuner" href="#PineBioML.model.supervised.Classification.RandomForest_tuner">RandomForest_tuner</a></li>
+<li><a title="PineBioML.model.supervised.Classification.SVM_tuner" href="#PineBioML.model.supervised.Classification.SVM_tuner">SVM_tuner</a></li>
+<li><a title="PineBioML.model.supervised.Classification.XGBoost_tuner" href="#PineBioML.model.supervised.Classification.XGBoost_tuner">XGBoost_tuner</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="PineBioML.model.supervised.Classification.Classification_tuner.create_model"><code class="name flex">
+<span>def <span class="ident">create_model</span></span>(<span>self, trial, default)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create model based on default setting or optuna trial</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>trial</code></strong> :&ensp;<code>optuna.trial.Trial</code></dt>
+<dd>optuna trial in this call.</dd>
+<dt><strong><code>default</code></strong> :&ensp;<code>bool</code></dt>
+<dd>To use default hyper parameter</dd>
+</dl>
+<p>Returns :
+sklearn.base.BaseEstimator: A sklearn style model object.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def create_model(self, trial, default):
+    &#34;&#34;&#34;
+    Create model based on default setting or optuna trial
+
+    Args:
+        trial (optuna.trial.Trial): optuna trial in this call.
+        default (bool): To use default hyper parameter
+        
+    Returns :
+        sklearn.base.BaseEstimator: A sklearn style model object.
+    &#34;&#34;&#34;
+    pass</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.model.supervised.Classification.Classification_tuner.is_regression"><code class="name flex">
+<span>def <span class="ident">is_regression</span></span>(<span>self) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"><p>No, this is not a regresion tuner or for regresion task.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>False</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def is_regression(self) -&gt; bool:
+    &#34;&#34;&#34;
+    No, this is not a regresion tuner or for regresion task.
+    Returns:
+        bool: False
+    &#34;&#34;&#34;
+
+    return False</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.model.supervised.Classification.Classification_tuner.name"><code class="name flex">
+<span>def <span class="ident">name</span></span>(<span>self) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>To be determined.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>str</code></dt>
+<dd>Name of this tuner.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def name(self) -&gt; str:
+    &#34;&#34;&#34;
+    To be determined.
+
+    Returns:
+        str: Name of this tuner.
+    &#34;&#34;&#34;
+    pass</code></pre>
+</details>
+</dd>
+<dt id="PineBioML.model.supervised.Classification.Classification_tuner.predict_proba"><code class="name flex">
+<span>def <span class="ident">predict_proba</span></span>(<span>self, x)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>The sklearn.base.BaseEstimator predict_prob api.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code></dt>
+<dd>feature to extract information from.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pd.DataFrame</code></dt>
+<dd>prediction in prob, an array with shape (n_samples, n_classes)</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def predict_proba(self, x):
+    &#34;&#34;&#34;
+    The sklearn.base.BaseEstimator predict_prob api.
+
+    Args:
+        x (pandas.DataFrame): feature to extract information from.
+
+    Returns:
+        pd.DataFrame: prediction in prob, an array with shape (n_samples, n_classes)
+    &#34;&#34;&#34;
+    return DataFrame(self.best_model.predict_proba(x),
+                     index=x.index,
+                     columns=self.y_mapping.classes_)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
 <li><code><b><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></b></code>:
 <ul class="hlist">
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.create_model" href="index.html#PineBioML.model.supervised.Basic_tuner.create_model">create_model</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.check_task" href="index.html#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.get_scorer" href="index.html#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict_proba" href="index.html#PineBioML.model.supervised.Basic_tuner.predict_proba">predict_proba</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.reference" href="index.html#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
 </ul>
 </li>
@@ -1076,7 +1698,7 @@ float: The score.</p></div>
 </dd>
 <dt id="PineBioML.model.supervised.Classification.DecisionTree_tuner"><code class="flex name class">
 <span>class <span class="ident">DecisionTree_tuner</span></span>
-<span>(</span><span>n_try=25, target='matthews_corrcoef', kernel_seed=None, valid_seed=None, optuna_seed=71, validate_penalty=True)</span>
+<span>(</span><span>n_try=25, n_cv=5, target='mcc', kernel_seed=None, valid_seed=None, optuna_seed=None, validate_penalty=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Tuning a DecisionTree calssifier.
@@ -1085,22 +1707,25 @@ float: The score.</p></div>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Times to try. Defaults to 50.</dd>
+<dd>The number of trials optuna should try. Defaults to 25.</dd>
+<dt><strong><code>n_cv</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.</dd>
 <dt><strong><code>target</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "neg_mean_squared_error" (mcc score).
-</dd>
-<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code></dt>
-<dd>random seed for model kernel. </dd>
-<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code></dt>
-<dd>random seed for cross validation</dd>
+<dd>The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mcc".</dd>
+<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for model. Defaults to None.</dd>
+<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for cross validation. Defaults to None.</dd>
 <dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>random seed for optuna. Defaults to 71.</dd>
+<dd>Random seed for optuna's hyperparameter sampling. Defaults to None.</dd>
+<dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>True to penalty the overfitting by difference between training score and cv score. Defaults to True.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class DecisionTree_tuner(Basic_tuner):
+<pre><code class="python">class DecisionTree_tuner(Classification_tuner):
     &#34;&#34;&#34;
     Tuning a DecisionTree calssifier.    
     [sklearn.tree.DecisionTreeClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html)
@@ -1108,25 +1733,50 @@ float: The score.</p></div>
 
     def __init__(self,
                  n_try=25,
-                 target=&#34;matthews_corrcoef&#34;,
+                 n_cv=5,
+                 target=&#34;mcc&#34;,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         &#34;&#34;&#34;
         Args:
-            n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;neg_mean_squared_error&#34; (mcc score).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+            n_try (int, optional): The number of trials optuna should try. Defaults to 25.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mcc&#34;.
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
         &#34;&#34;&#34;
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
                          validate_penalty=validate_penalty)
+
+    def name(self):
+        return &#34;DecisionTree&#34;
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = super().reference()
+        refer[
+            self.name() +
+            &#34; document&#34;] = &#34;https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html&#34;
+        refer[
+            self.name() +
+            &#34; publication&#34;] = &#34;https://www.taylorfrancis.com/books/mono/10.1201/9781315139470/classification-regression-trees-leo-breiman-jerome-friedman-olshen-charles-stone&#34;
+
+        return refer
 
     def create_model(self, trial, default=False):
         if default:
@@ -1145,34 +1795,38 @@ float: The score.</p></div>
                 trial.suggest_float(&#39;ccp_alpha&#39;, 1e-3, 1e-1, log=True),
                 &#34;random_state&#34;:
                 self.kernel_seed_tape[trial.number],
-                &#34;class_weight&#34;:
-                &#34;balanced&#34;
             }
         DT = DecisionTreeClassifier(**parms)
         return DT</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="PineBioML.model.supervised.Classification.Classification_tuner" href="#PineBioML.model.supervised.Classification.Classification_tuner">Classification_tuner</a></li>
 <li><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></b></code>:
+<li><code><b><a title="PineBioML.model.supervised.Classification.Classification_tuner" href="#PineBioML.model.supervised.Classification.Classification_tuner">Classification_tuner</a></b></code>:
 <ul class="hlist">
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.create_model" href="index.html#PineBioML.model.supervised.Basic_tuner.create_model">create_model</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict_proba" href="index.html#PineBioML.model.supervised.Basic_tuner.predict_proba">predict_proba</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.check_task" href="index.html#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.create_model" href="#PineBioML.model.supervised.Classification.Classification_tuner.create_model">create_model</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.get_scorer" href="index.html#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.is_regression" href="#PineBioML.model.supervised.Classification.Classification_tuner.is_regression">is_regression</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.name" href="#PineBioML.model.supervised.Classification.Classification_tuner.name">name</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.predict_proba" href="#PineBioML.model.supervised.Classification.Classification_tuner.predict_proba">predict_proba</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.reference" href="index.html#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
 <dt id="PineBioML.model.supervised.Classification.ElasticLogit_tuner"><code class="flex name class">
 <span>class <span class="ident">ElasticLogit_tuner</span></span>
-<span>(</span><span>kernel='saga', n_try=25, target='matthews_corrcoef', kernel_seed=None, valid_seed=None, optuna_seed=71, validate_penalty=True)</span>
+<span>(</span><span>n_try=25, n_cv=5, target='mcc', kernel_seed: int = None, valid_seed: int = None, optuna_seed: int = None, validate_penalty=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Tuning a elasic net logistic regression.
@@ -1181,76 +1835,96 @@ float: The score.</p></div>
 </p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>kernel</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>It will be passed to "solver" of sklearn.linear_model.LogisticRegression . Defaults to "saga".
-</dd>
 <dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Times to try. Defaults to 25.
-</dd>
+<dd>The number of trials optuna should try. Defaults to 25.</dd>
+<dt><strong><code>n_cv</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.</dd>
 <dt><strong><code>target</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "matthews_corrcoef" (mcc score).
-</dd>
-<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code></dt>
-<dd>random seed for model kernel. </dd>
-<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code></dt>
-<dd>random seed for cross validation</dd>
+<dd>The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mcc".</dd>
+<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for model. Defaults to None.</dd>
+<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for cross validation. Defaults to None.</dd>
 <dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>random seed for optuna. Defaults to 71.</dd>
+<dd>Random seed for optuna's hyperparameter sampling. Defaults to None.</dd>
+<dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>True to penalty the overfitting by difference between training score and cv score. Defaults to True.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ElasticLogit_tuner(Basic_tuner):
+<pre><code class="python">class ElasticLogit_tuner(Classification_tuner):
     &#34;&#34;&#34;
     Tuning a elasic net logistic regression.    
     [sklearn.linear_model.LogisticRegression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression), reminds the choice of the algorithm depends on the penalty chosen and on (multinomial) multiclass support.    
     &#34;&#34;&#34;
 
     def __init__(self,
-                 kernel=&#34;saga&#34;,
                  n_try=25,
-                 target=&#34;matthews_corrcoef&#34;,
-                 kernel_seed=None,
-                 valid_seed=None,
-                 optuna_seed=71,
+                 n_cv=5,
+                 target=&#34;mcc&#34;,
+                 kernel_seed: int = None,
+                 valid_seed: int = None,
+                 optuna_seed: int = None,
                  validate_penalty=True):
         &#34;&#34;&#34;
+
         Args:
-            kernel (str, optional): It will be passed to &#34;solver&#34; of sklearn.linear_model.LogisticRegression . Defaults to &#34;saga&#34;.    
-            n_try (int, optional): Times to try. Defaults to 25.    
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;matthews_corrcoef&#34; (mcc score).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+            n_try (int, optional): The number of trials optuna should try. Defaults to 25.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mcc&#34;.
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
         &#34;&#34;&#34;
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
                          validate_penalty=validate_penalty)
 
-        # ‘saga’ fast convergence is only guaranteed on features with approximately the same scale. You should do a feature-wise (between sample) normalization before fitting.
-        self.kernel = kernel  # sage, lbfgs
+        # &#34;saga&#34; fast convergence is only guaranteed on features with approximately the same scale. You should do a feature-wise (between sample) normalization before fitting.
+        self.kernel = &#34;saga&#34;
         self.penalty = &#34;elasticnet&#34;
-        #print(&#34;Logistic Regression with: &#34;, self.penalty, &#34; penalty, &#34;, self.kernel, &#34; solver.&#34;)
+
+    def name(self):
+        return &#34;ElasticNetLogisticRegression&#34;
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = super().reference()
+        refer[
+            self.name() +
+            &#34; document&#34;] = &#34;https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html&#34;
+        return refer
 
     def create_model(self, trial, default=False):
         if default:
             parms = {
-                &#34;verbose&#34;: 0,
+                &#34;C&#34;: 1.0,
                 &#34;l1_ratio&#34;: 0.5,
                 &#34;penalty&#34;: self.penalty,
-                &#34;solver&#34;: self.kernel
+                &#34;solver&#34;: self.kernel,
+                &#34;random_state&#34;: self.kernel_seed_tape[trial.number],
+                &#34;verbose&#34;: 0
             }
         else:
             parms = {
                 &#34;C&#34;: trial.suggest_float(&#39;C&#39;, 1e-6, 1e+2, log=True),
                 &#34;l1_ratio&#34;: trial.suggest_float(&#39;l1_ratio&#39;, 0, 1),
                 &#34;penalty&#34;: self.penalty,
-                &#34;class_weight&#34;: &#34;balanced&#34;,
                 &#34;solver&#34;: self.kernel,
+                &#34;random_state&#34;: self.kernel_seed_tape[trial.number],
                 &#34;verbose&#34;: 0,
             }
         lg = LogisticRegression(**parms)
@@ -1261,15 +1935,24 @@ float: The score.</p></div>
         It is the way I found to cram a sklearn regression result into the statsmodel regresion.    
         The only reason to do this is that statsmodel provides R-style summary.    
         &#34;&#34;&#34;
-        sm_logit = Logit(self.y, self.x).fit(
-            disp=False,
-            start_params=self.best_model.coef_.flatten(),
-            maxiter=0,
-            warn_convergence=False)
+        if len(self.best_model.classes_) &gt; 2:
+            # multi-class classification
+            # Todo
+            raise TypeError(
+                &#34;multi-class classification summary not support yet. Please tell me why do you need that in a multi-class classification task&#34;
+            )
+        else:
+            # binary classification
+            sm_logit = Logit(self.y, self.x).fit(
+                disp=False,
+                start_params=self.best_model.coef_.flatten(),
+                maxiter=0,
+                warn_convergence=False)
         print(sm_logit.summary())</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="PineBioML.model.supervised.Classification.Classification_tuner" href="#PineBioML.model.supervised.Classification.Classification_tuner">Classification_tuner</a></li>
 <li><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></li>
 <li>abc.ABC</li>
 </ul>
@@ -1291,32 +1974,45 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
     It is the way I found to cram a sklearn regression result into the statsmodel regresion.    
     The only reason to do this is that statsmodel provides R-style summary.    
     &#34;&#34;&#34;
-    sm_logit = Logit(self.y, self.x).fit(
-        disp=False,
-        start_params=self.best_model.coef_.flatten(),
-        maxiter=0,
-        warn_convergence=False)
+    if len(self.best_model.classes_) &gt; 2:
+        # multi-class classification
+        # Todo
+        raise TypeError(
+            &#34;multi-class classification summary not support yet. Please tell me why do you need that in a multi-class classification task&#34;
+        )
+    else:
+        # binary classification
+        sm_logit = Logit(self.y, self.x).fit(
+            disp=False,
+            start_params=self.best_model.coef_.flatten(),
+            maxiter=0,
+            warn_convergence=False)
     print(sm_logit.summary())</code></pre>
 </details>
 </dd>
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></b></code>:
+<li><code><b><a title="PineBioML.model.supervised.Classification.Classification_tuner" href="#PineBioML.model.supervised.Classification.Classification_tuner">Classification_tuner</a></b></code>:
 <ul class="hlist">
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.create_model" href="index.html#PineBioML.model.supervised.Basic_tuner.create_model">create_model</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict_proba" href="index.html#PineBioML.model.supervised.Basic_tuner.predict_proba">predict_proba</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.check_task" href="index.html#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.create_model" href="#PineBioML.model.supervised.Classification.Classification_tuner.create_model">create_model</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.get_scorer" href="index.html#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.is_regression" href="#PineBioML.model.supervised.Classification.Classification_tuner.is_regression">is_regression</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.name" href="#PineBioML.model.supervised.Classification.Classification_tuner.name">name</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.predict_proba" href="#PineBioML.model.supervised.Classification.Classification_tuner.predict_proba">predict_proba</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.reference" href="index.html#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
 <dt id="PineBioML.model.supervised.Classification.LighGBM_tuner"><code class="flex name class">
 <span>class <span class="ident">LighGBM_tuner</span></span>
-<span>(</span><span>n_try=200, target='matthews_corrcoef', kernel_seed=None, valid_seed=None, optuna_seed=71, validate_penalty=True)</span>
+<span>(</span><span>n_try=75, n_cv=5, target='mcc', kernel_seed=None, valid_seed=None, optuna_seed=None, validate_penalty=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Tuning a LighGBM classifier model.
@@ -1330,22 +2026,25 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Times to try. Defaults to 50.</dd>
+<dd>The number of trials optuna should try. Defaults to 75.</dd>
+<dt><strong><code>n_cv</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.</dd>
 <dt><strong><code>target</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "neg_mean_squared_error" (mcc score).
-</dd>
-<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code></dt>
-<dd>random seed for model kernel. </dd>
-<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code></dt>
-<dd>random seed for cross validation</dd>
+<dd>The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mcc".</dd>
+<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for model. Defaults to None.</dd>
+<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for cross validation. Defaults to None.</dd>
 <dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>random seed for optuna. Defaults to 71.</dd>
+<dd>Random seed for optuna's hyperparameter sampling. Defaults to None.</dd>
+<dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>True to penalty the overfitting by difference between training score and cv score. Defaults to True.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class LighGBM_tuner(Basic_tuner):
+<pre><code class="python">class LighGBM_tuner(Classification_tuner):
     &#34;&#34;&#34;
     Tuning a LighGBM classifier model.    
     [lightgbm.LGBMClassifier](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html)     
@@ -1355,28 +2054,52 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
     &#34;&#34;&#34;
 
     def __init__(self,
-                 n_try=200,
-                 target=&#34;matthews_corrcoef&#34;,
+                 n_try=75,
+                 n_cv=5,
+                 target=&#34;mcc&#34;,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         &#34;&#34;&#34;
 
         Args:
-            n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;neg_mean_squared_error&#34; (mcc score).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
-        
+            n_try (int, optional): The number of trials optuna should try. Defaults to 75.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mcc&#34;.
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.        
         &#34;&#34;&#34;
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
                          validate_penalty=validate_penalty)
+
+    def name(self):
+        return &#34;LightGBM&#34;
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = super().reference()
+        refer[
+            self.name() +
+            &#34; document&#34;] = &#34;https://lightgbm.readthedocs.io/en/latest/index.html&#34;
+        refer[
+            self.name() +
+            &#34; publication&#34;] = &#34;https://proceedings.neurips.cc/paper_files/paper/2017/file/6449f44a102fde848669bdd9eb6b76fa-Paper.pdf&#34;
+
+        return refer
 
     def create_model(self, trial, default=False):
         if default:
@@ -1426,8 +2149,6 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
                 trial.suggest_float(&#39;reg_lambda&#39;, 5e-3, 1e+1, log=True),
                 &#34;n_jobs&#34;:
                 None,
-                &#34;class_weight&#34;:
-                &#34;balanced&#34;,
                 &#34;random_state&#34;:
                 self.kernel_seed_tape[trial.number],
                 &#34;verbosity&#34;:
@@ -1439,26 +2160,32 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="PineBioML.model.supervised.Classification.Classification_tuner" href="#PineBioML.model.supervised.Classification.Classification_tuner">Classification_tuner</a></li>
 <li><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></b></code>:
+<li><code><b><a title="PineBioML.model.supervised.Classification.Classification_tuner" href="#PineBioML.model.supervised.Classification.Classification_tuner">Classification_tuner</a></b></code>:
 <ul class="hlist">
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.create_model" href="index.html#PineBioML.model.supervised.Basic_tuner.create_model">create_model</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict_proba" href="index.html#PineBioML.model.supervised.Basic_tuner.predict_proba">predict_proba</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.check_task" href="index.html#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.create_model" href="#PineBioML.model.supervised.Classification.Classification_tuner.create_model">create_model</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.get_scorer" href="index.html#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.is_regression" href="#PineBioML.model.supervised.Classification.Classification_tuner.is_regression">is_regression</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.name" href="#PineBioML.model.supervised.Classification.Classification_tuner.name">name</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.predict_proba" href="#PineBioML.model.supervised.Classification.Classification_tuner.predict_proba">predict_proba</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.reference" href="index.html#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
 <dt id="PineBioML.model.supervised.Classification.RandomForest_tuner"><code class="flex name class">
 <span>class <span class="ident">RandomForest_tuner</span></span>
-<span>(</span><span>using_oob=True, n_try=50, target='matthews_corrcoef', kernel_seed=None, valid_seed=None, optuna_seed=71, validate_penalty=True)</span>
+<span>(</span><span>using_oob=True, n_try=50, n_cv=5, target='mcc', kernel_seed=None, valid_seed=None, optuna_seed=None, validate_penalty=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Tuning a random forest model.
@@ -1469,22 +2196,25 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
 <dt><strong><code>using_oob</code></strong> :&ensp;<code>bool</code>, optional</dt>
 <dd>Using out of bag score as validation. Defaults to True.</dd>
 <dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Times to try. Defaults to 50.</dd>
+<dd>The number of trials optuna should try. Defaults to 50.</dd>
+<dt><strong><code>n_cv</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.</dd>
 <dt><strong><code>target</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "neg_mean_squared_error" (mcc score).
-</dd>
-<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code></dt>
-<dd>random seed for model kernel. </dd>
-<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code></dt>
-<dd>random seed for cross validation</dd>
+<dd>The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mcc".</dd>
+<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for model. Defaults to None.</dd>
+<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for cross validation. Defaults to None.</dd>
 <dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>random seed for optuna. Defaults to 71.</dd>
+<dd>Random seed for optuna's hyperparameter sampling. Defaults to None.</dd>
+<dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>True to penalty the overfitting by difference between training score and cv score. Defaults to True.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class RandomForest_tuner(Basic_tuner):
+<pre><code class="python">class RandomForest_tuner(Classification_tuner):
     &#34;&#34;&#34;
     Tuning a random forest model.    
     [sklearn.ensemble.RandomForestClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
@@ -1493,22 +2223,26 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
     def __init__(self,
                  using_oob=True,
                  n_try=50,
-                 target=&#34;matthews_corrcoef&#34;,
+                 n_cv=5,
+                 target=&#34;mcc&#34;,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         &#34;&#34;&#34;
 
         Args:
             using_oob (bool, optional): Using out of bag score as validation. Defaults to True.
-            n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;neg_mean_squared_error&#34; (mcc score).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+            n_try (int, optional): The number of trials optuna should try. Defaults to 50.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mcc&#34;.
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
         &#34;&#34;&#34;
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
@@ -1517,29 +2251,44 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
 
         self.using_oob = using_oob
 
+    def name(self):
+        return &#34;RandomForest&#34;
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = super().reference()
+        refer[
+            self.name() +
+            &#34; document&#34;] = &#34;https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html&#34;
+        refer[
+            self.name() +
+            &#34; publication&#34;] = &#34;https://www.stat.berkeley.edu/~breiman/randomforest2001.pdf&#34;
+
+        return refer
+
     def create_model(self, trial, default=False):
         if default:
             parms = {
                 &#34;bootstrap&#34;: self.using_oob,
                 &#34;oob_score&#34;: self.using_oob,
                 &#34;n_jobs&#34;: -1,
-                &#34;random_state&#34;: self.kernel_seed,
+                &#34;random_state&#34;: self.kernel_seed_tape[trial.number],
                 &#34;verbose&#34;: 0,
             }
         else:
             parms = {
                 &#34;n_estimators&#34;:
                 trial.suggest_int(&#39;n_estimators&#39;, 32, 1024, log=True),
-                &#34;max_depth&#34;:
-                trial.suggest_int(&#39;max_depth&#39;, 2, 16, log=True),
-                #&#34;min_samples_split&#34;:
-                #trial.suggest_int(&#39;min_samples_split&#39;, 2, 16, log=True),
                 &#34;min_samples_leaf&#34;:
-                trial.suggest_int(&#39;min_samples_leaf&#39;, 1, 16, log=True),
-                #&#34;min_weight_fraction_leaf&#34;:
-                #trial.suggest_float(&#39;min_weight_fraction_leaf&#39;, 1e-4, 1e-1, log=True),
+                trial.suggest_int(&#39;min_samples_leaf&#39;, 1, 32, log=True),
                 &#34;ccp_alpha&#34;:
-                trial.suggest_float(&#39;ccp_alpha&#39;, 1e-3, 1e-1, log=True),
+                trial.suggest_float(&#39;ccp_alpha&#39;, 1e-4, 1e-1, log=True),
                 &#34;max_samples&#34;:
                 trial.suggest_float(&#39;max_samples&#39;, 0.5, 0.9, log=True),
                 &#34;bootstrap&#34;:
@@ -1552,8 +2301,6 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
                 self.kernel_seed_tape[trial.number],
                 &#34;verbose&#34;:
                 0,
-                &#34;class_weight&#34;:
-                &#34;balanced&#34;
             }
 
         rf = RandomForestClassifier(**parms)
@@ -1573,32 +2320,66 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
 
         if self.using_oob:
             # oob predict
-            classifier_obj.fit(self.x, self.y)
-            y_pred = classifier_obj.oob_decision_function_[:, 1]
+            # there is a bug that default sklaern randomforest parallel_backend using thread where others use &#34;loky&#34;, see joblib.parallel_backend.
+            with parallel_backend(&#39;loky&#39;):
+                classifier_obj.fit(self.x,
+                                   self.y,
+                                   sample_weight=compute_sample_weight(
+                                       class_weight=&#34;balanced&#34;, y=self.y))
+
+            # oob prediction
+            y_pred = classifier_obj.oob_decision_function_
+            if self.metric_name == &#34;roc_auc&#34;:
+                # roc_auc can only be used on binary classification. Do not try ovr, ovo. forget them.
+                y_pred = y_pred[:, 1]
 
             # oob score
-            if not self.eval_prob:
-                # !!! some metrics (such as accuracy and F1) require discrete predictions.
-                # !!! If the score function raise an error about y_pred should not be float,
-                # !!! then please add the name of your metric(target) into Basic_tuner&#39;s &#34;discrete_target&#34; in ./__init__.py.
-                y_pred = y_pred &gt; 0.5
-            score = self.metric._score_func(self.y, y_pred)
+            ### manual scorer wraper.
+            if self.metric_using_proba:
+                score = self.metric._score_func(self.y, y_pred,
+                                                **self.scorer_kargs)
+            else:
+                # revert to class symbols.
+                y_pred = classifier_obj.classes_[y_pred.argmax(axis=-1)]
+                score = self.metric._score_func(self.y, y_pred,
+                                                **self.scorer_kargs)
+            if not self.metric_great_better:
+                # if not great is better, then multiply -1
+                score *= -1
         else:
             # cv score
-            score = cross_val_score(
-                classifier_obj,
-                self.x,
-                self.y,
-                cv=StratifiedKFold(
-                    n_splits=5,
-                    shuffle=True,
-                    random_state=self.valid_seed_tape[trial.number]),
-                scoring=self.metric)
-            score = score.mean()
+            cv = StratifiedKFold(
+                n_splits=self.n_cv,
+                shuffle=True,
+                random_state=self.valid_seed_tape[trial.number])
+
+            score = []
+            for i, (train_ind, test_ind) in enumerate(cv.split(self.x,
+                                                               self.y)):
+                x_train = self.x.iloc[train_ind]
+                y_train = self.y.iloc[train_ind]
+                x_test = self.x.iloc[test_ind]
+                y_test = self.y.iloc[test_ind]
+
+                with parallel_backend(&#39;loky&#39;):
+                    classifier_obj.fit(x_train,
+                                       y_train,
+                                       sample_weight=compute_sample_weight(
+                                           class_weight=&#34;balanced&#34;, y=y_train))
+
+                test_score = self.metric(classifier_obj, x_test, y_test)
+                train_score = self.metric(classifier_obj, x_train, y_train)
+                if self.validate_penalty:
+                    score.append(test_score + 0.1 * (test_score - train_score))
+                else:
+                    score.append(test_score)
+
+            score = sum(score) / self.n_cv
         return score</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="PineBioML.model.supervised.Classification.Classification_tuner" href="#PineBioML.model.supervised.Classification.Classification_tuner">Classification_tuner</a></li>
 <li><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></li>
 <li>abc.ABC</li>
 </ul>
@@ -1636,48 +2417,86 @@ float: The score.</p></div>
 
     if self.using_oob:
         # oob predict
-        classifier_obj.fit(self.x, self.y)
-        y_pred = classifier_obj.oob_decision_function_[:, 1]
+        # there is a bug that default sklaern randomforest parallel_backend using thread where others use &#34;loky&#34;, see joblib.parallel_backend.
+        with parallel_backend(&#39;loky&#39;):
+            classifier_obj.fit(self.x,
+                               self.y,
+                               sample_weight=compute_sample_weight(
+                                   class_weight=&#34;balanced&#34;, y=self.y))
+
+        # oob prediction
+        y_pred = classifier_obj.oob_decision_function_
+        if self.metric_name == &#34;roc_auc&#34;:
+            # roc_auc can only be used on binary classification. Do not try ovr, ovo. forget them.
+            y_pred = y_pred[:, 1]
 
         # oob score
-        if not self.eval_prob:
-            # !!! some metrics (such as accuracy and F1) require discrete predictions.
-            # !!! If the score function raise an error about y_pred should not be float,
-            # !!! then please add the name of your metric(target) into Basic_tuner&#39;s &#34;discrete_target&#34; in ./__init__.py.
-            y_pred = y_pred &gt; 0.5
-        score = self.metric._score_func(self.y, y_pred)
+        ### manual scorer wraper.
+        if self.metric_using_proba:
+            score = self.metric._score_func(self.y, y_pred,
+                                            **self.scorer_kargs)
+        else:
+            # revert to class symbols.
+            y_pred = classifier_obj.classes_[y_pred.argmax(axis=-1)]
+            score = self.metric._score_func(self.y, y_pred,
+                                            **self.scorer_kargs)
+        if not self.metric_great_better:
+            # if not great is better, then multiply -1
+            score *= -1
     else:
         # cv score
-        score = cross_val_score(
-            classifier_obj,
-            self.x,
-            self.y,
-            cv=StratifiedKFold(
-                n_splits=5,
-                shuffle=True,
-                random_state=self.valid_seed_tape[trial.number]),
-            scoring=self.metric)
-        score = score.mean()
+        cv = StratifiedKFold(
+            n_splits=self.n_cv,
+            shuffle=True,
+            random_state=self.valid_seed_tape[trial.number])
+
+        score = []
+        for i, (train_ind, test_ind) in enumerate(cv.split(self.x,
+                                                           self.y)):
+            x_train = self.x.iloc[train_ind]
+            y_train = self.y.iloc[train_ind]
+            x_test = self.x.iloc[test_ind]
+            y_test = self.y.iloc[test_ind]
+
+            with parallel_backend(&#39;loky&#39;):
+                classifier_obj.fit(x_train,
+                                   y_train,
+                                   sample_weight=compute_sample_weight(
+                                       class_weight=&#34;balanced&#34;, y=y_train))
+
+            test_score = self.metric(classifier_obj, x_test, y_test)
+            train_score = self.metric(classifier_obj, x_train, y_train)
+            if self.validate_penalty:
+                score.append(test_score + 0.1 * (test_score - train_score))
+            else:
+                score.append(test_score)
+
+        score = sum(score) / self.n_cv
     return score</code></pre>
 </details>
 </dd>
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></b></code>:
+<li><code><b><a title="PineBioML.model.supervised.Classification.Classification_tuner" href="#PineBioML.model.supervised.Classification.Classification_tuner">Classification_tuner</a></b></code>:
 <ul class="hlist">
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.create_model" href="index.html#PineBioML.model.supervised.Basic_tuner.create_model">create_model</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict_proba" href="index.html#PineBioML.model.supervised.Basic_tuner.predict_proba">predict_proba</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.check_task" href="index.html#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.create_model" href="#PineBioML.model.supervised.Classification.Classification_tuner.create_model">create_model</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.get_scorer" href="index.html#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.is_regression" href="#PineBioML.model.supervised.Classification.Classification_tuner.is_regression">is_regression</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.name" href="#PineBioML.model.supervised.Classification.Classification_tuner.name">name</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.predict_proba" href="#PineBioML.model.supervised.Classification.Classification_tuner.predict_proba">predict_proba</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.reference" href="index.html#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
 <dt id="PineBioML.model.supervised.Classification.SVM_tuner"><code class="flex name class">
 <span>class <span class="ident">SVM_tuner</span></span>
-<span>(</span><span>kernel='rbf', n_try=25, target='matthews_corrcoef', kernel_seed=None, valid_seed=None, optuna_seed=71, validate_penalty=True)</span>
+<span>(</span><span>kernel: Literal['linear', 'poly', 'rbf', 'sigmoid'] = 'rbf', n_try=25, n_cv=5, target='mcc', kernel_seed=None, valid_seed=None, optuna_seed=None, validate_penalty=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Tuning a support vector machine.
@@ -1685,48 +2504,55 @@ float: The score.</p></div>
 <a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html">sklearn.svm.SVC</a></p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>kernel</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>This will be passed to the attribute of SVC: "kernel". Defaults to "rbf".</dd>
+<dt>kernel (Literal[&quot;linear&quot;, &quot;poly&quot;, &quot;rbf&quot;, &quot;sigmoid&quot;], optional): This will be passed to the attribute of SVC: "kernel". Defaults to "rbf".</dt>
 <dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Times to try. Defaults to 50.</dd>
+<dd>The number of trials optuna should try. Defaults to 25.</dd>
+<dt><strong><code>n_cv</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.</dd>
 <dt><strong><code>target</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "neg_mean_squared_error" (mcc score).
-</dd>
-<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code></dt>
-<dd>random seed for model kernel. </dd>
-<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code></dt>
-<dd>random seed for cross validation</dd>
+<dd>The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mcc".</dd>
+<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for model. Defaults to None.</dd>
+<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for cross validation. Defaults to None.</dd>
 <dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>random seed for optuna. Defaults to 71.</dd>
+<dd>Random seed for optuna's hyperparameter sampling. Defaults to None.</dd>
+<dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>True to penalty the overfitting by difference between training score and cv score. Defaults to True.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class SVM_tuner(Basic_tuner):
+<pre><code class="python">class SVM_tuner(Classification_tuner):
     &#34;&#34;&#34;
     Tuning a support vector machine.    
     [sklearn.svm.SVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html)
     &#34;&#34;&#34;
 
     def __init__(self,
-                 kernel=&#34;rbf&#34;,
+                 kernel: Literal[&#34;linear&#34;, &#34;poly&#34;, &#34;rbf&#34;, &#34;sigmoid&#34;] = &#34;rbf&#34;,
                  n_try=25,
-                 target=&#34;matthews_corrcoef&#34;,
+                 n_cv=5,
+                 target=&#34;mcc&#34;,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         &#34;&#34;&#34;
+
         Args:
-            kernel (str, optional): This will be passed to the attribute of SVC: &#34;kernel&#34;. Defaults to &#34;rbf&#34;.
-            n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;neg_mean_squared_error&#34; (mcc score).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+            kernel (Literal[&amp;quot;linear&amp;quot;, &amp;quot;poly&amp;quot;, &amp;quot;rbf&amp;quot;, &amp;quot;sigmoid&amp;quot;], optional): This will be passed to the attribute of SVC: &#34;kernel&#34;. Defaults to &#34;rbf&#34;.
+            n_try (int, optional): The number of trials optuna should try. Defaults to 25.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mcc&#34;.
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
         &#34;&#34;&#34;
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
@@ -1734,11 +2560,32 @@ float: The score.</p></div>
                          validate_penalty=validate_penalty)
         self.kernel = kernel  # rbf, linear, poly, sigmoid
 
+    def name(self):
+        return self.kernel + &#34;-SVM&#34;
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = super().reference()
+        refer[
+            self.name() +
+            &#34; document&#34;] = &#34;https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html&#34;
+        refer[
+            self.name() +
+            &#34; publication&#34;] = &#34;https://citeseerx.ist.psu.edu/doc_view/pid/42e5ed832d4310ce4378c44d05570439df28a393&#34;
+
+        return refer
+
     def create_model(self, trial, default=False):
         if default:
             parms = {
                 &#34;kernel&#34;: self.kernel,
-                &#34;random_state&#34;: self.kernel_seed,
+                &#34;random_state&#34;: self.kernel_seed_tape[trial.number],
                 &#34;probability&#34;: True
             }
         else:
@@ -1749,42 +2596,46 @@ float: The score.</p></div>
                                     1e-4 * np.sqrt(self.n_sample),
                                     1e+2 * np.sqrt(self.n_sample),
                                     log=True),
-                &#34;kernel&#34;:
-                self.kernel,
-                &#34;class_weight&#34;:
-                &#34;balanced&#34;,
                 &#34;gamma&#34;:
                 &#34;auto&#34;,
-                &#34;probability&#34;:
-                True,
+                &#34;kernel&#34;:
+                self.kernel,
                 &#34;random_state&#34;:
-                self.kernel_seed_tape[trial.number]
+                self.kernel_seed_tape[trial.number],
+                &#34;probability&#34;:
+                True
             }
         svm = SVC(**parms)
         return svm</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="PineBioML.model.supervised.Classification.Classification_tuner" href="#PineBioML.model.supervised.Classification.Classification_tuner">Classification_tuner</a></li>
 <li><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></b></code>:
+<li><code><b><a title="PineBioML.model.supervised.Classification.Classification_tuner" href="#PineBioML.model.supervised.Classification.Classification_tuner">Classification_tuner</a></b></code>:
 <ul class="hlist">
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.create_model" href="index.html#PineBioML.model.supervised.Basic_tuner.create_model">create_model</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict_proba" href="index.html#PineBioML.model.supervised.Basic_tuner.predict_proba">predict_proba</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.check_task" href="index.html#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.create_model" href="#PineBioML.model.supervised.Classification.Classification_tuner.create_model">create_model</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.get_scorer" href="index.html#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.is_regression" href="#PineBioML.model.supervised.Classification.Classification_tuner.is_regression">is_regression</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.name" href="#PineBioML.model.supervised.Classification.Classification_tuner.name">name</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.predict_proba" href="#PineBioML.model.supervised.Classification.Classification_tuner.predict_proba">predict_proba</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.reference" href="index.html#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
 <dt id="PineBioML.model.supervised.Classification.XGBoost_tuner"><code class="flex name class">
 <span>class <span class="ident">XGBoost_tuner</span></span>
-<span>(</span><span>n_try=200, target='matthews_corrcoef', kernel_seed=None, valid_seed=None, optuna_seed=71, validate_penalty=True)</span>
+<span>(</span><span>n_try=75, n_cv=5, target='mcc', kernel_seed=None, valid_seed=None, optuna_seed=None, validate_penalty=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Tuning a XGBoost classifier model.
@@ -1801,22 +2652,25 @@ float: The score.</p></div>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Times to try. Defaults to 50.</dd>
+<dd>The number of trials optuna should try. Defaults to 75.</dd>
+<dt><strong><code>n_cv</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.</dd>
 <dt><strong><code>target</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to "neg_mean_squared_error" (mcc score).
-</dd>
-<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code></dt>
-<dd>random seed for model kernel. </dd>
-<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code></dt>
-<dd>random seed for cross validation</dd>
+<dd>The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mcc".</dd>
+<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for model. Defaults to None.</dd>
+<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for cross validation. Defaults to None.</dd>
 <dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>random seed for optuna. Defaults to 71.</dd>
+<dd>Random seed for optuna's hyperparameter sampling. Defaults to None.</dd>
+<dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>True to penalty the overfitting by difference between training score and cv score. Defaults to True.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class XGBoost_tuner(Basic_tuner):
+<pre><code class="python">class XGBoost_tuner(Classification_tuner):
     &#34;&#34;&#34;
     Tuning a XGBoost classifier model.    
     [xgboost.XGBClassifier](https://xgboost.readthedocs.io/en/stable/python/python_api.html)
@@ -1829,34 +2683,58 @@ float: The score.</p></div>
     &#34;&#34;&#34;
 
     def __init__(self,
-                 n_try=200,
-                 target=&#34;matthews_corrcoef&#34;,
+                 n_try=75,
+                 n_cv=5,
+                 target=&#34;mcc&#34;,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=71,
+                 optuna_seed=None,
                  validate_penalty=True):
         &#34;&#34;&#34;
 
         Args:
-            n_try (int, optional): Times to try. Defaults to 50.
-            target (str, optional): The target of hyperparameter tuning. It will pass to sklearn.metrics.get_scorer . Using sklearn.metrics.get_scorer_names() to list available metrics. Defaults to &#34;neg_mean_squared_error&#34; (mcc score).    
-            kernel_seed (int): random seed for model kernel. 
-            valid_seed (int): random seed for cross validation
-            optuna_seed (int, optional): random seed for optuna. Defaults to 71.     
+            n_try (int, optional): The number of trials optuna should try. Defaults to 75.
+            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
+            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mcc&#34;.
+            kernel_seed (int, optional): Random seed for model. Defaults to None.
+            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
+            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
+            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
         
         &#34;&#34;&#34;
         super().__init__(n_try=n_try,
+                         n_cv=n_cv,
                          target=target,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
                          validate_penalty=validate_penalty)
 
+    def name(self):
+        return &#34;XGBoost&#34;
+
+    def reference(self) -&gt; dict[str, str]:
+        &#34;&#34;&#34;
+        This function will return reference of this method in python dict.    
+        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
+
+        Returns:
+            dict[str, str]: a dict of reference.
+        &#34;&#34;&#34;
+        refer = super().reference()
+        refer[self.name() +
+              &#34; document&#34;] = &#34;https://xgboost.readthedocs.io/en/stable/&#34;
+        refer[
+            self.name() +
+            &#34; publication&#34;] = &#34;https://dl.acm.org/doi/10.1145/2939672.2939785&#34;
+
+        return refer
+
     def create_model(self, trial, default=False):
         if default:
             parms = {
                 &#34;n_jobs&#34;: None,
-                &#34;random_state&#34;: self.kernel_seed,
+                &#34;random_state&#34;: self.kernel_seed_tape[trial.number],
                 &#34;verbosity&#34;: 0
             }
         else:
@@ -1873,7 +2751,7 @@ float: The score.</p></div>
 
             parms = {
                 &#34;n_estimators&#34;:
-                trial.suggest_int(&#39;n_estimators&#39;, 16, 512, log=True),
+                trial.suggest_int(&#39;n_estimators&#39;, 16, 256, log=True),
                 &#34;max_depth&#34;:
                 trial.suggest_int(&#39;max_depth&#39;, 2, 16, log=True),
                 &#34;gamma&#34;:
@@ -1884,8 +2762,6 @@ float: The score.</p></div>
                 sampling_rate,
                 &#34;colsample_bytree&#34;:
                 col_sampling_rate,
-                #&#34;min_child_weight&#34;:
-                #trial.suggest_float(&#39;min_child_weight&#39;, 1e-3, 1e+2, log=True),
                 &#34;reg_lambda&#34;:
                 trial.suggest_float(&#39;reg_lambda&#39;, 1e-2, 1e+1, log=True),
                 &#34;n_jobs&#34;:
@@ -1897,125 +2773,29 @@ float: The score.</p></div>
             }
 
         xgb = XGBClassifier(**parms)
-        return xgb
-
-    def evaluate(self, trial, default=False):
-        &#34;&#34;&#34;
-        xgboost do not support class_weight.    
-        we use sample_weight as substitute.    
-
-        Args:
-            trial (optuna.trial.Trial): optuna trial in this call.
-            default (bool): To use default hyper parameter. This argument will be passed to creat_model
-        Returns:
-            float: The score.    
-        ToDo:
-            manage class_weight manually in baseclass. for consistency.    
-
-        &#34;&#34;&#34;
-        classifier_obj = self.create_model(trial, default)
-
-        cv = StratifiedKFold(n_splits=5,
-                             shuffle=True,
-                             random_state=self.valid_seed_tape[trial.number])
-
-        score = []
-        for i, (train_ind, test_ind) in enumerate(cv.split(self.x, self.y)):
-            x_train = self.x.iloc[train_ind]
-            y_train = self.y.iloc[train_ind]
-            x_test = self.x.iloc[test_ind]
-            y_test = self.y.iloc[test_ind]
-
-            classifier_obj.fit(x_train,
-                               y_train,
-                               sample_weight=compute_sample_weight(
-                                   class_weight=&#34;balanced&#34;, y=y_train))
-
-            score.append(self.metric(classifier_obj, x_test, y_test))
-        score = np.array(score).mean()
-        return score</code></pre>
+        return xgb</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="PineBioML.model.supervised.Classification.Classification_tuner" href="#PineBioML.model.supervised.Classification.Classification_tuner">Classification_tuner</a></li>
 <li><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></li>
 <li>abc.ABC</li>
 </ul>
-<h3>Methods</h3>
-<dl>
-<dt id="PineBioML.model.supervised.Classification.XGBoost_tuner.evaluate"><code class="name flex">
-<span>def <span class="ident">evaluate</span></span>(<span>self, trial, default=False)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>xgboost do not support class_weight.
-<br>
-we use sample_weight as substitute.
-</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>trial</code></strong> :&ensp;<code>optuna.trial.Trial</code></dt>
-<dd>optuna trial in this call.</dd>
-<dt><strong><code>default</code></strong> :&ensp;<code>bool</code></dt>
-<dd>To use default hyper parameter. This argument will be passed to creat_model</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>float</code></dt>
-<dd>The score.
-</dd>
-</dl>
-<h2 id="todo">Todo</h2>
-<p>manage class_weight manually in baseclass. for consistency.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def evaluate(self, trial, default=False):
-    &#34;&#34;&#34;
-    xgboost do not support class_weight.    
-    we use sample_weight as substitute.    
-
-    Args:
-        trial (optuna.trial.Trial): optuna trial in this call.
-        default (bool): To use default hyper parameter. This argument will be passed to creat_model
-    Returns:
-        float: The score.    
-    ToDo:
-        manage class_weight manually in baseclass. for consistency.    
-
-    &#34;&#34;&#34;
-    classifier_obj = self.create_model(trial, default)
-
-    cv = StratifiedKFold(n_splits=5,
-                         shuffle=True,
-                         random_state=self.valid_seed_tape[trial.number])
-
-    score = []
-    for i, (train_ind, test_ind) in enumerate(cv.split(self.x, self.y)):
-        x_train = self.x.iloc[train_ind]
-        y_train = self.y.iloc[train_ind]
-        x_test = self.x.iloc[test_ind]
-        y_test = self.y.iloc[test_ind]
-
-        classifier_obj.fit(x_train,
-                           y_train,
-                           sample_weight=compute_sample_weight(
-                               class_weight=&#34;balanced&#34;, y=y_train))
-
-        score.append(self.metric(classifier_obj, x_test, y_test))
-    score = np.array(score).mean()
-    return score</code></pre>
-</details>
-</dd>
-</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></b></code>:
+<li><code><b><a title="PineBioML.model.supervised.Classification.Classification_tuner" href="#PineBioML.model.supervised.Classification.Classification_tuner">Classification_tuner</a></b></code>:
 <ul class="hlist">
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.create_model" href="index.html#PineBioML.model.supervised.Basic_tuner.create_model">create_model</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.predict_proba" href="index.html#PineBioML.model.supervised.Basic_tuner.predict_proba">predict_proba</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Basic_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.check_task" href="index.html#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.create_model" href="#PineBioML.model.supervised.Classification.Classification_tuner.create_model">create_model</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.get_scorer" href="index.html#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.is_regression" href="#PineBioML.model.supervised.Classification.Classification_tuner.is_regression">is_regression</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.name" href="#PineBioML.model.supervised.Classification.Classification_tuner.name">name</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.predict_proba" href="#PineBioML.model.supervised.Classification.Classification_tuner.predict_proba">predict_proba</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.reference" href="index.html#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
 </ul>
 </li>
 </ul>
@@ -2046,6 +2826,15 @@ we use sample_weight as substitute.
 </ul>
 </li>
 <li>
+<h4><code><a title="PineBioML.model.supervised.Classification.Classification_tuner" href="#PineBioML.model.supervised.Classification.Classification_tuner">Classification_tuner</a></code></h4>
+<ul class="">
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.create_model" href="#PineBioML.model.supervised.Classification.Classification_tuner.create_model">create_model</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.is_regression" href="#PineBioML.model.supervised.Classification.Classification_tuner.is_regression">is_regression</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.name" href="#PineBioML.model.supervised.Classification.Classification_tuner.name">name</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Classification.Classification_tuner.predict_proba" href="#PineBioML.model.supervised.Classification.Classification_tuner.predict_proba">predict_proba</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="PineBioML.model.supervised.Classification.DecisionTree_tuner" href="#PineBioML.model.supervised.Classification.DecisionTree_tuner">DecisionTree_tuner</a></code></h4>
 </li>
 <li>
@@ -2068,9 +2857,6 @@ we use sample_weight as substitute.
 </li>
 <li>
 <h4><code><a title="PineBioML.model.supervised.Classification.XGBoost_tuner" href="#PineBioML.model.supervised.Classification.XGBoost_tuner">XGBoost_tuner</a></code></h4>
-<ul class="">
-<li><code><a title="PineBioML.model.supervised.Classification.XGBoost_tuner.evaluate" href="#PineBioML.model.supervised.Classification.XGBoost_tuner.evaluate">evaluate</a></code></li>
-</ul>
 </li>
 </ul>
 </li>

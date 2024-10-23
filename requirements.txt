@@ -3,6 +3,7 @@ openpyxl
 xlrd
 tqdm
 seaborn
+plotly
 gprofiler-official
 jupyter
 jupyterlab
