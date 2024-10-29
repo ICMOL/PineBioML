@@ -10,6 +10,7 @@
              - contradicts to log domain in selection method (the negative output of pca)
              - the variance of feature will change during bagging (variance matters)
         2. Lasso logistic regression in grid search need to to modified. In temporary using binary search.
+        3. confusion matrix no title
         
 
     On Going:
