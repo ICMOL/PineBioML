@@ -1,6 +1,5 @@
 # Overview
 This package aims to help analysising biomedical data using ML method in python.    
-We only support binary classification now.
 
 ![image](./documents/images/workflow/PineBioML_workflow_v3.png) 
 
@@ -17,24 +16,21 @@ Please follow the tutorial to install python (the sections "Visual Studio Code" 
 
     https://learn.microsoft.com/en-us/windows/python/beginners 
     
-Please skip this step, if you have python 3.10+ installed in your PC.
+Please skip this step if you already have python 3.10+ installed in your PC.
 
 ### 2. Install dependencies and execute the scripts
 
-Step 1. Download our scripts from Release and unzip it.
+Step 1. Download the examples from Release and unzip it.
 
     https://github.com/ICMOL/undetermined/releases
 
-Step 2. Install dependencies: Please open Windows PowerShell, move to the directory of our scripts, and execute the following command.
+Step 2. Please open Windows PowerShell, and execute the following command.
 
-    pip install -r ./requirements.txt          
+    pip install PineBioML          
 
-Step 3. Open the jupyter interface
+Step 3. Move to the directory of the unzipped examples, and open the jupyter interface. 
 
 Please execute the following command to open jupyter. You will see the figure, if the scripts execute correctly.
-
-    > jupyter lab    
-or    
 
     > python -m notebook
 
@@ -44,7 +40,7 @@ or
 
 # Input Table Format
 
-The input data should be tabular and placed in the ./input folder. We accept .csv, .tsv, .xlsx and R-table in .txt formats.
+The input data should be tabular and placed in the ./input folder. We accept .csv, .tsv, .xlsx and R-table in .txt formats.    
 
 # Process
 
