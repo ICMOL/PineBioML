@@ -1,4 +1,6 @@
-# resource
+##########################################################
+### relative features
+##########################################################
 sklearn estimator guideline:
 https://scikit-learn.org/1.5/developers/develop.html#developer-api-for-html-representation
 
@@ -8,42 +10,60 @@ https://www.jeffchiou.com/blog/hyperparameter-optimization-optuna/
 imbalanced learn:
 https://imbalanced-learn.org/stable/user_guide.html
 
-fairlearn:
+fairlearn(***):
 https://fairlearn.org/v0.10/user_guide/index.html
 
-read the doc
-https://docs.readthedocs.io/en/stable/
-
-Boruta-shap
+Boruta-shap(*):
 https://github.com/Ekeany/Boruta-Shap
 
 smart pls
 https://www.smartpls.com/
 
-tsai
-https://timeseriesai.github.io/tsai/
-A state-of-the-art deep learning library for time series and sequential data
+#########################################################
+### plots
+##########################################################
+datashader: plot big data
+https://datashader.org/index.html
+
+plotly: interactive plot
+https://plotly.com/python/
+
+bokeh: interactive plot (capable with javascript)
+https://docs.bokeh.org/en/latest/index.html
+
+holoviews
+https://holoviews.org/gallery/index.html
+
+##########################################################
+### project management
+##########################################################
+read the doc
+https://docs.readthedocs.io/en/stable/
+
+pydata-sphinx-theme
+https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html
 
 awesome MLops
 https://github.com/visenger/awesome-mlops
 
-
-# competitor
+##########################################################
+### competitor
+##########################################################
 pycaret
 https://pycaret.org/
  - an auto ML toolkit
-
-pychemauth
-https://pychemauth.readthedocs.io/en/latest/index.html
- - soft/hard pls
 
 JADBio
 https://support.jadbio.com/
  - AWS platform
 
-# autoML
-mljar
-H2O
+tsai
+https://timeseriesai.github.io/tsai/
+A state-of-the-art deep learning library for time series and sequential data
 
-AutoML.org
-https://www.automl.org/automl-for-x/tabular-data/
+pychemauth
+https://pychemauth.readthedocs.io/en/latest/index.html
+ - soft/hard pls
+
+awesome-automl
+https://github.com/windmaple/awesome-AutoML

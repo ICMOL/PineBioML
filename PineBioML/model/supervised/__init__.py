@@ -1,4 +1,5 @@
 import sklearn.metrics as metrics
+from sklearn.base import BaseEstimator
 import optuna
 from abc import ABC, abstractmethod
 from sklearn.model_selection import StratifiedKFold
@@ -6,7 +7,7 @@ from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.preprocessing import LabelEncoder
 from optuna.samplers import TPESampler
 from numpy.random import RandomState, randint
-from pandas import Series
+from pandas import Series, DataFrame, concat
 
 from sklearn.exceptions import ConvergenceWarning
 
@@ -59,6 +60,7 @@ class Basic_tuner(ABC):
 
         self.n_cv = n_cv
         self.n_try = n_try
+        self.n_sample = 1
 
         # initialize the random seeds
         if kernel_seed is None:
@@ -125,9 +127,44 @@ class Basic_tuner(ABC):
         pass
 
     @abstractmethod
-    def create_model(self, trial, default):
+    def parms_range(self) -> dict:
         """
-        Create model based on default setting or optuna trial
+        model hyper-parameter search range.
+
+        Returns:
+            dict: {parameter_name : (parameter_name, parameter_dtype, lower_bound, upper_bound)}
+        """
+        pass
+
+    def parms_range_sparser(self, trial, search_setting):
+        parameter_name, parameter_dtype, lower_bound, upper_bound = search_setting
+        log = lower_bound > 0 and upper_bound / lower_bound > 10
+
+        if parameter_dtype == "float":
+            param = trial.suggest_float(parameter_name,
+                                        lower_bound,
+                                        upper_bound,
+                                        log=log)
+        elif parameter_dtype == "int":
+            param = trial.suggest_int(parameter_name,
+                                      lower_bound,
+                                      upper_bound,
+                                      log=log)
+        elif parameter_dtype == "bool":
+            param = trial.suggest_categorical(parameter_name,
+                                              [lower_bound, upper_bound])
+        elif parameter_dtype == "category":
+            param = trial.suggest_categorical(parameter_name, lower_bound)
+        else:
+            raise ValueError(
+                "parameter type not support, receaive parameter_dtype {}, parameter_name {}"
+                .format(parameter_dtype, parameter_name))
+        return param
+
+    @abstractmethod
+    def create_model(self, trial, default) -> BaseEstimator:
+        """
+        Create model based on default setting or optuna trial over search range.
 
         Args:
             trial (optuna.trial.Trial): optuna trial in this call.
@@ -412,3 +449,27 @@ class Basic_tuner(ABC):
                       annotation_text="Default setting",
                       annotation_position="bottom right")
         io.show(fig)
+
+    def detail(self):
+        """
+        show the experiment settings including:    
+            1. models parameters searching range.    
+
+        Returns:
+            pandas.DataFrame
+        """
+        parms_range = DataFrame(self.parms_range()).drop(0).T.reset_index()
+        parms_range.columns = [
+            "parameter", "dtype", "lower_bound", "upper_bound"
+        ]
+        parms_range.index = [" "] * parms_range.shape[0]
+
+        name_holder = DataFrame({
+            self.name(): {
+                "parameter": None,
+                "dtype": None,
+                "lower_bound": None,
+                "upper_bound": None
+            }
+        }).T
+        return concat([name_holder, parms_range], axis=0)

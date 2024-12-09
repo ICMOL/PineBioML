@@ -4,7 +4,7 @@ import runpy
 from setuptools import setup, find_packages
 
 PACKAGE_NAME = "PineBioML"
-version_meta = runpy.run_path("./version.py")
+version_meta = runpy.run_path("./PineBioML/__init__.py")
 VERSION = version_meta["__version__"]
 
 with open("README.md", "r") as fh:
@@ -33,6 +33,9 @@ if __name__ == "__main__":
               "Operating System :: OS Independent",
           ])
     # to publish
-    #python setup.py sdist bdist_wheel
-    #twine check dist/*
-    #python -m twine upload dist/*
+    # requirement: setuptools twine wheel
+    # remove early version in dist/*
+    #
+    # python setup.py sdist bdist_wheel
+    # python -m twine check dist/*
+    # python -m twine upload dist/*

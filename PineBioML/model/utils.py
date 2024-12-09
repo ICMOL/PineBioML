@@ -391,3 +391,19 @@ class Pine():
             using_method = model_spec[step_name]
             model_pipeline.append((step_name, methods[using_method]))
         return Pipeline(model_pipeline)
+
+    def experiment_detail(self):
+        """
+        show the experiment settings including:    
+            1. models parameters searching range.    
+
+        Returns:
+            pandas.DataFrame
+        """
+        _, models = self.experiment[-1]
+
+        tmp = []
+        for n in list(models)[1:]:
+            m = models[n]
+            tmp.append(m.detail())
+        return concat(tmp, axis=0)
