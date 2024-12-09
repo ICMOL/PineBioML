@@ -165,25 +165,26 @@ class ElasticLogit_tuner(Classification_tuner):
             " document"] = "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html"
         return refer
 
+    def parms_range(self) -> dict:
+        return {
+            "C": ('C', "float", 1e-6, 1e+2),
+            "l1_ratio": ('l1_ratio', "float", 0, 1)
+        }
+
     def create_model(self, trial, default=False):
-        if default:
-            parms = {
-                "C": 1.0,
-                "l1_ratio": 0.5,
-                "penalty": self.penalty,
-                "solver": self.kernel,
-                "random_state": self.kernel_seed_tape[trial.number],
-                "verbose": 0
-            }
-        else:
-            parms = {
-                "C": trial.suggest_float('C', 1e-6, 1e+2, log=True),
-                "l1_ratio": trial.suggest_float('l1_ratio', 0, 1),
-                "penalty": self.penalty,
-                "solver": self.kernel,
-                "random_state": self.kernel_seed_tape[trial.number],
-                "verbose": 0,
-            }
+        parms = {
+            "C": 1.0,
+            "l1_ratio": 0.5,
+            "penalty": self.penalty,
+            "solver": self.kernel,
+            "random_state": self.kernel_seed_tape[trial.number],
+            "verbose": 0
+        }
+        if not default:
+            parms_to_tune = self.parms_range()
+            for par in parms_to_tune:
+                parms[par] = self.parms_range_sparser(trial,
+                                                      parms_to_tune[par])
         lg = LogisticRegression(**parms)
         return lg
 
@@ -267,36 +268,29 @@ class RandomForest_tuner(Classification_tuner):
 
         return refer
 
+    def parms_range(self) -> dict:
+        return {
+            "n_estimators": ('n_estimators', "int", 32, 1024),
+            'min_samples_leaf': ('min_samples_leaf', "int", 1, 32),
+            'ccp_alpha': ('ccp_alpha', "float", 1e-4, 1e-1),
+            'max_samples': ('max_samples', "float", 0.5, 0.9),
+            "max_depth": ("max_depth", "int", 2, 20)
+        }
+
     def create_model(self, trial, default=False):
-        if default:
-            parms = {
-                "bootstrap": self.using_oob,
-                "oob_score": self.using_oob,
-                "n_jobs": -1,
-                "random_state": self.kernel_seed_tape[trial.number],
-                "verbose": 0,
-            }
-        else:
-            parms = {
-                "n_estimators":
-                trial.suggest_int('n_estimators', 32, 1024, log=True),
-                "min_samples_leaf":
-                trial.suggest_int('min_samples_leaf', 1, 32, log=True),
-                "ccp_alpha":
-                trial.suggest_float('ccp_alpha', 1e-4, 1e-1, log=True),
-                "max_samples":
-                trial.suggest_float('max_samples', 0.5, 0.9, log=True),
-                "bootstrap":
-                self.using_oob,
-                "oob_score":
-                self.using_oob,
-                "n_jobs":
-                -1,
-                "random_state":
-                self.kernel_seed_tape[trial.number],
-                "verbose":
-                0,
-            }
+        parms = {
+            "bootstrap": self.using_oob,
+            "oob_score": self.using_oob,
+            "n_jobs": -1,
+            "random_state": self.kernel_seed_tape[trial.number],
+            "verbose": 0,
+        }
+
+        if not default:
+            parms_to_tune = self.parms_range()
+            for par in parms_to_tune:
+                parms[par] = self.parms_range_sparser(trial,
+                                                      parms_to_tune[par])
 
         rf = RandomForestClassifier(**parms)
         return rf
@@ -431,30 +425,25 @@ class SVM_tuner(Classification_tuner):
 
         return refer
 
+    def parms_range(self) -> dict:
+        # scaling penalty: https://scikit-learn.org/stable/auto_examples/svm/plot_svm_scale_c.html#sphx-glr-auto-examples-svm-plot-svm-scale-c-py
+        return {
+            'C': ('C', "float", 1e-4 * np.sqrt(self.n_sample),
+                  1e+2 * np.sqrt(self.n_sample))
+        }
+
     def create_model(self, trial, default=False):
-        if default:
-            parms = {
-                "kernel": self.kernel,
-                "random_state": self.kernel_seed_tape[trial.number],
-                "probability": True
-            }
-        else:
-            # scaling penalty: https://scikit-learn.org/stable/auto_examples/svm/plot_svm_scale_c.html#sphx-glr-auto-examples-svm-plot-svm-scale-c-py
-            parms = {
-                "C":
-                trial.suggest_float('C',
-                                    1e-4 * np.sqrt(self.n_sample),
-                                    1e+2 * np.sqrt(self.n_sample),
-                                    log=True),
-                "gamma":
-                "auto",
-                "kernel":
-                self.kernel,
-                "random_state":
-                self.kernel_seed_tape[trial.number],
-                "probability":
-                True
-            }
+        parms = {
+            "kernel": self.kernel,
+            "random_state": self.kernel_seed_tape[trial.number],
+            "probability": True,
+            "gamma": "auto"
+        }
+        if not default:
+            parms_to_tune = self.parms_range()
+            for par in parms_to_tune:
+                parms[par] = self.parms_range_sparser(trial,
+                                                      parms_to_tune[par])
         svm = SVC(**parms)
         return svm
 
@@ -521,47 +510,28 @@ class XGBoost_tuner(Classification_tuner):
 
         return refer
 
-    def create_model(self, trial, default=False):
-        if default:
-            parms = {
-                "n_jobs": None,
-                "random_state": self.kernel_seed_tape[trial.number],
-                "verbosity": 0
-            }
-        else:
-            if trial.suggest_categorical("use_subsample", [True, False]):
-                sampling_rate = trial.suggest_float('subsample',
-                                                    0.5,
-                                                    0.9,
-                                                    log=True)
-                col_sampling_rate = trial.suggest_float(
-                    'colsample_bytree', 0.1, 0.9)
-            else:
-                sampling_rate = 1.
-                col_sampling_rate = 1.
+    def parms_range(self) -> dict:
+        return {
+            "n_estimators": ('n_estimators', "int", 16, 256),
+            "max_depth": ('max_depth', "int", 2, 16),
+            "gamma": ('gamma', "float", 5e-2, 2e+1),
+            "learning_rate": ('learning_rate', "float", 5e-2, 5e-1),
+            "subsample": ('subsample', "float", 0.5, 1),
+            "colsample_bytree": ('colsample_bytree', "float", 0.1, 0.9),
+            "reg_lambda": ('reg_lambda', "float", 1e-2, 1e+1)
+        }
 
-            parms = {
-                "n_estimators":
-                trial.suggest_int('n_estimators', 16, 256, log=True),
-                "max_depth":
-                trial.suggest_int('max_depth', 2, 16, log=True),
-                "gamma":
-                trial.suggest_float('gamma', 5e-2, 2e+1, log=True),
-                "learning_rate":
-                trial.suggest_float('learning_rate', 5e-2, 5e-1, log=True),
-                "subsample":
-                sampling_rate,
-                "colsample_bytree":
-                col_sampling_rate,
-                "reg_lambda":
-                trial.suggest_float('reg_lambda', 1e-2, 1e+1, log=True),
-                "n_jobs":
-                None,
-                "random_state":
-                self.kernel_seed_tape[trial.number],
-                "verbosity":
-                0,
-            }
+    def create_model(self, trial, default=False):
+        parms = {
+            "n_jobs": None,
+            "random_state": self.kernel_seed_tape[trial.number],
+            "verbosity": 0
+        }
+        if not default:
+            parms_to_tune = self.parms_range()
+            for par in parms_to_tune:
+                parms[par] = self.parms_range_sparser(trial,
+                                                      parms_to_tune[par])
 
         xgb = XGBClassifier(**parms)
         return xgb
@@ -625,59 +595,28 @@ class LighGBM_tuner(Classification_tuner):
 
         return refer
 
+    def parms_range(self) -> dict:
+        return {
+            "n_estimators": ('n_estimators', "int", 16, 256),
+            "max_depth": ('max_depth', "int", 4, 16),
+            "learning_rate": ('learning_rate', "float", 1e-2, 1),
+            "subsample": ('subsample', "float", 0.5, 1),
+            "colsample_bytree": ('colsample_bytree', "float", 0.1, 0.9),
+            "reg_lambda": ('reg_lambda', "float", 5e-3, 1e+1)
+        }
+
     def create_model(self, trial, default=False):
-        if default:
-            parms = {
-                "n_jobs": None,
-                "random_state": self.kernel_seed,
-                "verbosity": -1
-            }
-        else:
-            depth = trial.suggest_float('max_depth', 3, 16, log=True)
-            leaves = trial.suggest_float('num_leaves',
-                                         depth * 2 / 3,
-                                         depth,
-                                         log=True)
-            depth = int(np.rint(depth))
-            leaves = int(np.floor(np.power(2, leaves)))
-
-            if trial.suggest_categorical("use_subsample", [True, False]):
-                sampling_rate = trial.suggest_float('subsample',
-                                                    0.5,
-                                                    0.9,
-                                                    log=True)
-                col_sampling_rate = trial.suggest_float(
-                    'colsample_bytree', 0.1, 0.9)
-            else:
-                sampling_rate = 1.
-                col_sampling_rate = 1.
-
-            parms = {
-                "n_estimators":
-                trial.suggest_int('n_estimators', 16, 256, log=True),
-                "max_depth":
-                depth,
-                "num_leaves":
-                leaves,
-                "learning_rate":
-                trial.suggest_float('learning_rate', 1e-2, 1, log=True),
-                "subsample_freq":
-                1,
-                "subsample":
-                sampling_rate,
-                "colsample_bytree":
-                col_sampling_rate,
-                "min_child_samples":
-                trial.suggest_int('min_child_samples', 2, 32, log=True),
-                "reg_lambda":
-                trial.suggest_float('reg_lambda', 5e-3, 1e+1, log=True),
-                "n_jobs":
-                None,
-                "random_state":
-                self.kernel_seed_tape[trial.number],
-                "verbosity":
-                -1,
-            }
+        parms = {
+            "n_jobs": None,
+            "random_state": self.kernel_seed_tape[trial.number],
+            "verbosity": -1,
+            "subsample_freq": 1
+        }
+        if not default:
+            parms_to_tune = self.parms_range()
+            for par in parms_to_tune:
+                parms[par] = self.parms_range_sparser(trial,
+                                                      parms_to_tune[par])
 
         lgbm = LGBMClassifier(**parms)
         return lgbm
@@ -740,23 +679,22 @@ class AdaBoost_tuner(Classification_tuner):
 
         return refer
 
+    def parms_range(self) -> dict:
+        return {
+            "n_estimators": ('n_estimators', "int", 8, 256),
+            "learning_rate": ('learning_rate', "float", 1e-2, 1)
+        }
+
     def create_model(self, trial, default=False):
-        if default:
-            parms = {
-                "random_state": self.kernel_seed,
-            }
-        else:
-            # scaling penalty: https://scikit-learn.org/stable/auto_examples/svm/plot_svm_scale_c.html#sphx-glr-auto-examples-svm-plot-svm-scale-c-py
-            parms = {
-                "n_estimators":
-                trial.suggest_int('n_estimators', 8, 256, log=True),
-                "learning_rate":
-                trial.suggest_float('learning_rate', 1e-2, 1, log=True),
-                "algorithm":
-                "SAMME",
-                "random_state":
-                self.kernel_seed_tape[trial.number]
-            }
+        parms = {
+            "algorithm": "SAMME",
+            "random_state": self.kernel_seed_tape[trial.number]
+        }
+        if not default:
+            parms_to_tune = self.parms_range()
+            for par in parms_to_tune:
+                parms[par] = self.parms_range_sparser(trial,
+                                                      parms_to_tune[par])
         ada = AdaBoostClassifier(**parms)
         return ada
 
@@ -815,24 +753,21 @@ class DecisionTree_tuner(Classification_tuner):
 
         return refer
 
+    def parms_range(self) -> dict:
+        return {
+            "max_depth": ('max_depth', "int", 2, 16),
+            "min_samples_split": ('min_samples_split', "int", 2, 32),
+            "min_samples_leaf": ('min_samples_leaf', "int", 1, 16),
+            "ccp_alpha": ('ccp_alpha', "float", 1e-3, 1e-1),
+        }
+
     def create_model(self, trial, default=False):
-        if default:
-            parms = {
-                "random_state": self.kernel_seed,
-            }
-        else:
-            parms = {
-                "max_depth":
-                trial.suggest_int('max_depth', 2, 16, log=True),
-                "min_samples_split":
-                trial.suggest_int('min_samples_split', 2, 32, log=True),
-                "min_samples_leaf":
-                trial.suggest_int('min_samples_leaf', 1, 16, log=True),
-                "ccp_alpha":
-                trial.suggest_float('ccp_alpha', 1e-3, 1e-1, log=True),
-                "random_state":
-                self.kernel_seed_tape[trial.number],
-            }
+        parms = {"random_state": self.kernel_seed_tape[trial.number]}
+        if not default:
+            parms_to_tune = self.parms_range()
+            for par in parms_to_tune:
+                parms[par] = self.parms_range_sparser(trial,
+                                                      parms_to_tune[par])
         DT = DecisionTreeClassifier(**parms)
         return DT
 
@@ -894,52 +829,26 @@ class CatBoost_tuner(Classification_tuner):
 
         return refer
 
+    def parms_range(self) -> dict:
+        return {
+            "n_estimators": ('n_estimators', "int", 16, 256),
+            "learning_rate": ('learning_rate', "float", 1e-2, 1),
+            "max_depth": ('max_depth', "int", 3, 16),
+            "reg_lambda": ('reg_lambda', "float", 5e-3, 1e+1),
+            "colsample_bylevel": ('colsample_bytree', "float", 0.1, 0.9),
+            "subsample": ('subsample', "float", 0.5, 1)
+        }
+
     def create_model(self, trial, default=False):
-        if default:
-            parms = {
-                "random_seed": self.kernel_seed,
-                "verbose": False,
-                #"use_best_model": True
-            }
-        else:
-            depth = trial.suggest_float('max_depth', 3, 16, log=True)
-            leaves = trial.suggest_float('num_leaves',
-                                         depth * 2 / 3,
-                                         depth,
-                                         log=True)
-            depth = int(np.rint(depth))
-            leaves = int(np.floor(np.power(2, leaves)))
-
-            if trial.suggest_categorical("use_subsample", [True, False]):
-                sampling_rate = trial.suggest_float('subsample',
-                                                    0.5,
-                                                    0.9,
-                                                    log=True)
-                col_sampling_rate = trial.suggest_float(
-                    'colsample_bytree', 0.1, 0.9)
-            else:
-                sampling_rate = 1.
-                col_sampling_rate = 1.
-
-            parms = {
-                "n_estimators":
-                trial.suggest_int('n_estimators', 16, 256, log=True),
-                "learning_rate":
-                trial.suggest_float('learning_rate', 1e-2, 1, log=True),
-                "max_depth":
-                depth,
-                "reg_lambda":
-                trial.suggest_float('reg_lambda', 5e-3, 1e+1, log=True),
-                "colsample_bylevel":
-                col_sampling_rate,
-                "subsample":
-                sampling_rate,
-                #"use_best_model": True,
-                "random_seed":
-                self.kernel_seed_tape[trial.number],
-                "verbose":
-                False,
-            }
+        parms = {
+            "random_seed": self.kernel_seed_tape[trial.number],
+            "verbose": False,
+        }
+        if not default:
+            parms_to_tune = self.parms_range()
+            for par in parms_to_tune:
+                parms[par] = self.parms_range_sparser(trial,
+                                                      parms_to_tune[par])
 
         cat = CatBoostClassifier(**parms)
         return cat
@@ -982,8 +891,3 @@ class CatBoost_tuner(Classification_tuner):
 
         score = sum(score) / self.n_cv
         return score
-
-
-# Todo
-# KNN
-# KNN-Graph spectrum

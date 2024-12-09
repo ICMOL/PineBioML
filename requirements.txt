@@ -10,7 +10,6 @@ joblib
 optuna
 scikit-learn
 umap-learn
-pacmap
 statsmodels
 mljar-supervised
 gprofiler-official

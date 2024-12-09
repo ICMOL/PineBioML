@@ -686,8 +686,13 @@ def classification_summary(y_true,
         3. ROC curve.    
 
     Args:
-            y_true (pandas.Series or a 1D array): Bool, the label
-            y_pred_prob (pandas.Series or a 1D array): float in [0, 1]. prediction from model
+        y_true (pandas.Series or a 1D array): The label.
+        y_pred_prob (pandas.Series or a 1D array): float in [0, 1]. prediction from model.
+        target_label ( member of label, optional): The target class from y_true to compute sensitivity and specificity. Defaults to None.
+        prefix (str, optional): Prefix of label title. Defaults to "".
+        save_path (str, optional): export path. Defaults to "./output/images/".
+        save_fig (bool, optional): saving the figure or not. Defaults to True.
+        show_fig (bool, optional): showing the figure or not. Defaults to True.
     Todo:
         1. support to multi-class classification(on going)
         2. the label matching between y_true and y_pred

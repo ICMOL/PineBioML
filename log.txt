@@ -1,3 +1,15 @@
+2024/12/7 v1.2.2:
+    description:    
+        1. Tuner:
+            a. Formalize tuner tuning range.
+            b. Adding tuner.detail() to access optuna tuning range.
+            c. optuna tuning range changes.
+        2. update README.md.
+        
+2024/10/23 v1.2.1:
+    description:    
+        1. remove pacmap from requirment. (C++ 14 build tool dependancy)
+
 2024/10/23 v1.2.0:
     description:    
         1. Document update    
@@ -12,20 +24,23 @@
         2. Lasso logistic regression in grid search need to to modified. In temporary using binary search.
         3. confusion matrix no title
         
-
     On Going:
         0. A reliable tutorial. (including mac) / Document reference
         1. Pine monitor, progress bar and report. experiment setting visualization.
         
     ToDo:
-        0. threshold tuner
-        1. report and diagnose, Pine pipeline graph.
-        2. using pretty, beautiful, good-looking, precise packages:
+        0. threshold tuner (or like jadbio)
+        1. search space dict
+        2. report and diagnose, Pine pipeline graph.
+        3. using pretty, beautiful, good-looking, precise packages:
             a. pca
             b. The only OPLS da reliable(compare to others), alive, python implement 
                https://github.com/Omicometrics/pypls?tab=readme-ov-file 
-        3. barutoSHAP
-        4. multi objective optimize for optuna
+            c. https://www.omicsanalyst.ca/docs/Gallery.xhtml
+        4. barutoSHAP (baruto, shap, barutoshap)
+        5. fairness learning (mljar, fairlearn)
+        6. cv std
+        n. multi objective optimize for optuna
         n. add parameter dict(json or yaml-like)
         n. interactive interface or GUI (maybe nicegui/ plotly)
 

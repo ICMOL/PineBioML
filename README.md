@@ -4,45 +4,35 @@ This package aims to help analysising biomedical data using ML method in python.
 ![image](./documents/images/workflow/PineBioML_workflow_v3.png) 
 
 # System requirements
-   1. Python 3.10+
-   2. The following python module dependencies are required: 
-   > pandas openpyxl xlrd tqdm seaborn gprofiler-official jupyter jupyterlab optuna scikit-learn umap-learn pacmap statsmodels mljar-supervised joblib
-
+Python 3.10+
 
 # Installation
+PineBioML is available on PyPI. You can access it through:
+> pip install PineBioML
 
-### 1. Install Python
-Please follow the tutorial to install python (the sections "Visual Studio Code" and "Git" are optional):
+For those who do not know how to use python, you can follow our step by step Installation tutorials.
+ - [Windows11/10](./documents/Installization/win11/win11.md)
+ - MacOs
 
-    https://learn.microsoft.com/en-us/windows/python/beginners 
-    
-Please skip this step if you already have python 3.10+ installed in your PC.
+# Examples
+After installation, you can download examples from release.
 
-### 2. Install dependencies and execute the scripts
+> https://github.com/user-attachments/files/17568138/examples.zip
 
-Step 1. Download the examples from Release and unzip it.
+Chosse one of the following examples, double click it in jupyter interface:    
+| ID |     Name      |       Description                |
+|----|---------------|----------------------------------|
+|  1 | example_BasicUsage multi class.ipynb   | Demonstrate the basic features of PineBioML on a multi-class classification task.  |  |
+|  2 | example_BasicUsage regression.ipynb   | Demonstrate the basic features of PineBioML on a regression classification task.  |  |
+|  3 | example_Proteomics.ipynb         | An example on proteomics data analysis |  |
+|  4 | example_PipeLine.ipynb           | Demonstrate how to use the pipeline to store the whole data processing flow |  |
+|  5 | example_Pine.ipynb               | Demonstrate how to use Pine ml to finding the best data processing flow in an efficient way |  |
 
-    https://github.com/ICMOL/undetermined/releases
+### Execute the scripts
+Click the buttom and the script should start.
+![image](./documents/images/tutorial/jupyter_runall.png)
 
-Step 2. Please open Windows PowerShell, and execute the following command.
-
-    pip install PineBioML          
-
-Step 3. Move to the directory of the unzipped examples, and open the jupyter interface. 
-
-Please execute the following command to open jupyter. You will see the figure, if the scripts execute correctly.
-
-    > python -m notebook
-
-
-![image](./documents/images/tutorial/browser_jupyter.png)
-
-
-# Input Table Format
-
-The input data should be tabular and placed in the ./input folder. We accept .csv, .tsv, .xlsx and R-table in .txt formats.    
-
-# Process
+# Features
 
 ### 0. Document
 
@@ -95,21 +85,9 @@ The input data should be tabular and placed in the ./input folder. We accept .cs
 |  1 | data_overview  | Giving a glance to input data.   |  |
 |  2 | classification_summary | Summarizing a classification task |  |
 
-# Examples for Program Demonstration    
 
-Chosse one of the following examples, double click it in jupyter interface:    
-| ID |     Name      |       Description                |
-|----|---------------|----------------------------------|
-|  1 | example_BasicUsage.ipynb   | Demonstrate the basic features of PineBioML  |  |
-|  2 | example_Proteomics.ipynb         | An example on proteomics data analysis |  |
-|  3 | example_PipeLine.ipynb           | Demonstrate how to use the pipeline to store the whole data processing flow |  |
-|  4 | example_Pine.ipynb               | Demonstrate how to use Pine ml to finding the best data processing flow in an efficient way |  |
-|  5 | example_UsingExistingModel.ipynb | An example of unsing existing models/pipeline gained from 3. , 4. or 5.  |  |
-
-
-
-Click the buttom and the script should start.
-![image](./documents/images/tutorial/jupyter_runall.png)
+# Contact us
+> 112826006@cc.ncu.edu.tw
 
 
 # Cites
