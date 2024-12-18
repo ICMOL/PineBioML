@@ -1,3 +1,11 @@
+2024/12/11 v1.2.3:
+    description:
+        1. report utils - classification_summary and regression_summary:
+            a. revise the scores from str to pd.DataFrame.
+            b. now we can export the scores
+        2. tuner now will flush the data after tuned. for safety and privacy concerns.
+        3. Pine: add evaluation_ncv api to the final cv score evaluation.
+
 2024/12/7 v1.2.2:
     description:    
         1. Tuner:

@@ -25,7 +25,7 @@ Enter this command to check whether Python installed correctly:
 ![image](./terminal_check.png)
 
 Enter this command to prepare to install PineBioML: 
-> python -m pip install -- upgrade pip 
+> python -m pip install --upgrade pip 
 
 ![image](./terminal_updatepip.png)
 
@@ -35,7 +35,7 @@ Enter this command to install PineBioML, it will take about 10 minutes. You can 
 ![image](./terminal_install_PineBioML.png)
 
 ### Step 3. Download PineBioML examples
-Download the examples.zip from [here](https://github.com/ICMOL/PineBioML/releases/tag/v1.2.0) and unzip.
+Download the examples.zip from [here](https://github.com/ICMOL/PineBioML/releases/tag/v1.2.2) and unzip.
 
 ![image](./example.png)
 

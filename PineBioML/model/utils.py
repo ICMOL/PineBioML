@@ -202,27 +202,30 @@ class Pine():
     """
     Deep first traversal the given experiment setting.    
     the last step of experiment sould be model.    
-    Please refer to example_Pine.ipynb for usage.
+    Please refer to example_Pine.ipynb for usage.    
 
 
-    note: experiment step and experiment stage is the same thing.
+    note: experiment step and experiment stage is the same thing.    
     """
 
     def __init__(self,
                  experiment: list[tuple[str, dict[str, object]]],
                  target_label: str = None,
-                 cv_result: bool = False):
+                 cv_result: bool = False,
+                 evaluate_ncv: int = 5):
         """
         Args:
             experiment (list[tuple[str, dict[str, object]]]): list of experiment steps. step should be in the form: ('step_name', {'method_name': method}). it could be several method in one step and they will fork in deep first traversal. Each method should be either sklearn estimator or transformer.
             target_label (str, optional): the name of target_label. For example, the label in a binary classification task might be {'pos', 'neg'}. Then you can assign 'neg' to target_label, and the result will contain sensitivity, specificity and roc-auc score of label 'neg'. Defaults to None.
             cv_result (bool, optional): Rcording the scores and prediction of cross validation. Defaults to False.
+            evaluate_cv (int, optional): The number of folds to evaluate cv_result after pipeline tuned. Defaults to 5.
         """
 
         self.experiment = experiment
         self.total_stage = len(experiment)
         self.target_label = target_label
         self.cv_result = cv_result
+        self.evaluate_ncv = evaluate_ncv
 
         self.result = []
 
@@ -300,9 +303,10 @@ class Pine():
                     # compute the cross validation score on training set
                     fold_scores = []
                     cv_pred = []
-                    cross_validation = StratifiedKFold(n_splits=5,
-                                                       shuffle=True,
-                                                       random_state=133)
+                    cross_validation = StratifiedKFold(
+                        n_splits=self.evaluate_ncv,
+                        shuffle=True,
+                        random_state=133)
                     for (train_idx, valid_idx) in cross_validation.split(
                             train_x, train_y):
 
