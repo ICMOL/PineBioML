@@ -2,11 +2,13 @@ from . import SelectionPipeline
 
 import pandas as pd
 import numpy as np
-from tqdm import tqdm
 
-from joblib import parallel_backend
+from joblib import parallel_config
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+from matplotlib.cm import ScalarMappable
 
-from sklearn.linear_model import Lasso
+from sklearn.linear_model import Lasso, LassoLars
 from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor
 from sklearn.svm import LinearSVR
 import xgboost as xgb
@@ -15,27 +17,32 @@ import lightgbm as lgbm
 
 class Lasso_selection(SelectionPipeline):
     """
-    Using Lasso (L1 penalty) regression as scoring method.  More specifically, L1 penalty will force feature weights to be zeros. 
-    As the coefficient of penalty increases, more and more weights of features got killed and the important feature will remain.
+    Using Lasso (L1 penalty) regression as scoring method. L1 penalty will force feature weights to be zeros.    
+    As the penalty increases, more and more regression coefficients vanish and the ones coresponding to important variables will remain.    
 
-    Lasso_selection will use grid search to find out when all weights vanish.
+    The Lasso_selection is base on [Lasso Lars](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LassoLars.html).    
 
-    Lasso_selection is scale sensitive in numerical and in result.
+    Currently, this do not support Lasso + logistic regression, so:    
+        Binary classification problem will be regarded as a regression to {0, 1}.    
+        Multi-class classification problem will be devided into ovr (one vs rest) classification and the score of features over ovr will be combined by average weighted class weight.    
 
+    ~~Lasso_selection will use grid search to find out when all weights vanish.    ~~
     """
 
-    def __init__(self, k):
+    def __init__(self, k, unbalanced=True):
         """
         Args:
             unbalanced (bool, optional): False to imply class weight to samples. Defaults to True.
-            objective (str, optional): one of {"Regression", "BinaryClassification"}
         """
         super().__init__(k=k)
 
         # parameters
-        self.da = 0.25  # d alpha
-        self.upper_init = 50
+        self.regression = True
+        self.unbalanced = unbalanced
         self.name = "LassoLinear"
+
+        self.important_path = None
+        self.result = []
 
     def reference(self) -> dict[str, str]:
         """
@@ -48,14 +55,16 @@ class Lasso_selection(SelectionPipeline):
         refer = super().reference()
         refer[
             self.name() +
-            " document"] = "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html"
+            " document"] = "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LassoLars.html"
         refer[
-            " publication 1"] = "https://projecteuclid.org/journals/annals-of-statistics/volume-37/issue-5A/High-dimensional-variable-selection/10.1214/08-AOS646.full"
+            " publication Lasso 1"] = "https://projecteuclid.org/journals/annals-of-statistics/volume-37/issue-5A/High-dimensional-variable-selection/10.1214/08-AOS646.full"
         refer[
-            " publication 2"] = "https://www.tandfonline.com/doi/abs/10.1198/016214506000000735?casa_token=5HDhtyCfh40AAAAA:4NxSU97CZubZVpReaQNsSBpqA10_xNhspTQobPnb_z2YXe3Wf-HBHV8OygbqUkmJQPt2Jmp7ZlJPWd0"
+            " publication Lasso 2"] = "https://www.tandfonline.com/doi/abs/10.1198/016214506000000735?casa_token=5HDhtyCfh40AAAAA:4NxSU97CZubZVpReaQNsSBpqA10_xNhspTQobPnb_z2YXe3Wf-HBHV8OygbqUkmJQPt2Jmp7ZlJPWd0"
+        refer[" publication Lars"] = "https://arxiv.org/pdf/math/0406456"
+
         return refer
 
-    def create_kernel(self, C):
+    def create_kernel(self, C=1e-2):
         """
         Create diffirent kernel according to opjective.
 
@@ -64,15 +73,17 @@ class Lasso_selection(SelectionPipeline):
 
         Returns:
             sklearn.linearmodel: a kernel of sklearn linearmodel
+        
+        TODO:
+            1. auto C tuner or adapter.
+            
         """
-        return Lasso(alpha=C)
+
+        return LassoLars(alpha=C, random_state=142)
 
     def Scoring(self, x, y=None):
         """
-        Using Lasso (L1 penalty) regression as scoring method.  More specifically, L1 penalty will force feature weights to be zeros. 
-        As the coefficient of penalty increases, more and more weights of features got killed and the important feature will remain.
-
-        Lasso_selection will use grid search to find out when all weights vanish.
+        Using Lasso Lars regression as scoring method.
 
          Args:
             x (pandas.DataFrame or a 2D array): The data to extract information.
@@ -86,32 +97,116 @@ class Lasso_selection(SelectionPipeline):
         
         """
 
-        X_train = x.copy()
+        x_train = x.copy()
+        #x_train = (x_train - x_train.mean()) / x_train.std()
+
         y_train = y.copy()
+        y_train = (y_train - y_train.mean()) / y_train.std()
 
-        if self.k == -1:
-            self.k = x.shape[0]
+        kernel = self.create_kernel()
 
-        lassoes = []
-        # grid searching
-        grids = np.arange(self.da, self.upper_init, self.da)
+        kernel.fit(x_train, y_train)
 
-        for alpha in tqdm(grids):
-            lassoes.append(self.create_kernel(C=alpha))
-            lassoes[-1].fit(X_train, y_train)
-            alive = (lassoes[-1].coef_ != 0).sum()
+        coef = np.clip(kernel.coef_path_.T, -1, 1)
+        alpha = kernel.alphas_
+        col = kernel.feature_names_in_
 
-            if alive < 1:
-                print("all coefficient are dead, terminated.")
-                break
+        self.result.append(pd.DataFrame(coef, columns=col, index=alpha))
 
-        coef = np.array([clr.coef_ for clr in lassoes]).flatten()
+        coef_sur_time = []
+        for s in self.result:
+            tmp = (s != 0).idxmax(axis=0).replace(s.index[0], 0)**2
+            tmp = tmp / tmp.max()
+            coef_sur_time.append(tmp)
 
-        self.scores = pd.Series(np.logical_not(coef == 0).sum(axis=0) *
-                                self.da,
-                                index=x.columns,
-                                name=self.name).sort_values(ascending=False)
+        self.scores = np.sqrt(sum(coef_sur_time)).sort_values(ascending=False)
         return self.scores.copy()
+
+    def Plotting(self):
+        """
+        plot hist graph of selectied feature importance
+        """
+        fig, ax = plt.subplots(1, 1)
+        ax.bar(self.selected_score.index, self.selected_score)
+        for label in ax.get_xticklabels(which='major'):
+            label.set(rotation=45, horizontalalignment='right')
+        ax.set_title(self.name + " score")
+        plt.show()
+
+        global_selected = self.selected_score.index
+        for i_th in range(len(self.result)):
+            s = self.result[i_th]
+
+            lifetime = (s != 0).sum(axis=0)
+            alive_col = s.columns[lifetime > 0]
+            active_col = lifetime.sort_values().tail(5).index
+
+            plt_cmap = plt.get_cmap("Blues")
+            plt_norm = plt.Normalize(vmin=0, vmax=s.index[1])
+            fig, ax = plt.subplots(layout='constrained')
+
+            for col in alive_col:
+                var_coef = s[col]
+                self.plot_coef_1var(
+                    alpha=var_coef.index,
+                    coef=var_coef.values,
+                    global_selected=col in global_selected,
+                    coef_name=col if col in active_col else None,
+                    cmap=plt_cmap,
+                    norm=plt_norm,
+                )
+
+            plt.axhline(y=0, color="grey", linestyle="--")
+            plt.xlabel("alpha")
+            plt.ylabel("coefficient")
+            plt.title("Lasso")
+
+            scalar_mappable = ScalarMappable(norm=plt_norm, cmap=plt_cmap)
+            fig.colorbar(scalar_mappable,
+                         ax=ax,
+                         orientation='vertical',
+                         label='Variable dropout alpha')
+            plt.xscale('log')
+            legend_elements = [
+                Line2D([0], [0],
+                       color="b",
+                       label="Globally important",
+                       linestyle="solid"),
+                Line2D([0], [0],
+                       color="b",
+                       label="Partially important",
+                       linestyle="--"),
+            ]
+            ax.legend(handles=legend_elements, loc="upper right")
+            plt.show()
+
+    def plot_coef_1var(self, alpha, coef, global_selected, coef_name, cmap,
+                       norm):
+        # plot the coef curve
+        linestyle = "solid" if global_selected else "--"
+
+        alive = coef != 0
+        alive[alive.argmax() - 1] = True
+
+        alpha = alpha[alive]
+        coef = coef[alive]
+
+        plt.plot(alpha,
+                 coef,
+                 label=coef_name,
+                 c=cmap(norm(alpha.max())),
+                 linestyle=linestyle)
+
+        # plot the annotate
+        if coef_name is not None:
+            annotate_idx = np.abs(coef).argmax()
+            annotate_coor = (alpha[annotate_idx], coef[annotate_idx])
+            text_coor = (alpha[annotate_idx], coef[annotate_idx])
+            plt.annotate(
+                coef_name,
+                xy=annotate_coor,
+                xytext=text_coor,
+            )
 
 
 class Lasso_bisection_selection(SelectionPipeline):
@@ -475,7 +570,7 @@ class RF_selection(SelectionPipeline):
         Returns:
             pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
         """
-        with parallel_backend('loky'):
+        with parallel_config(backend='loky'):
             self.kernel.fit(x, y)
         score = self.kernel.feature_importances_
         self.scores = pd.Series(score, index=x.columns,
@@ -643,7 +738,7 @@ class AdaBoost_selection(SelectionPipeline):
         return self.scores.copy()
 
 
-class essemble_selector(SelectionPipeline):
+class ensemble_selector(SelectionPipeline):
     """
     A functional stack of diffirent methods.
     
@@ -663,9 +758,9 @@ class essemble_selector(SelectionPipeline):
             "Lasso_Bisection": Lasso_bisection_selection(k=k),
             "multi_Lasso": multi_Lasso_selection(k=k),
             "SVM": SVM_selection(k=k),
-            "AdaBoost": AdaBoost_selection(k=k),
-            "XGboost": XGboost_selection(k=k),
-            "Lightgbm": Lightgbm_selection(k=k)
+            #"AdaBoost": AdaBoost_selection(k=k),
+            #"XGboost": XGboost_selection(k=k),
+            #"Lightgbm": Lightgbm_selection(k=k)
         }
 
     def reference(self) -> dict[str, str]:

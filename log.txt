@@ -1,3 +1,31 @@
+2024/3/5 v1.2.4:
+    description:
+        1. change the backend of Lasso_selection from LassoRegression to LassoLars. there is still some numerical issue when penalty is low. 
+            a. 50x faster than Lasso bisection
+            b. coeficient path now is available in .Plotting function
+        2. lasso bisection 30% faster.
+        3. Multi processing support for DT_selection.
+        4. Early stopping for XGBoost, Lightgbm and CatBoost.
+        5. Pine summary.
+        6. threshold tuner: Binary classification's threshold will be chosen by auc.
+        7. Model's search space now can be obtained by .detail()
+        
+    On Going:
+        0. A reliable tutorial. (including mac)
+        1. Pine monitor, progress bar and report. experiment setting visualization.
+        
+    ToDo:
+        1. barutoSHAP (baruto, shap, barutoshap)
+        2. using pretty, beautiful, good-looking, precise packages:
+            a. pca
+            b. The only OPLS da reliable(compare to others), alive, python implement 
+               https://github.com/Omicometrics/pypls?tab=readme-ov-file 
+            c. https://www.omicsanalyst.ca/docs/Gallery.xhtml
+        3. fairness learning (mljar, fairlearn)
+        4. cv std
+        n. add parameter dict(json or yaml-like)
+
+
 2024/12/11 v1.2.3:
     description:
         1. report utils - classification_summary and regression_summary:

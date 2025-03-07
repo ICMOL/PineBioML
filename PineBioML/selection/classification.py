@@ -3,13 +3,17 @@ from . import SelectionPipeline
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
+import time
 
-from joblib import parallel_backend
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+from matplotlib.cm import ScalarMappable
+
+from joblib import Parallel, parallel_config, delayed
 
 from sklearn.utils.class_weight import compute_sample_weight
-
 from sklearn.preprocessing import OneHotEncoder
-from sklearn.linear_model import LogisticRegression, Lasso
+from sklearn.linear_model import Lasso, LassoLars, LogisticRegression
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.svm import LinearSVC
 import xgboost as xgb
@@ -18,33 +22,32 @@ import lightgbm as lgbm
 
 class Lasso_selection(SelectionPipeline):
     """
-    Using Lasso (L1 penalty) regression as scoring method.  More specifically, L1 penalty will force feature weights to be zeros. 
-    As the coefficient of penalty increases, more and more weights of features got killed and the important feature will remain.
+    Using Lasso (L1 penalty) regression as scoring method. L1 penalty will force feature weights to be zeros.    
+    As the penalty increases, more and more regression coefficients vanish and the ones coresponding to important variables will remain.    
 
-    Lasso_selection will use grid search to find out when all weights vanish.
+    The Lasso_selection is base on [Lasso Lars](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LassoLars.html).    
 
-    Lasso_selection is scale sensitive in numerical and in result.
+    Currently, this do not support Lasso + logistic regression, so:    
+        Binary classification problem will be regarded as a regression to {0, 1}.    
+        Multi-class classification problem will be devided into ovr (one vs rest) classification and the score of features over ovr will be combined by average weighted class weight.    
 
+    ~~Lasso_selection will use grid search to find out when all weights vanish.    ~~
     """
 
-    def __init__(self, k, unbalanced=True, objective="Regression"):
+    def __init__(self, k, unbalanced=True):
         """
         Args:
             unbalanced (bool, optional): False to imply class weight to samples. Defaults to True.
-            objective (str, optional): one of {"Regression", "BinaryClassification"}
         """
         super().__init__(k=k)
 
         # parameters
-        self.objective = objective
-        if self.objective in ["regression", "Regression"]:
-            self.regression = True
-        else:
-            self.regression = False
-        self.da = 0.025  # d alpha
-        self.upper_init = 50
+        self.regression = True
         self.unbalanced = unbalanced
         self.name = "LassoLinear"
+
+        self.important_path = None
+        self.result = []
 
     def reference(self) -> dict[str, str]:
         """
@@ -57,14 +60,16 @@ class Lasso_selection(SelectionPipeline):
         refer = super().reference()
         refer[
             self.name() +
-            " document"] = "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html"
+            " document"] = "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LassoLars.html"
         refer[
-            " publication 1"] = "https://projecteuclid.org/journals/annals-of-statistics/volume-37/issue-5A/High-dimensional-variable-selection/10.1214/08-AOS646.full"
+            " publication Lasso 1"] = "https://projecteuclid.org/journals/annals-of-statistics/volume-37/issue-5A/High-dimensional-variable-selection/10.1214/08-AOS646.full"
         refer[
-            " publication 2"] = "https://www.tandfonline.com/doi/abs/10.1198/016214506000000735?casa_token=5HDhtyCfh40AAAAA:4NxSU97CZubZVpReaQNsSBpqA10_xNhspTQobPnb_z2YXe3Wf-HBHV8OygbqUkmJQPt2Jmp7ZlJPWd0"
+            " publication Lasso 2"] = "https://www.tandfonline.com/doi/abs/10.1198/016214506000000735?casa_token=5HDhtyCfh40AAAAA:4NxSU97CZubZVpReaQNsSBpqA10_xNhspTQobPnb_z2YXe3Wf-HBHV8OygbqUkmJQPt2Jmp7ZlJPWd0"
+        refer[" publication Lars"] = "https://arxiv.org/pdf/math/0406456"
+
         return refer
 
-    def create_kernel(self, C):
+    def create_kernel(self, C=1e-2):
         """
         Create diffirent kernel according to opjective.
 
@@ -73,21 +78,17 @@ class Lasso_selection(SelectionPipeline):
 
         Returns:
             sklearn.linearmodel: a kernel of sklearn linearmodel
+        
+        TODO:
+            1. auto C tuner or adapter.
+            
         """
-        if self.regression:
-            return Lasso(alpha=C)
-        else:
-            return LogisticRegression(penalty="l1",
-                                      C=1 / C,
-                                      solver="liblinear",
-                                      random_state=142)
+
+        return LassoLars(alpha=C)
 
     def Scoring(self, x, y=None):
         """
-        Using Lasso (L1 penalty) regression as scoring method.  More specifically, L1 penalty will force feature weights to be zeros. 
-        As the coefficient of penalty increases, more and more weights of features got killed and the important feature will remain.
-
-        Lasso_selection will use grid search to find out when all weights vanish.
+        Using Lasso Lars regression as scoring method.
 
          Args:
             x (pandas.DataFrame or a 2D array): The data to extract information.
@@ -101,37 +102,132 @@ class Lasso_selection(SelectionPipeline):
         
         """
 
-        X_train = x.copy()
+        x_train = x.copy()
+        #x_train = (x_train - x_train.mean()) / x_train.std()
+
         y_train = y.copy()
+        self.y_encoder = OneHotEncoder(sparse_output=False)
+        y_train = self.y_encoder.fit_transform(y_train.to_numpy().reshape(
+            -1, 1))
+        class_pos_weights = y_train.mean(axis=0)
 
-        if self.unbalanced:
-            weights = compute_sample_weight(class_weight="balanced", y=y_train)
+        kernel = self.create_kernel()
+
+        ### TODO: Sample weight for Lars.
+        if y_train.shape[1] == 2:
+            # Binary classification
+            task_set = [1]
         else:
-            weights = np.ones_like(y_train)
+            # multi-class classification
+            ### TODO: Multinomial classfication for Lars.
+            task_set = range(y_train.shape[1])
 
-        lassoes = []
-        # grid searching
-        if self.regression:
-            grids = np.arange(self.da, self.upper_init, self.da)
-        else:
-            grids = np.arange(self.upper_init, self.da, -self.da)
+        for i in task_set:
+            y = y_train[:, i]
+            y = (y - y.mean()) / y.std()
+            kernel.fit(x_train, y)
 
-        for alpha in tqdm(grids):
-            lassoes.append(self.create_kernel(C=alpha))
-            lassoes[-1].fit(X_train, y_train, weights)
-            alive = (lassoes[-1].coef_ != 0).sum()
+            coef = np.clip(kernel.coef_path_.T, -1, 1)
+            alpha = kernel.alphas_
+            col = kernel.feature_names_in_
 
-            if alive < 1:
-                print("all coefficient are dead, terminated.")
-                break
+            self.result.append(pd.DataFrame(coef, columns=col, index=alpha))
 
-        coef = np.array([clr.coef_ for clr in lassoes]).flatten()
+        coef_sur_time = []
+        for s in self.result:
+            tmp = (s != 0).idxmax(axis=0).replace(s.index[0], 0)**2
+            tmp = tmp / tmp.max()
+            coef_sur_time.append(tmp)
 
-        self.scores = pd.Series(np.logical_not(coef == 0).sum(axis=0) *
-                                self.da,
-                                index=x.columns,
-                                name=self.name).sort_values(ascending=False)
+        self.scores = np.sqrt(sum(coef_sur_time)).sort_values(ascending=False)
         return self.scores.copy()
+
+    def Plotting(self):
+        """
+        plot hist graph of selectied feature importance
+        """
+        fig, ax = plt.subplots(1, 1)
+        ax.bar(self.selected_score.index, self.selected_score)
+        for label in ax.get_xticklabels(which='major'):
+            label.set(rotation=45, horizontalalignment='right')
+        ax.set_title(self.name + " score")
+        plt.show()
+
+        global_selected = self.selected_score.index
+        for i_th in range(len(self.result)):
+            s = self.result[i_th]
+
+            lifetime = (s != 0).sum(axis=0)
+            alive_col = s.columns[lifetime > 0]
+            active_col = lifetime.sort_values().tail(5).index
+
+            plt_cmap = plt.get_cmap("Blues")
+            plt_norm = plt.Normalize(vmin=0, vmax=s.index[1])
+            fig, ax = plt.subplots(layout='constrained')
+
+            for col in alive_col:
+                var_coef = s[col]
+                self.plot_coef_1var(
+                    alpha=var_coef.index,
+                    coef=var_coef.values,
+                    global_selected=col in global_selected,
+                    coef_name=col if col in active_col else None,
+                    cmap=plt_cmap,
+                    norm=plt_norm,
+                )
+
+            plt.axhline(y=0, color="grey", linestyle="--")
+            plt.xlabel("alpha")
+            plt.ylabel("coefficient")
+            plt.title("class-{} Lasso".format(
+                self.y_encoder.categories_[0][i_th]))
+
+            scalar_mappable = ScalarMappable(norm=plt_norm, cmap=plt_cmap)
+            fig.colorbar(scalar_mappable,
+                         ax=ax,
+                         orientation='vertical',
+                         label='Variable dropout alpha')
+            plt.xscale('log')
+            legend_elements = [
+                Line2D([0], [0],
+                       color="b",
+                       label="Globally important",
+                       linestyle="solid"),
+                Line2D([0], [0],
+                       color="b",
+                       label="Partially important",
+                       linestyle="--"),
+            ]
+            ax.legend(handles=legend_elements, loc="upper right")
+            plt.show()
+
+    def plot_coef_1var(self, alpha, coef, global_selected, coef_name, cmap,
+                       norm):
+        # plot the coef curve
+        linestyle = "solid" if global_selected else "--"
+
+        alive = coef != 0
+        alive[alive.argmax() - 1] = True
+
+        alpha = alpha[alive]
+        coef = coef[alive]
+
+        plt.plot(alpha,
+                 coef,
+                 label=coef_name,
+                 c=cmap(norm(alpha.max())),
+                 linestyle=linestyle)
+
+        # plot the annotate
+        if coef_name is not None:
+            annotate_idx = np.abs(coef).argmax()
+            annotate_coor = (alpha[annotate_idx], coef[annotate_idx])
+            text_coor = (alpha[annotate_idx], coef[annotate_idx])
+            plt.annotate(
+                coef_name,
+                xy=annotate_coor,
+                xytext=text_coor,
+            )
 
 
 class Lasso_bisection_selection(SelectionPipeline):
@@ -152,15 +248,18 @@ class Lasso_bisection_selection(SelectionPipeline):
             objective (str, optional): one of {"Regression", "BinaryClassification"}
         """
         super().__init__(k=k)
-        self.upper_init = 1e+5
-        self.lower_init = 1e-5
+        self.upper_init = 1e+4
+        self.lower_init = 1e-4
         self.objective = objective
         if self.objective in ["regression", "Regression"]:
             self.regression = True
         else:
             self.regression = False
+
+        self.sample_weights = 1
         self.unbalanced = unbalanced
         self.name = "LassoLinear"
+        self.kernel = self.create_kernel(1)
 
     def reference(self) -> dict[str, str]:
         """
@@ -182,12 +281,37 @@ class Lasso_bisection_selection(SelectionPipeline):
 
     def create_kernel(self, C):
         if self.regression:
-            return Lasso(alpha=C)
+            return Lasso(alpha=C, warm_start=True)
         else:
             return LogisticRegression(penalty="l1",
                                       C=1 / C,
                                       solver="liblinear",
                                       random_state=142)
+
+    def assign_alpha(self, C, coef=None):
+        if self.regression:
+            self.kernel.alpha = C
+        else:
+            self.kernel.C = 1 / C
+        if coef is not None:
+            self.kernel.coef_ = coef
+
+    def lasso_alive(self, x, y, log_alpha: float, coef=None):
+        alpha = self.to_alpha(log_alpha)
+
+        self.assign_alpha(alpha, coef=coef)
+        self.kernel.fit(x, y, self.sample_weights)
+
+        importance = self.coef_to_importance(self.kernel.coef_)
+        num_alives = (importance > 0).sum()
+
+        return num_alives
+
+    def to_alpha(self, log_alpha):
+        return log_alpha  #np.power(10., log_alpha)
+
+    def coef_to_importance(self, coef):
+        return np.linalg.norm(coef, ord=2, axis=0)
 
     def Select(self, x, y):
         """
@@ -206,66 +330,67 @@ class Lasso_bisection_selection(SelectionPipeline):
         """
 
         # train test split
-        X_train = x.copy()
+        x_train = x.copy()
         y_train = y.copy()
 
         if self.unbalanced:
-            weights = compute_sample_weight(class_weight="balanced", y=y_train)
+            self.sample_weights = compute_sample_weight(
+                class_weight="balanced", y=y_train)
         else:
-            weights = np.ones_like(y_train)
+            self.sample_weights = np.ones_like(y_train)
 
         if self.k == -1:
-            self.k = x.shape[0]
+            self.k = round(np.sqrt(x.shape[0]) * 2)
 
         y_train = OneHotEncoder(sparse_output=False).fit_transform(
             y_train.to_numpy().reshape(-1, 1))
 
-        lassoes = []
         # Bisection searching
         ### standardize x
-        X_train = X_train / X_train.values.std()
+        x_train = x_train / x_train.values.std()
+        if self.regression:
+            y_train = (y_train - y_train.mean(
+                axis=0, keepdims=True)) / y_train.std(axis=0, keepdims=True)
 
         upper = self.upper_init
-        lassoes.append(self.create_kernel(C=upper))
-        lassoes[-1].fit(X_train, y_train, weights)
-        upper_alive = (self.coef_to_importance(lassoes[-1].coef_) != 0).sum()
+        upper_alive = self.lasso_alive(x_train, y_train, upper)
+        upper_coef = self.kernel.coef_
         #print(upper, upper_alive)
 
         lower = self.lower_init
-        lassoes.append(self.create_kernel(C=lower))
-        lassoes[-1].fit(X_train, y_train, weights)
-        lower_alive = (self.coef_to_importance(lassoes[-1].coef_) != 0).sum()
+        lower_alive = self.lasso_alive(x_train, y_train, lower)
+        lower_coef = self.kernel.coef_
         #print(lower, lower_alive)
 
-        counter = 0
-        while not lower_alive == self.k:
-            alpha = (upper + lower) / 2
-            lassoes.append(self.create_kernel(C=alpha))
-            lassoes[-1].fit(X_train, y_train, weights)
-            alive = (self.coef_to_importance(lassoes[-1].coef_) != 0).sum()
+        alpha = (upper + lower) / 2
+        coef = (upper_coef + lower_coef) / 2
+        alive = self.lasso_alive(x_train, y_train, alpha, coef)
+        counter = 1
+        while not alive == self.k:
             #print(alive, alpha)
-
             if alive >= self.k:
                 lower = alpha
-                lower_alive = alive
+                lower_coef = self.kernel.coef_
             else:
                 upper = alpha
-                upper_alive = alive
+                upper_coef = self.kernel.coef_
+
+            alpha = (upper + lower) / 2
+            coef = (upper_coef + lower_coef) / 2
+            alive = self.lasso_alive(x_train, y_train, alpha, coef)
 
             counter += 1
-            if counter > 40:
+            if counter > 20:
                 break
 
-        coef = np.array([clr.coef_ for clr in lassoes])
-
-        self.scores = pd.Series(self.coef_to_importance(coef[-1]),
+        self.scores = pd.Series(self.coef_to_importance(self.kernel.coef_),
                                 index=x.columns,
                                 name=self.name).sort_values(ascending=False)
         self.selected_score = self.scores.head(self.k)
         return self.selected_score
 
-    def coef_to_importance(self, coef):
-        return np.linalg.norm(coef, ord=2, axis=0)
+
+#class Lasso_bisection_selection_V2(Lasso_bisection_selection):
 
 
 class multi_Lasso_selection(SelectionPipeline):
@@ -296,7 +421,7 @@ class multi_Lasso_selection(SelectionPipeline):
             " Warning"] = "We do not have a reference and this method's effectivity has not been proven yet."
         return refer
 
-    def Select(self, x, y, n=5):
+    def Select(self, x, y, n=4):
         """
         Select k//n features for n times, and then concatenate the results.
 
@@ -311,7 +436,7 @@ class multi_Lasso_selection(SelectionPipeline):
         """
         result = []
         if self.k == -1:
-            self.k = x.shape[0]
+            self.k = round(np.sqrt(x.shape[0]) * 2)
         batch_size = self.k // n + 1
 
         for i in range(n):
@@ -407,6 +532,7 @@ class DT_selection(SelectionPipeline):
         self.q = q
         self.strategy = strategy
         self.name = "DT_score_" + self.strategy
+        self.label_name = "$%^&UYHGV"
 
     def reference(self) -> dict[str, str]:
         """
@@ -441,26 +567,36 @@ class DT_selection(SelectionPipeline):
         bin_idx = (normed * self.bins - 0.5).round().astype(np.int32)
         columns = bin_idx.columns
 
-        bin_idx["label"] = y
+        y.name = self.label_name
 
-        scores = []
-        for i in tqdm(columns):
-            feature_hists = bin_idx[[i, "label"]].groupby(i)
-            feature_entropy = feature_hists.apply(self.entropy)
-            feature_size = feature_hists.apply(len) + 1e-3
+        #scores = []
+        #for i in tqdm(columns):
+        #   scores.append(self.compute_col_gini(bin_idx[i], y))
+        with parallel_config(backend='loky', n_jobs=-1):
+            scores = Parallel()(delayed(self.compute_col_gini)(bin_idx[i], y)
+                                for i in tqdm(columns))
 
-            info = (feature_entropy / feature_size).sum()
-            gain = 0 - info
-            if self.strategy == "c45":
-                freq = bin_idx[i].value_counts()
-                p = freq / freq.sum()
-                split_info = -p * np.log(p)
-                gain /= split_info.sum()
-            scores.append(gain)
         scores = pd.Series(scores, index=columns,
                            name=self.name).sort_values(ascending=False)
         scores = scores - scores.min()
         return scores
+
+    def compute_col_gini(self, col, label):
+        i = col.name
+        #print(i)
+        feature_hists = pd.concat([col, label], axis=1).groupby(i)
+        feature_entropy = feature_hists.apply(self.entropy)
+        feature_size = feature_hists.apply(len) + 1e-3
+
+        info = (feature_entropy / feature_size).sum()
+        gain = 0 - info
+        if self.strategy == "c45":
+            freq = col.value_counts()
+            p = freq / freq.sum()
+            split_info = -p * np.log(p) + 1e-6
+            gain /= split_info.sum()
+
+        return gain
 
     def entropy(self, x):
         """
@@ -472,7 +608,7 @@ class DT_selection(SelectionPipeline):
         Returns:
             float: entropy
         """
-        label_nums = x["label"].value_counts()
+        label_nums = x[self.label_name].value_counts()
         label_prop = label_nums / label_nums.sum()
 
         entropy = -(label_prop * np.log(label_prop + 1e-6)).sum()
@@ -501,7 +637,7 @@ class RF_selection(SelectionPipeline):
         else:
             class_weight = None
 
-        with parallel_backend('loky'):
+        with parallel_config(backend='loky'):
             self.kernel = RandomForestClassifier(n_estimators=trees,
                                                  n_jobs=-1,
                                                  max_samples=0.75,
@@ -544,7 +680,7 @@ class RF_selection(SelectionPipeline):
         Returns:
             pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
         """
-        with parallel_backend('loky'):
+        with parallel_config(backend='loky'):
             self.kernel.fit(x, y)
         score = self.kernel.feature_importances_
         self.scores = pd.Series(score, index=x.columns,
@@ -729,7 +865,7 @@ class AdaBoost_selection(SelectionPipeline):
         return self.scores.copy()
 
 
-class essemble_selector(SelectionPipeline):
+class ensemble_selector(SelectionPipeline):
     """
     A functional stack of diffirent methods.    
     What we do here is:    
@@ -750,7 +886,7 @@ class essemble_selector(SelectionPipeline):
             RF_trees (int, optional): number of trees using for randomforest. Defaults to 1024.
             z_importance_threshold (int, optional): The threshold to picking features. Defaults to None.
         
-        Todo:
+        TODO:
             auto adjust the RF_Trees by number of input features.
         """
         self.k = k
@@ -762,9 +898,10 @@ class essemble_selector(SelectionPipeline):
             "Lasso_Bisection": Lasso_bisection_selection(k=k),
             "multi_Lasso": multi_Lasso_selection(k=k),
             "SVM": SVM_selection(k=k),
-            "AdaBoost": AdaBoost_selection(k=k),
-            "XGboost": XGboost_selection(k=k),
-            "Lightgbm": Lightgbm_selection(k=k)
+
+            #"AdaBoost": AdaBoost_selection(k=k),
+            #"XGboost": XGboost_selection(k=k),
+            #"Lightgbm": Lightgbm_selection(k=k)
         }
 
     def reference(self) -> dict[str, str]:
@@ -796,14 +933,14 @@ class essemble_selector(SelectionPipeline):
         results = []
         for method in self.kernels:
             print("Using ", method, " to select.")
+            start_time = time.time()
             results.append(self.kernels[method].Select(x.copy(), y))
-            print(method, " is done.\n")
+            end_time = time.time()
+            print(method,
+                  " is done. Using {t:.4f}\n".format(t=end_time - start_time))
 
-        name = pd.concat([pd.Series(i.index, name=i.name) for i in results],
-                         axis=1)
-        importance = pd.concat(results, axis=1)
-        self.selected_score = importance
-        return name, importance
+        self.selected_score = pd.concat(results, axis=1)
+        return self.selected_score
 
     def fit(self, x, y):
         """
@@ -813,7 +950,7 @@ class essemble_selector(SelectionPipeline):
             x (pandas.DataFrame or a 2D array): The data to extract information.
             y (pandas.Series or a 1D array): The target label for methods.
         """
-        name, importance = self.Select(x, y)
+        importance = self.Select(x, y)
 
         return self
 
