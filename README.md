@@ -17,7 +17,7 @@ For those who do not know how to use python, you can follow our step by step Ins
 # Examples
 After installation, you can download examples from release.
 
-> https://github.com/user-attachments/files/17568138/examples.zip
+> https://github.com/ICMOL/PineBioML/releases/download/v1.2.4/examples124.zip
 
 Chosse one of the following examples, double click it in jupyter interface:    
 | ID |     Name      |       Description                |
