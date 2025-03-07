@@ -341,13 +341,6 @@ class Pine():
                                    target_label=self.target_label).score(
                                        train_y.iloc[valid_idx], fold_pred))
                     # average the fold scores
-                    """
-                    valid_scores = {}
-                    for metric_name in fold_scores[0].keys():
-                        valid_scores[metric_name] = np.array([
-                            fold_scores[cv][metric_name] for cv in range(5)
-                        ]).mean()
-                    """
                     self.cv_pred.append(concat(cv_pred, axis=0))
                     valid_scores = DataFrame(fold_scores).mean().to_dict()
                 else:

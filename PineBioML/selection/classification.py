@@ -34,7 +34,7 @@ class Lasso_selection(SelectionPipeline):
     ~~Lasso_selection will use grid search to find out when all weights vanish.    ~~
     """
 
-    def __init__(self, k, unbalanced=True):
+    def __init__(self, k, unbalanced=True, objective="regression"):
         """
         Args:
             unbalanced (bool, optional): False to imply class weight to samples. Defaults to True.
@@ -44,7 +44,7 @@ class Lasso_selection(SelectionPipeline):
         # parameters
         self.regression = True
         self.unbalanced = unbalanced
-        self.name = "LassoLinear"
+        self.name = "LassoLars"
 
         self.important_path = None
         self.result = []
@@ -140,6 +140,7 @@ class Lasso_selection(SelectionPipeline):
             coef_sur_time.append(tmp)
 
         self.scores = np.sqrt(sum(coef_sur_time)).sort_values(ascending=False)
+        self.scores.name = self.name
         return self.scores.copy()
 
     def Plotting(self):
@@ -258,7 +259,7 @@ class Lasso_bisection_selection(SelectionPipeline):
 
         self.sample_weights = 1
         self.unbalanced = unbalanced
-        self.name = "LassoLinear"
+        self.name = "LassoBisection"
         self.kernel = self.create_kernel(1)
 
     def reference(self) -> dict[str, str]:
@@ -407,6 +408,7 @@ class multi_Lasso_selection(SelectionPipeline):
         super().__init__(k=k)
         self.name = "multi_Lasso"
         self.objective = objective
+        self.backend = Lasso_selection  #Lasso_bisection_selection
 
     def reference(self) -> dict[str, str]:
         """
@@ -441,9 +443,8 @@ class multi_Lasso_selection(SelectionPipeline):
 
         for i in range(n):
             result.append(
-                Lasso_bisection_selection(k=batch_size,
-                                          objective=self.objective).Select(
-                                              x, y))
+                self.backend(k=batch_size,
+                             objective=self.objective).Select(x, y))
             x = x.drop(result[-1].index, axis=1)
             if x.shape[1] == 0:
                 break
@@ -640,12 +641,13 @@ class RF_selection(SelectionPipeline):
         with parallel_config(backend='loky'):
             self.kernel = RandomForestClassifier(n_estimators=trees,
                                                  n_jobs=-1,
-                                                 max_samples=0.75,
+                                                 max_samples=0.7,
                                                  class_weight=class_weight,
                                                  criterion=strategy,
                                                  verbose=0,
                                                  ccp_alpha=1e-2,
-                                                 random_state=142)
+                                                 random_state=142,
+                                                 min_samples_leaf=3)
         self.name = "RandomForest_" + self.strategy
 
     def reference(self) -> dict[str, str]:
@@ -895,7 +897,7 @@ class ensemble_selector(SelectionPipeline):
         self.kernels = {
             "c45": DT_selection(k=k, strategy="c45"),
             "RF_gini": RF_selection(k=k, strategy="gini", trees=RF_trees),
-            "Lasso_Bisection": Lasso_bisection_selection(k=k),
+            "Lasso": Lasso_selection(k=k),
             "multi_Lasso": multi_Lasso_selection(k=k),
             "SVM": SVM_selection(k=k),
 
@@ -957,7 +959,7 @@ class ensemble_selector(SelectionPipeline):
     def transform(self, x):
         z_scores = (self.selected_score - self.selected_score.mean()) / (
             self.selected_score.std() + 1e-4)
-        z_scores = z_scores.mean(axis=1).sort_values(ascending=False)
+        z_scores = z_scores.sum(axis=1).sort_values(ascending=False)
 
         if self.z_importance_threshold is None:
             return x[z_scores.index[:self.k]]

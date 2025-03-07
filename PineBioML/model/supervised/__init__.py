@@ -252,7 +252,8 @@ class Basic_tuner(ABC):
         
         Args:
             trial (optuna.trial.Trial): optuna trial in this call.
-            default (bool): To use default hyper parameter. This argument will be passed to creat_model
+            default (bool): To use default hyper parameter. This argument will be passed to creat_model .    
+            training (bool): whether it is under optuna optimization or not. False then evalutate will not tune a threshold or applying early stop. 
         Returns :
             float: The score. Decided by optimization target.
         """
@@ -296,12 +297,16 @@ class Basic_tuner(ABC):
             # tune a threshold via roc for Binary classification
             if self.is_binary and not self.is_regression():
                 y_prob = fitted_clr.predict_proba(x_test)[:, 1]
-                fpr, tpr, thr = metrics.roc_curve(y_test, y_prob)
-                ### TODO: flexible threshold picker for various metrics.
-                cv_thresholds[i] = thr[abs(tpr - fpr).argmax()]
-                fitted_clr = Binary_threshold_wrapper(fitted_clr,
-                                                      cv_thresholds[-1])
 
+                if training:
+                    fpr, tpr, thr = metrics.roc_curve(y_test, y_prob)
+                    ### TODO: flexible threshold picker for various metrics.
+                    cv_thresholds[i] = thr[abs(tpr - fpr).argmax()]
+                else:
+                    cv_thresholds[i] = self.thresholds[trial.number]
+
+                fitted_clr = Binary_threshold_wrapper(fitted_clr,
+                                                      cv_thresholds[i])
             # evaluate on testing fold
             test_score = self.metric(fitted_clr, x_test, y_test)
             train_score = self.metric(fitted_clr, x_train, y_train)
@@ -550,6 +555,9 @@ class Basic_tuner(ABC):
         return True
 
     def plot(self):
+        """
+        Plot the learning process.
+        """
         from plotly import io
         fig = optuna.visualization.plot_optimization_history(
             self.study, target_name=self.metric_name)

@@ -2,18 +2,32 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.5">
 <title>PineBioML.model.supervised.Regression API documentation</title>
-<meta name="description" content="" />
-<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
-<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
-<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
-<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
-<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
 </head>
 <body>
 <main>
@@ -22,794 +36,6 @@
 <h1 class="title">Module <code>PineBioML.model.supervised.Regression</code></h1>
 </header>
 <section id="section-intro">
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">from . import Basic_tuner
-from abc import abstractmethod
-from typing import Literal
-
-from joblib import parallel_backend
-
-from sklearn.model_selection import StratifiedKFold
-
-from sklearn.svm import SVR
-from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.linear_model import ElasticNet
-from xgboost import XGBRegressor
-from lightgbm import LGBMRegressor
-
-import numpy as np
-from statsmodels.regression.linear_model import OLS
-
-# Todo: Now loss(not metrics) only support mse, we need more like mae, mape, hinge... etc
-
-
-class Regression_tuner(Basic_tuner):
-    &#34;&#34;&#34;
-    A subclass of Basic_tuner for regression task.
-    
-    &#34;&#34;&#34;
-
-    def __init__(self,
-                 n_try,
-                 n_cv,
-                 target,
-                 validate_penalty,
-                 kernel_seed=None,
-                 valid_seed=None,
-                 optuna_seed=None):
-        super().__init__(n_try=n_try,
-                         n_cv=n_cv,
-                         target=target,
-                         validate_penalty=validate_penalty,
-                         kernel_seed=kernel_seed,
-                         valid_seed=valid_seed,
-                         optuna_seed=optuna_seed)
-        &#34;&#34;&#34;
-        Args:
-            n_try (int): The number of trials optuna should try.
-            n_cv (int): The number of folds to execute cross validation evaluation in iteration of optuna optimization.
-            target (str): The target of optuna optimization. Notice that is different from the training loss of model.
-            validate_penalty (bool): True to penalty the overfitting by difference between training score and cv score.
-            kernel_seed (int, optional): Random seed for model. Defaults to None.
-            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
-            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
-        &#34;&#34;&#34;
-
-    def is_regression(self) -&gt; bool:
-        &#34;&#34;&#34;
-        Yes, it is for regression.
-
-        Returns:
-            bool: True
-        &#34;&#34;&#34;
-        return True
-
-    def reference(self) -&gt; dict[str, str]:
-        &#34;&#34;&#34;
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        &#34;&#34;&#34;
-        return super().reference()
-
-    @abstractmethod
-    def name(self) -&gt; str:
-        &#34;&#34;&#34;
-        To be determined.
-
-        Returns:
-            str: Name of this tuner.
-        &#34;&#34;&#34;
-        pass
-
-    @abstractmethod
-    def create_model(self, trial, default):
-        &#34;&#34;&#34;
-        Create model based on default setting or optuna trial
-
-        Args:
-            trial (optuna.trial.Trial): optuna trial in this call.
-            default (bool): To use default hyper parameter
-            
-        Returns :
-            sklearn.base.BaseEstimator: A sklearn style model object.
-        &#34;&#34;&#34;
-        pass
-
-
-# linear model, elasticnet
-class ElasticNet_tuner(Regression_tuner):
-    &#34;&#34;&#34;
-    Tuning a elasic net regression.    
-    [sklearn.linear_model.ElasticNet](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html)
-    &#34;&#34;&#34;
-
-    def __init__(self,
-                 n_try=25,
-                 n_cv=5,
-                 target=&#34;mse&#34;,
-                 kernel_seed=None,
-                 valid_seed=None,
-                 optuna_seed=None,
-                 validate_penalty=True):
-        &#34;&#34;&#34;
-        Args:
-            n_try (int, optional): The number of trials optuna should try. Defaults to 25.
-            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
-            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mse&#34;.
-            kernel_seed (int, optional): Random seed for model. Defaults to None.
-            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
-            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
-            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
-        &#34;&#34;&#34;
-        super().__init__(n_try=n_try,
-                         n_cv=n_cv,
-                         target=target,
-                         kernel_seed=kernel_seed,
-                         valid_seed=valid_seed,
-                         optuna_seed=optuna_seed,
-                         validate_penalty=validate_penalty)
-
-    def name(self):
-        return &#34;ElasticNet&#34;
-
-    def reference(self) -&gt; dict[str, str]:
-        &#34;&#34;&#34;
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        &#34;&#34;&#34;
-        refer = super().reference()
-        refer[
-            self.name() +
-            &#34; document&#34;] = &#34;https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html&#34;
-
-        return refer
-
-    def create_model(self, trial, default=False):
-        if default:
-            parms = {}
-        else:
-            parms = {
-                &#34;alpha&#34;: trial.suggest_float(&#39;alpha&#39;, 1e-3, 1e+3, log=True),
-                &#34;l1_ratio&#34;: trial.suggest_float(&#39;l1_ratio&#39;, 0, 1),
-            }
-        enr = ElasticNet(**parms)
-        return enr
-
-    def summary(self):
-        &#34;&#34;&#34;
-        It is the way I found to cram a sklearn regression result into the statsmodel regresion.    
-        The only reason to do this is that statsmodel provides R-style summary.    
-        &#34;&#34;&#34;
-        raise NotImplementedError
-        sm_ols = OLS(self.y, self.x).fit_regularized(
-            alpha=self.best_model.alpha,
-            L1_wt=self.best_model.l1_ratio,
-            start_params=self.best_model.coef_.flatten(),
-            maxiter=0,
-        )
-        print(sm_ols.summary())
-
-
-# RF
-class RandomForest_tuner(Regression_tuner):
-    &#34;&#34;&#34;
-    Tuning a random forest model.    
-    [sklearn.ensemble.RandomForestRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html)
-    &#34;&#34;&#34;
-
-    def __init__(self,
-                 using_oob=True,
-                 n_try=50,
-                 n_cv=5,
-                 target=&#34;mse&#34;,
-                 kernel_seed=None,
-                 valid_seed=None,
-                 optuna_seed=None,
-                 validate_penalty=True):
-        &#34;&#34;&#34;
-
-        Args:
-            using_oob (bool, optional): Using out of bag score as validation. Defaults to True.
-            n_try (int, optional): The number of trials optuna should try. Defaults to 50.
-            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
-            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mse&#34;.
-            kernel_seed (int, optional): Random seed for model. Defaults to None.
-            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
-            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
-            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
-        &#34;&#34;&#34;
-        super().__init__(n_try=n_try,
-                         n_cv=n_cv,
-                         target=target,
-                         kernel_seed=kernel_seed,
-                         valid_seed=valid_seed,
-                         optuna_seed=optuna_seed,
-                         validate_penalty=validate_penalty)
-
-        self.using_oob = using_oob
-
-    def name(self):
-        return &#34;RandomForest&#34;
-
-    def reference(self) -&gt; dict[str, str]:
-        &#34;&#34;&#34;
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        &#34;&#34;&#34;
-        refer = super().reference()
-        refer[
-            self.name() +
-            &#34; document&#34;] = &#34;https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html&#34;
-        refer[
-            self.name() +
-            &#34; publication&#34;] = &#34;https://www.stat.berkeley.edu/~breiman/randomforest2001.pdf&#34;
-
-        return refer
-
-    def create_model(self, trial, default=False):
-        if default:
-            parms = {
-                &#34;bootstrap&#34;: self.using_oob,
-                &#34;oob_score&#34;: self.using_oob,
-                &#34;n_jobs&#34;: -1,
-                &#34;random_state&#34;: self.kernel_seed,
-                &#34;verbose&#34;: 0,
-            }
-        else:
-            parms = {
-                &#34;n_estimators&#34;:
-                trial.suggest_int(&#39;n_estimators&#39;, 32, 1024, log=True),
-                &#34;max_depth&#34;:
-                trial.suggest_int(&#39;max_depth&#39;, 4, 16, log=True),
-                &#34;min_samples_leaf&#34;:
-                trial.suggest_int(&#39;min_samples_leaf&#39;, 1, 32, log=True),
-                &#34;ccp_alpha&#34;:
-                trial.suggest_float(&#39;ccp_alpha&#39;, 1e-4, 1e-1, log=True),
-                &#34;max_samples&#34;:
-                trial.suggest_float(&#39;max_samples&#39;, 0.5, 0.9, log=True),
-                &#34;bootstrap&#34;:
-                self.using_oob,
-                &#34;oob_score&#34;:
-                self.using_oob,
-                &#34;n_jobs&#34;:
-                -1,
-                &#34;random_state&#34;:
-                self.kernel_seed_tape[trial.number],
-                &#34;verbose&#34;:
-                0,
-            }
-
-        rf = RandomForestRegressor(**parms)
-        return rf
-
-    def evaluate(self, trial, default=False):
-        regressor_obj = self.create_model(trial, default)
-
-        if self.using_oob:
-            # oob predict
-            with parallel_backend(&#39;loky&#39;):
-                regressor_obj.fit(self.x, self.y)
-            y_pred = regressor_obj.oob_prediction_
-
-            # oob score
-            score = self.metric._score_func(self.y, y_pred)
-
-            if not self.metric_great_better:
-                # if not great is better, then multiply -1
-                score *= -1
-        else:
-            # cv score
-            cv = StratifiedKFold(
-                n_splits=self.n_cv,
-                shuffle=True,
-                random_state=self.valid_seed_tape[trial.number])
-            score = []
-
-            for i, (train_ind, test_ind) in enumerate(cv.split(self.x,
-                                                               self.y)):
-                x_train = self.x.iloc[train_ind]
-                y_train = self.y.iloc[train_ind]
-                x_test = self.x.iloc[test_ind]
-                y_test = self.y.iloc[test_ind]
-
-                with parallel_backend(&#39;loky&#39;):
-                    regressor_obj.fit(self.x, self.y)
-
-                test_score = self.metric(regressor_obj, x_test, y_test)
-                train_score = self.metric(regressor_obj, x_train, y_train)
-
-                if self.validate_penalty:
-                    score.append(test_score + 0.1 * (test_score - train_score))
-                else:
-                    score.append(test_score)
-
-            score = sum(score) / self.n_cv
-        return score
-
-
-# SVM
-class SVM_tuner(Regression_tuner):
-    &#34;&#34;&#34;
-    Tuning a support vector machine.    
-    [sklearn.svm.SVR](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html)
-    &#34;&#34;&#34;
-
-    def __init__(self,
-                 kernel: Literal[&#34;linear&#34;, &#34;poly&#34;, &#34;rbf&#34;, &#34;sigmoid&#34;] = &#34;rbf&#34;,
-                 n_try=25,
-                 n_cv=5,
-                 target=&#34;mse&#34;,
-                 kernel_seed=None,
-                 valid_seed=None,
-                 optuna_seed=None,
-                 validate_penalty=True):
-        &#34;&#34;&#34;
-        Args:
-            kernel (Literal[&amp;quot;linear&amp;quot;, &amp;quot;poly&amp;quot;, &amp;quot;rbf&amp;quot;, &amp;quot;sigmoid&amp;quot;], optional): This will be passed to the attribute of SVC: &#34;kernel&#34;. Defaults to &#34;rbf&#34;.
-            n_try (int, optional): The number of trials optuna should try. Defaults to 25.
-            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
-            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mse&#34;.
-            kernel_seed (int, optional): Random seed for model. Defaults to None.
-            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
-            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
-            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
-        &#34;&#34;&#34;
-        super().__init__(n_try=n_try,
-                         n_cv=n_cv,
-                         target=target,
-                         kernel_seed=kernel_seed,
-                         valid_seed=valid_seed,
-                         optuna_seed=optuna_seed,
-                         validate_penalty=validate_penalty)
-        self.kernel = kernel
-
-    def name(self):
-        return self.kernel + &#34;-SVM&#34;
-
-    def reference(self) -&gt; dict[str, str]:
-        &#34;&#34;&#34;
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        &#34;&#34;&#34;
-        refer = super().reference()
-        refer[
-            self.name() +
-            &#34; document&#34;] = &#34;https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html&#34;
-        refer[
-            self.name() +
-            &#34; sklearn backend&#34;] = &#34;http://www.csie.ntu.edu.tw/~cjlin/papers/libsvm.pdf&#34;
-        refer[
-            self.name() +
-            &#34; publication&#34;] = &#34;https://citeseerx.ist.psu.edu/doc_view/pid/42e5ed832d4310ce4378c44d05570439df28a393&#34;
-
-        return refer
-
-    def create_model(self, trial, default=False):
-        if default:
-            parms = {
-                &#34;kernel&#34;: self.kernel,
-            }
-        else:
-            # scaling penalty: https://scikit-learn.org/stable/auto_examples/svm/plot_svm_scale_c.html#sphx-glr-auto-examples-svm-plot-svm-scale-c-py
-            parms = {
-                &#34;C&#34;:
-                trial.suggest_float(&#39;C&#39;,
-                                    1e-4 * np.sqrt(self.n_sample),
-                                    1e+2 * np.sqrt(self.n_sample),
-                                    log=True),
-                &#34;kernel&#34;:
-                self.kernel,
-                &#34;gamma&#34;:
-                &#34;auto&#34;,
-            }
-        svm = SVR(**parms)
-        return svm
-
-
-# XGboost
-class XGBoost_tuner(Regression_tuner):
-    &#34;&#34;&#34;
-    Tuning a XGBoost classifier model.    
-    [xgboost.XGBClassifier](https://xgboost.readthedocs.io/en/stable/python/python_api.html)
-
-    ToDo:    
-        1. sample imbalance. (Done)
-        2. early stop. (give up)
-        3. efficiency (optuna.integration.XGBoostPruningCallback).
-
-    &#34;&#34;&#34;
-
-    def __init__(self,
-                 n_try=75,
-                 n_cv=5,
-                 target=&#34;mse&#34;,
-                 kernel_seed=None,
-                 valid_seed=None,
-                 optuna_seed=None,
-                 validate_penalty=True):
-        &#34;&#34;&#34;
-
-        Args:
-            n_try (int, optional): The number of trials optuna should try. Defaults to 75.
-            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
-            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mse&#34;.
-            kernel_seed (int, optional): Random seed for model. Defaults to None.
-            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
-            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
-            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
-        
-        &#34;&#34;&#34;
-        super().__init__(n_try=n_try,
-                         n_cv=n_cv,
-                         target=target,
-                         kernel_seed=kernel_seed,
-                         valid_seed=valid_seed,
-                         optuna_seed=optuna_seed,
-                         validate_penalty=validate_penalty)
-
-    def name(self):
-        return &#34;XGBoost&#34;
-
-    def reference(self) -&gt; dict[str, str]:
-        &#34;&#34;&#34;
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        &#34;&#34;&#34;
-        refer = super().reference()
-        refer[self.name() +
-              &#34; document&#34;] = &#34;https://xgboost.readthedocs.io/en/stable/&#34;
-        refer[
-            self.name() +
-            &#34; publication&#34;] = &#34;https://dl.acm.org/doi/10.1145/2939672.2939785&#34;
-
-        return refer
-
-    def create_model(self, trial, default=False):
-        if default:
-            parms = {
-                &#34;n_jobs&#34;: None,
-                &#34;random_state&#34;: self.kernel_seed,
-                &#34;verbosity&#34;: 0
-            }
-        else:
-            if trial.suggest_categorical(&#34;use_subsample&#34;, [True, False]):
-                sampling_rate = trial.suggest_float(&#39;subsample&#39;,
-                                                    0.5,
-                                                    0.9,
-                                                    log=True)
-                col_sampling_rate = trial.suggest_float(
-                    &#39;colsample_bytree&#39;, 0.1, 0.9)
-            else:
-                sampling_rate = 1.
-                col_sampling_rate = 1.
-            parms = {
-                &#34;n_estimators&#34;:
-                trial.suggest_int(&#39;n_estimators&#39;, 16, 512, log=True),
-                &#34;max_depth&#34;:
-                trial.suggest_int(&#39;max_depth&#39;, 2, 16, log=True),
-                &#34;gamma&#34;:
-                trial.suggest_float(&#39;gamma&#39;, 5e-2, 2e+1, log=True),
-                &#34;learning_rate&#34;:
-                trial.suggest_float(&#39;learning_rate&#39;, 5e-2, 5e-1, log=True),
-                &#34;subsample&#34;:
-                sampling_rate,
-                &#34;colsample_bytree&#34;:
-                col_sampling_rate,
-                #&#34;min_child_weight&#34;:
-                #trial.suggest_float(&#39;min_child_weight&#39;, 1e-3, 1e+2, log=True),
-                &#34;reg_lambda&#34;:
-                trial.suggest_float(&#39;reg_lambda&#39;, 1e-2, 1e+1, log=True),
-                &#34;n_jobs&#34;:
-                None,
-                &#34;random_state&#34;:
-                self.kernel_seed_tape[trial.number],
-                &#34;verbosity&#34;:
-                0,
-            }
-
-        xgb = XGBRegressor(**parms)
-        return xgb
-
-
-# lightGBM
-class LighGBM_tuner(Regression_tuner):
-    &#34;&#34;&#34;
-    Tuning a LighGBM classifier model.    
-    [lightgbm.LGBMClassifier](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html)     
-
-    ToDo:    
-        1. compare with optuna.integration.lightgbm.LightGBMTuner    
-    &#34;&#34;&#34;
-
-    def __init__(self,
-                 n_try=75,
-                 n_cv=5,
-                 target=&#34;mse&#34;,
-                 kernel_seed=None,
-                 valid_seed=None,
-                 optuna_seed=None,
-                 validate_penalty=True):
-        &#34;&#34;&#34;
-
-        Args:
-            n_try (int, optional): The number of trials optuna should try. Defaults to 75.
-            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
-            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mse&#34;.
-            kernel_seed (int, optional): Random seed for model. Defaults to None.
-            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
-            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
-            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.        
-        
-        &#34;&#34;&#34;
-        super().__init__(n_try=n_try,
-                         n_cv=n_cv,
-                         target=target,
-                         kernel_seed=kernel_seed,
-                         valid_seed=valid_seed,
-                         optuna_seed=optuna_seed,
-                         validate_penalty=validate_penalty)
-
-    def name(self):
-        return &#34;LightGBM&#34;
-
-    def reference(self) -&gt; dict[str, str]:
-        &#34;&#34;&#34;
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        &#34;&#34;&#34;
-        refer = super().reference()
-        refer[
-            self.name() +
-            &#34; document&#34;] = &#34;https://lightgbm.readthedocs.io/en/latest/index.html&#34;
-        refer[
-            self.name() +
-            &#34; publication&#34;] = &#34;https://proceedings.neurips.cc/paper_files/paper/2017/file/6449f44a102fde848669bdd9eb6b76fa-Paper.pdf&#34;
-
-        return refer
-
-    def create_model(self, trial, default=False):
-        if default:
-            parms = {
-                &#34;n_jobs&#34;: None,
-                &#34;random_state&#34;: self.kernel_seed,
-                &#34;verbosity&#34;: -1
-            }
-        else:
-            depth = trial.suggest_float(&#39;max_depth&#39;, 3, 16, log=True)
-            leaves = trial.suggest_float(&#39;num_leaves&#39;,
-                                         depth * 2 / 3,
-                                         depth,
-                                         log=True)
-            depth = int(np.rint(depth))
-            leaves = int(np.floor(np.power(2, leaves)))
-
-            if trial.suggest_categorical(&#34;use_subsample&#34;, [True, False]):
-                sampling_rate = trial.suggest_float(&#39;subsample&#39;,
-                                                    0.5,
-                                                    0.9,
-                                                    log=True)
-                col_sampling_rate = trial.suggest_float(
-                    &#39;colsample_bytree&#39;, 0.1, 0.9)
-            else:
-                sampling_rate = 1.
-                col_sampling_rate = 1.
-
-            parms = {
-                &#34;n_estimators&#34;:
-                trial.suggest_int(&#39;n_estimators&#39;, 16, 256, log=True),
-                &#34;max_depth&#34;:
-                depth,
-                &#34;num_leaves&#34;:
-                leaves,
-                &#34;learning_rate&#34;:
-                trial.suggest_float(&#39;learning_rate&#39;, 1e-2, 1, log=True),
-                &#34;subsample_freq&#34;:
-                1,
-                &#34;subsample&#34;:
-                sampling_rate,
-                &#34;colsample_bytree&#34;:
-                col_sampling_rate,
-                &#34;min_child_samples&#34;:
-                trial.suggest_int(&#39;min_child_samples&#39;, 2, 32, log=True),
-                &#34;reg_lambda&#34;:
-                trial.suggest_float(&#39;reg_lambda&#39;, 5e-3, 1e+1, log=True),
-                &#34;n_jobs&#34;:
-                None,
-                &#34;class_weight&#34;:
-                &#34;balanced&#34;,
-                &#34;random_state&#34;:
-                self.kernel_seed_tape[trial.number],
-                &#34;verbosity&#34;:
-                -1,
-            }
-
-        lgbm = LGBMRegressor(**parms)
-        return lgbm
-
-
-# AdaBoost
-class AdaBoost_tuner(Regression_tuner):
-    &#34;&#34;&#34;
-    Tuning a AdaBoost regressor.    
-    [sklearn.ensemble.AdaBoostRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostRegressor.html)
-    &#34;&#34;&#34;
-
-    def __init__(self,
-                 n_try=25,
-                 n_cv=5,
-                 target=&#34;mse&#34;,
-                 kernel_seed=None,
-                 valid_seed=None,
-                 optuna_seed=None,
-                 validate_penalty=True):
-        &#34;&#34;&#34;
-        Args:
-            n_try (int, optional): The number of trials optuna should try. Defaults to 25.
-            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
-            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mse&#34;.
-            kernel_seed (int, optional): Random seed for model. Defaults to None.
-            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
-            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
-            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
-        &#34;&#34;&#34;
-        super().__init__(n_try=n_try,
-                         n_cv=n_cv,
-                         target=target,
-                         kernel_seed=kernel_seed,
-                         valid_seed=valid_seed,
-                         optuna_seed=optuna_seed,
-                         validate_penalty=validate_penalty)
-
-    def name(self):
-        return &#34;AdaBoost&#34;
-
-    def reference(self) -&gt; dict[str, str]:
-        &#34;&#34;&#34;
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        &#34;&#34;&#34;
-        refer = super().reference()
-        refer[
-            self.name() +
-            &#34; document&#34;] = &#34;https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostRegressor.html&#34;
-        refer[
-            self.name() +
-            &#34; publication: original version&#34;] = &#34;https://www.ee.columbia.edu/~sfchang/course/svia-F03/papers/freund95decisiontheoretic-adaboost.pdf&#34;
-        refer[
-            self.name() +
-            &#34; publication: implemented version&#34;] = &#34;Drucker, &#39;Improving Regressors using Boosting Techniques&#39;, 1997&#34;
-
-        return refer
-
-    def create_model(self, trial, default=False):
-        if default:
-            parms = {
-                &#34;random_state&#34;: self.kernel_seed,
-            }
-        else:
-            # scaling penalty: https://scikit-learn.org/stable/auto_examples/svm/plot_svm_scale_c.html#sphx-glr-auto-examples-svm-plot-svm-scale-c-py
-            parms = {
-                &#34;n_estimators&#34;:
-                trial.suggest_int(&#39;n_estimators&#39;, 8, 256, log=True),
-                &#34;learning_rate&#34;:
-                trial.suggest_float(&#39;learning_rate&#39;, 1e-2, 1, log=True),
-                &#34;loss&#34;:
-                trial.suggest_categorical(&#34;loss&#34;,
-                                          [&#34;linear&#34;, &#34;square&#34;, &#34;exponential&#34;]),
-                &#34;random_state&#34;:
-                self.kernel_seed_tape[trial.number]
-            }
-        ada = AdaBoostRegressor(**parms)
-        return ada
-
-
-# DT
-class DecisionTree_tuner(Regression_tuner):
-    &#34;&#34;&#34;
-    Tuning a DecisionTree regressor.    
-    [sklearn.tree.DecisionTreeRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html)
-    &#34;&#34;&#34;
-
-    def __init__(self,
-                 n_try=25,
-                 n_cv=5,
-                 target=&#34;mse&#34;,
-                 kernel_seed=None,
-                 valid_seed=None,
-                 optuna_seed=None,
-                 validate_penalty=True):
-        &#34;&#34;&#34;
-        Args:
-            n_try (int, optional): The number of trials optuna should try. Defaults to 25.
-            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
-            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to &#34;mse&#34;.
-            kernel_seed (int, optional): Random seed for model. Defaults to None.
-            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
-            optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
-            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
-        &#34;&#34;&#34;
-        super().__init__(n_try=n_try,
-                         n_cv=n_cv,
-                         target=target,
-                         kernel_seed=kernel_seed,
-                         valid_seed=valid_seed,
-                         optuna_seed=optuna_seed,
-                         validate_penalty=validate_penalty)
-
-    def name(self):
-        return &#34;DecisionTree&#34;
-
-    def reference(self) -&gt; dict[str, str]:
-        &#34;&#34;&#34;
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        &#34;&#34;&#34;
-        refer = super().reference()
-        refer[
-            self.name() +
-            &#34; document&#34;] = &#34;https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html&#34;
-        refer[
-            self.name() +
-            &#34; publication&#34;] = &#34;https://www.taylorfrancis.com/books/mono/10.1201/9781315139470/classification-regression-trees-leo-breiman-jerome-friedman-olshen-charles-stone&#34;
-
-        return refer
-
-    def create_model(self, trial, default=False):
-        if default:
-            parms = {
-                &#34;random_state&#34;: self.kernel_seed,
-            }
-        else:
-            parms = {
-                &#34;max_depth&#34;:
-                trial.suggest_int(&#39;max_depth&#39;, 2, 16, log=True),
-                &#34;min_samples_split&#34;:
-                trial.suggest_int(&#39;min_samples_split&#39;, 2, 32, log=True),
-                &#34;min_samples_leaf&#34;:
-                trial.suggest_int(&#39;min_samples_leaf&#39;, 1, 16, log=True),
-                &#34;ccp_alpha&#34;:
-                trial.suggest_float(&#39;ccp_alpha&#39;, 1e-3, 1e-1, log=True),
-                &#34;random_state&#34;:
-                self.kernel_seed_tape[trial.number],
-                &#34;class_weight&#34;:
-                &#34;balanced&#34;
-            }
-        DT = DecisionTreeRegressor(**parms)
-        return DT
-
-
-# CatBoost
-# KNN
-# KNN-Graph spectrum</code></pre>
-</details>
 </section>
 <section>
 </section>
@@ -822,29 +48,9 @@ class DecisionTree_tuner(Regression_tuner):
 <dl>
 <dt id="PineBioML.model.supervised.Regression.AdaBoost_tuner"><code class="flex name class">
 <span>class <span class="ident">AdaBoost_tuner</span></span>
-<span>(</span><span>n_try=25, n_cv=5, target='mse', kernel_seed=None, valid_seed=None, optuna_seed=None, validate_penalty=True)</span>
+<span>(</span><span>n_try=25,<br>n_cv=5,<br>target='mse',<br>kernel_seed=None,<br>valid_seed=None,<br>optuna_seed=None,<br>validate_penalty=True)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Tuning a AdaBoost regressor.
-<br>
-<a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostRegressor.html">sklearn.ensemble.AdaBoostRegressor</a></p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>The number of trials optuna should try. Defaults to 25.</dd>
-<dt><strong><code>n_cv</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.</dd>
-<dt><strong><code>target</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mse".</dd>
-<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Random seed for model. Defaults to None.</dd>
-<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Random seed for cross validation. Defaults to None.</dd>
-<dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Random seed for optuna's hyperparameter sampling. Defaults to None.</dd>
-<dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>True to penalty the overfitting by difference between training score and cv score. Defaults to True.</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -905,59 +111,28 @@ class DecisionTree_tuner(Regression_tuner):
 
         return refer
 
-    def create_model(self, trial, default=False):
-        if default:
-            parms = {
-                &#34;random_state&#34;: self.kernel_seed,
-            }
-        else:
-            # scaling penalty: https://scikit-learn.org/stable/auto_examples/svm/plot_svm_scale_c.html#sphx-glr-auto-examples-svm-plot-svm-scale-c-py
-            parms = {
-                &#34;n_estimators&#34;:
-                trial.suggest_int(&#39;n_estimators&#39;, 8, 256, log=True),
-                &#34;learning_rate&#34;:
-                trial.suggest_float(&#39;learning_rate&#39;, 1e-2, 1, log=True),
-                &#34;loss&#34;:
-                trial.suggest_categorical(&#34;loss&#34;,
-                                          [&#34;linear&#34;, &#34;square&#34;, &#34;exponential&#34;]),
-                &#34;random_state&#34;:
-                self.kernel_seed_tape[trial.number]
-            }
+    def parms_range(self) -&gt; dict:
+        return {
+            &#34;n_estimators&#34;: (&#39;n_estimators&#39;, &#34;int&#34;, 4, 256),
+            &#34;learning_rate&#34;: (&#39;learning_rate&#39;, &#34;float&#34;, 1e-2, 1.),
+            &#34;loss&#34;: (&#34;loss&#34;, &#34;category&#34;, [&#34;linear&#34;, &#34;square&#34;,
+                                          &#34;exponential&#34;], None)
+        }
+
+    def create_model(self, trial, default=False, training=False):
+        parms = {&#34;random_state&#34;: self.kernel_seed}
+        if not default:
+            parms_to_tune = self.parms_range()
+            for par in parms_to_tune:
+                parms[par] = self.parms_range_sparser(trial,
+                                                      parms_to_tune[par])
+            parms[&#34;random_state&#34;] = self.kernel_seed_tape[trial.number]
         ada = AdaBoostRegressor(**parms)
         return ada</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></li>
-<li><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></li>
-<li>abc.ABC</li>
-</ul>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></b></code>:
-<ul class="hlist">
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.check_task" href="index.html#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.create_model" href="#PineBioML.model.supervised.Regression.Regression_tuner.create_model">create_model</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.get_scorer" href="index.html#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.is_regression" href="#PineBioML.model.supervised.Regression.Regression_tuner.is_regression">is_regression</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.name" href="#PineBioML.model.supervised.Regression.Regression_tuner.name">name</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.reference" href="index.html#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
-</ul>
-</li>
-</ul>
-</dd>
-<dt id="PineBioML.model.supervised.Regression.DecisionTree_tuner"><code class="flex name class">
-<span>class <span class="ident">DecisionTree_tuner</span></span>
-<span>(</span><span>n_try=25, n_cv=5, target='mse', kernel_seed=None, valid_seed=None, optuna_seed=None, validate_penalty=True)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Tuning a DecisionTree regressor.
+<div class="desc"><p>Tuning a AdaBoost regressor.
 <br>
-<a href="https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html">sklearn.tree.DecisionTreeRegressor</a></p>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostRegressor.html">sklearn.ensemble.AdaBoostRegressor</a></p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
@@ -975,6 +150,41 @@ class DecisionTree_tuner(Regression_tuner):
 <dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code>, optional</dt>
 <dd>True to penalty the overfitting by difference between training score and cv score. Defaults to True.</dd>
 </dl></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></li>
+<li><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></b></code>:
+<ul class="hlist">
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.check_task" href="index.html#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.clr_best_iteration" href="index.html#PineBioML.model.supervised.Basic_tuner.clr_best_iteration">clr_best_iteration</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.create_model" href="#PineBioML.model.supervised.Regression.Regression_tuner.create_model">create_model</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.detail" href="index.html#PineBioML.model.supervised.Basic_tuner.detail">detail</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.get_scorer" href="index.html#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.is_regression" href="#PineBioML.model.supervised.Regression.Regression_tuner.is_regression">is_regression</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.name" href="#PineBioML.model.supervised.Regression.Regression_tuner.name">name</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.optimize_fit" href="index.html#PineBioML.model.supervised.Basic_tuner.optimize_fit">optimize_fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.parms_range" href="index.html#PineBioML.model.supervised.Basic_tuner.parms_range">parms_range</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.plot" href="index.html#PineBioML.model.supervised.Basic_tuner.plot">plot</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.reference" href="index.html#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.using_earlystopping" href="index.html#PineBioML.model.supervised.Basic_tuner.using_earlystopping">using_earlystopping</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="PineBioML.model.supervised.Regression.DecisionTree_tuner"><code class="flex name class">
+<span>class <span class="ident">DecisionTree_tuner</span></span>
+<span>(</span><span>n_try=25,<br>n_cv=5,<br>target='mse',<br>kernel_seed=None,<br>valid_seed=None,<br>optuna_seed=None,<br>validate_penalty=True)</span>
+</code></dt>
+<dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1032,61 +242,31 @@ class DecisionTree_tuner(Regression_tuner):
 
         return refer
 
-    def create_model(self, trial, default=False):
-        if default:
-            parms = {
-                &#34;random_state&#34;: self.kernel_seed,
-            }
-        else:
-            parms = {
-                &#34;max_depth&#34;:
-                trial.suggest_int(&#39;max_depth&#39;, 2, 16, log=True),
-                &#34;min_samples_split&#34;:
-                trial.suggest_int(&#39;min_samples_split&#39;, 2, 32, log=True),
-                &#34;min_samples_leaf&#34;:
-                trial.suggest_int(&#39;min_samples_leaf&#39;, 1, 16, log=True),
-                &#34;ccp_alpha&#34;:
-                trial.suggest_float(&#39;ccp_alpha&#39;, 1e-3, 1e-1, log=True),
-                &#34;random_state&#34;:
-                self.kernel_seed_tape[trial.number],
-                &#34;class_weight&#34;:
-                &#34;balanced&#34;
-            }
+    def parms_range(self) -&gt; dict:
+        return {
+            &#34;max_depth&#34;:
+            (&#34;max_depth&#34;, &#34;int&#34;, round(np.log2(self.n_sample) / 2),
+             int(np.log2(self.n_sample)) + 2),
+            &#34;min_samples_split&#34;: (&#39;min_samples_split&#39;, &#34;int&#34;, 2, 32),
+            &#34;min_samples_leaf&#34;: (&#39;min_samples_leaf&#39;, &#34;int&#34;, 1, 16),
+            &#39;ccp_alpha&#39;:
+            (&#39;ccp_alpha&#39;, &#34;float&#34;, 1e-1 / self.n_sample, 1e+2 / self.n_sample),
+        }
+
+    def create_model(self, trial, default=False, training=False):
+        parms = {&#34;random_state&#34;: self.kernel_seed}
+        if not default:
+            parms_to_tune = self.parms_range()
+            for par in parms_to_tune:
+                parms[par] = self.parms_range_sparser(trial,
+                                                      parms_to_tune[par])
+            parms[&#34;random_state&#34;] = self.kernel_seed_tape[trial.number]
         DT = DecisionTreeRegressor(**parms)
         return DT</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></li>
-<li><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></li>
-<li>abc.ABC</li>
-</ul>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></b></code>:
-<ul class="hlist">
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.check_task" href="index.html#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.create_model" href="#PineBioML.model.supervised.Regression.Regression_tuner.create_model">create_model</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.get_scorer" href="index.html#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.is_regression" href="#PineBioML.model.supervised.Regression.Regression_tuner.is_regression">is_regression</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.name" href="#PineBioML.model.supervised.Regression.Regression_tuner.name">name</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.reference" href="index.html#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
-</ul>
-</li>
-</ul>
-</dd>
-<dt id="PineBioML.model.supervised.Regression.ElasticNet_tuner"><code class="flex name class">
-<span>class <span class="ident">ElasticNet_tuner</span></span>
-<span>(</span><span>n_try=25, n_cv=5, target='mse', kernel_seed=None, valid_seed=None, optuna_seed=None, validate_penalty=True)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Tuning a elasic net regression.
+<div class="desc"><p>Tuning a DecisionTree regressor.
 <br>
-<a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html">sklearn.linear_model.ElasticNet</a></p>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html">sklearn.tree.DecisionTreeRegressor</a></p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
@@ -1104,6 +284,41 @@ class DecisionTree_tuner(Regression_tuner):
 <dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code>, optional</dt>
 <dd>True to penalty the overfitting by difference between training score and cv score. Defaults to True.</dd>
 </dl></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></li>
+<li><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></b></code>:
+<ul class="hlist">
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.check_task" href="index.html#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.clr_best_iteration" href="index.html#PineBioML.model.supervised.Basic_tuner.clr_best_iteration">clr_best_iteration</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.create_model" href="#PineBioML.model.supervised.Regression.Regression_tuner.create_model">create_model</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.detail" href="index.html#PineBioML.model.supervised.Basic_tuner.detail">detail</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.get_scorer" href="index.html#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.is_regression" href="#PineBioML.model.supervised.Regression.Regression_tuner.is_regression">is_regression</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.name" href="#PineBioML.model.supervised.Regression.Regression_tuner.name">name</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.optimize_fit" href="index.html#PineBioML.model.supervised.Basic_tuner.optimize_fit">optimize_fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.parms_range" href="index.html#PineBioML.model.supervised.Basic_tuner.parms_range">parms_range</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.plot" href="index.html#PineBioML.model.supervised.Basic_tuner.plot">plot</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.reference" href="index.html#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.using_earlystopping" href="index.html#PineBioML.model.supervised.Basic_tuner.using_earlystopping">using_earlystopping</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="PineBioML.model.supervised.Regression.ElasticNet_tuner"><code class="flex name class">
+<span>class <span class="ident">ElasticNet_tuner</span></span>
+<span>(</span><span>n_try=25,<br>n_cv=5,<br>target='mse',<br>kernel_seed=None,<br>valid_seed=None,<br>optuna_seed=None,<br>validate_penalty=True)</span>
+</code></dt>
+<dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1158,14 +373,20 @@ class DecisionTree_tuner(Regression_tuner):
 
         return refer
 
-    def create_model(self, trial, default=False):
-        if default:
-            parms = {}
-        else:
-            parms = {
-                &#34;alpha&#34;: trial.suggest_float(&#39;alpha&#39;, 1e-3, 1e+3, log=True),
-                &#34;l1_ratio&#34;: trial.suggest_float(&#39;l1_ratio&#39;, 0, 1),
-            }
+    def parms_range(self) -&gt; dict:
+        return {
+            &#39;alpha&#39;: (&#39;alpha&#39;, &#34;float&#34;, 1e-3, 1e+3),
+            &#39;l1_ratio&#39;: (&#39;l1_ratio&#39;, &#34;float&#34;, 0, 1)
+        }
+
+    def create_model(self, trial, default=False, training=False):
+        parms = {&#34;random_state&#34;: self.kernel_seed, &#34;selection&#34;: &#34;random&#34;}
+        if not default:
+            parms_to_tune = self.parms_range()
+            for par in parms_to_tune:
+                parms[par] = self.parms_range_sparser(trial,
+                                                      parms_to_tune[par])
+            parms[&#34;random_state&#34;] = self.kernel_seed_tape[trial.number]
         enr = ElasticNet(**parms)
         return enr
 
@@ -1183,6 +404,26 @@ class DecisionTree_tuner(Regression_tuner):
         )
         print(sm_ols.summary())</code></pre>
 </details>
+<div class="desc"><p>Tuning a elasic net regression.
+<br>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html">sklearn.linear_model.ElasticNet</a></p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The number of trials optuna should try. Defaults to 25.</dd>
+<dt><strong><code>n_cv</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.</dd>
+<dt><strong><code>target</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mse".</dd>
+<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for model. Defaults to None.</dd>
+<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for cross validation. Defaults to None.</dd>
+<dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for optuna's hyperparameter sampling. Defaults to None.</dd>
+<dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>True to penalty the overfitting by difference between training score and cv score. Defaults to True.</dd>
+</dl></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></li>
@@ -1195,9 +436,6 @@ class DecisionTree_tuner(Regression_tuner):
 <span>def <span class="ident">summary</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>It is the way I found to cram a sklearn regression result into the statsmodel regresion.
-<br>
-The only reason to do this is that statsmodel provides R-style summary.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1216,6 +454,9 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
     )
     print(sm_ols.summary())</code></pre>
 </details>
+<div class="desc"><p>It is the way I found to cram a sklearn regression result into the statsmodel regresion.
+<br>
+The only reason to do this is that statsmodel provides R-style summary.</p></div>
 </dd>
 </dl>
 <h3>Inherited members</h3>
@@ -1223,54 +464,35 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
 <li><code><b><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></b></code>:
 <ul class="hlist">
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.check_task" href="index.html#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.clr_best_iteration" href="index.html#PineBioML.model.supervised.Basic_tuner.clr_best_iteration">clr_best_iteration</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.create_model" href="#PineBioML.model.supervised.Regression.Regression_tuner.create_model">create_model</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.detail" href="index.html#PineBioML.model.supervised.Basic_tuner.detail">detail</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.get_scorer" href="index.html#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.is_regression" href="#PineBioML.model.supervised.Regression.Regression_tuner.is_regression">is_regression</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.name" href="#PineBioML.model.supervised.Regression.Regression_tuner.name">name</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.optimize_fit" href="index.html#PineBioML.model.supervised.Basic_tuner.optimize_fit">optimize_fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.parms_range" href="index.html#PineBioML.model.supervised.Basic_tuner.parms_range">parms_range</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.plot" href="index.html#PineBioML.model.supervised.Basic_tuner.plot">plot</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.reference" href="index.html#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.using_earlystopping" href="index.html#PineBioML.model.supervised.Basic_tuner.using_earlystopping">using_earlystopping</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
-<dt id="PineBioML.model.supervised.Regression.LighGBM_tuner"><code class="flex name class">
-<span>class <span class="ident">LighGBM_tuner</span></span>
-<span>(</span><span>n_try=75, n_cv=5, target='mse', kernel_seed=None, valid_seed=None, optuna_seed=None, validate_penalty=True)</span>
+<dt id="PineBioML.model.supervised.Regression.LightGBM_tuner"><code class="flex name class">
+<span>class <span class="ident">LightGBM_tuner</span></span>
+<span>(</span><span>n_try=50,<br>n_cv=5,<br>target='mse',<br>kernel_seed=None,<br>valid_seed=None,<br>optuna_seed=None,<br>validate_penalty=True)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Tuning a LighGBM classifier model.
-<br>
-<a href="https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html">lightgbm.LGBMClassifier</a>
-</p>
-<p>ToDo:
-<br>
-1. compare with optuna.integration.lightgbm.LightGBMTuner
-</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>The number of trials optuna should try. Defaults to 75.</dd>
-<dt><strong><code>n_cv</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.</dd>
-<dt><strong><code>target</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mse".</dd>
-<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Random seed for model. Defaults to None.</dd>
-<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Random seed for cross validation. Defaults to None.</dd>
-<dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Random seed for optuna's hyperparameter sampling. Defaults to None.</dd>
-<dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>True to penalty the overfitting by difference between training score and cv score. Defaults to True.</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class LighGBM_tuner(Regression_tuner):
+<pre><code class="python">class LightGBM_tuner(Regression_tuner):
     &#34;&#34;&#34;
     Tuning a LighGBM classifier model.    
     [lightgbm.LGBMClassifier](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html)     
@@ -1280,7 +502,7 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
     &#34;&#34;&#34;
 
     def __init__(self,
-                 n_try=75,
+                 n_try=50,
                  n_cv=5,
                  target=&#34;mse&#34;,
                  kernel_seed=None,
@@ -1328,103 +550,90 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
 
         return refer
 
-    def create_model(self, trial, default=False):
-        if default:
-            parms = {
-                &#34;n_jobs&#34;: None,
-                &#34;random_state&#34;: self.kernel_seed,
-                &#34;verbosity&#34;: -1
-            }
-        else:
-            depth = trial.suggest_float(&#39;max_depth&#39;, 3, 16, log=True)
-            leaves = trial.suggest_float(&#39;num_leaves&#39;,
-                                         depth * 2 / 3,
-                                         depth,
-                                         log=True)
-            depth = int(np.rint(depth))
-            leaves = int(np.floor(np.power(2, leaves)))
+    def parms_range(self) -&gt; dict:
+        return {
+            &#34;n_estimators&#34;: (&#39;n_estimators&#39;, &#34;int&#34;, 4, 256),
+            &#34;max_depth&#34;:
+            (&#34;max_depth&#34;, &#34;int&#34;, round(np.log2(self.n_sample) / 2),
+             int(np.log2(self.n_sample)) + 2),
+            &#34;min_child_samples&#34;:
+            (&#34;min_child_samples&#34;, &#34;int&#34;, 2, int(np.sqrt(self.n_sample) / 2)),
+            &#34;min_split_gain&#34;: (&#34;min_split_gain&#34;, &#34;float&#34;, 1e-4, 1e-2),
+            &#34;learning_rate&#34;: (&#39;learning_rate&#39;, &#34;float&#34;, 1e-2, 1.),
+            &#34;subsample&#34;: (&#39;subsample&#39;, &#34;float&#34;, 0.5, 1.),
+            &#34;colsample_bytree&#34;: (&#39;colsample_bytree&#39;, &#34;float&#34;, 0.5, 1.),
+            &#34;reg_lambda&#34;: (&#39;reg_lambda&#39;, &#34;float&#34;, 1e-3, 1),
+            &#34;reg_alpha&#34;: (&#39;reg_alpha&#39;, &#34;float&#34;, 1e-4, 1.)
+        }
 
-            if trial.suggest_categorical(&#34;use_subsample&#34;, [True, False]):
-                sampling_rate = trial.suggest_float(&#39;subsample&#39;,
-                                                    0.5,
-                                                    0.9,
-                                                    log=True)
-                col_sampling_rate = trial.suggest_float(
-                    &#39;colsample_bytree&#39;, 0.1, 0.9)
-            else:
-                sampling_rate = 1.
-                col_sampling_rate = 1.
-
-            parms = {
-                &#34;n_estimators&#34;:
-                trial.suggest_int(&#39;n_estimators&#39;, 16, 256, log=True),
-                &#34;max_depth&#34;:
-                depth,
-                &#34;num_leaves&#34;:
-                leaves,
-                &#34;learning_rate&#34;:
-                trial.suggest_float(&#39;learning_rate&#39;, 1e-2, 1, log=True),
-                &#34;subsample_freq&#34;:
-                1,
-                &#34;subsample&#34;:
-                sampling_rate,
-                &#34;colsample_bytree&#34;:
-                col_sampling_rate,
-                &#34;min_child_samples&#34;:
-                trial.suggest_int(&#39;min_child_samples&#39;, 2, 32, log=True),
-                &#34;reg_lambda&#34;:
-                trial.suggest_float(&#39;reg_lambda&#39;, 5e-3, 1e+1, log=True),
-                &#34;n_jobs&#34;:
-                None,
-                &#34;class_weight&#34;:
-                &#34;balanced&#34;,
-                &#34;random_state&#34;:
-                self.kernel_seed_tape[trial.number],
-                &#34;verbosity&#34;:
-                -1,
-            }
+    def create_model(self, trial, default=False, training=False):
+        parms = {
+            &#34;n_jobs&#34;: None,
+            &#34;random_state&#34;: self.kernel_seed,
+            &#34;verbosity&#34;: -1,
+            &#34;subsample_freq&#34;: 1
+        }
+        if not default:
+            parms_to_tune = self.parms_range()
+            for par in parms_to_tune:
+                parms[par] = self.parms_range_sparser(trial,
+                                                      parms_to_tune[par])
+            parms[&#34;random_state&#34;] = self.kernel_seed_tape[trial.number]
+            if not training:
+                # not training, then overide the n_estimators by trial&#39;s early stopping point.
+                parms[&#34;n_estimators&#34;] = self.stop_points[trial.number]
 
         lgbm = LGBMRegressor(**parms)
-        return lgbm</code></pre>
+        return lgbm
+
+    def using_earlystopping(self):
+        &#34;&#34;&#34;
+        Returns:
+            bool: To activate earlystopping recorder in base class.
+        &#34;&#34;&#34;
+        return True
+
+    def clr_best_iteration(self, classifier):
+        return classifier.best_iteration_
+
+    def optimize_fit(self, clr, train_data, sample_weight, valid_data):
+        &#34;&#34;&#34;
+        optimize_fit the polymorphism middle layer between model fitting and optuna optimize evaluate.    
+        Specifically, optimize_fit is used for XGBoost/lightGBM/Catboost early stopping which requires validation data in .fit .
+        However sklearn estimators such as randomforest does not provide such api.    
+
+        Args:
+            clr (classifier): classifier to fit.
+            train_data (tuple): (train_x, train_y) .
+            sample_weight (list-like): training sample weight.
+            valid_data (tuple): (valid_x, valid_y) .
+
+        Returns:
+            classification object: fitted object.
+        &#34;&#34;&#34;
+        train_x, train_y = train_data
+
+        return clr.fit(train_x,
+                       train_y,
+                       sample_weight=sample_weight,
+                       eval_set=[valid_data],
+                       callbacks=[
+                           early_stopping(round(clr.n_estimators * 0.1) + 3,
+                                          verbose=False)
+                       ])</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></li>
-<li><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></li>
-<li>abc.ABC</li>
-</ul>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></b></code>:
-<ul class="hlist">
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.check_task" href="index.html#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.create_model" href="#PineBioML.model.supervised.Regression.Regression_tuner.create_model">create_model</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.get_scorer" href="index.html#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.is_regression" href="#PineBioML.model.supervised.Regression.Regression_tuner.is_regression">is_regression</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.name" href="#PineBioML.model.supervised.Regression.Regression_tuner.name">name</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.reference" href="index.html#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
-</ul>
-</li>
-</ul>
-</dd>
-<dt id="PineBioML.model.supervised.Regression.RandomForest_tuner"><code class="flex name class">
-<span>class <span class="ident">RandomForest_tuner</span></span>
-<span>(</span><span>using_oob=True, n_try=50, n_cv=5, target='mse', kernel_seed=None, valid_seed=None, optuna_seed=None, validate_penalty=True)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Tuning a random forest model.
+<div class="desc"><p>Tuning a LighGBM classifier model.
 <br>
-<a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html">sklearn.ensemble.RandomForestRegressor</a></p>
+<a href="https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html">lightgbm.LGBMClassifier</a>
+</p>
+<p>ToDo:
+<br>
+1. compare with optuna.integration.lightgbm.LightGBMTuner
+</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>using_oob</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Using out of bag score as validation. Defaults to True.</dd>
 <dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>The number of trials optuna should try. Defaults to 50.</dd>
+<dd>The number of trials optuna should try. Defaults to 75.</dd>
 <dt><strong><code>n_cv</code></strong> :&ensp;<code>int</code>, optional</dt>
 <dd>The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.</dd>
 <dt><strong><code>target</code></strong> :&ensp;<code>str</code>, optional</dt>
@@ -1438,6 +647,64 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
 <dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code>, optional</dt>
 <dd>True to penalty the overfitting by difference between training score and cv score. Defaults to True.</dd>
 </dl></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></li>
+<li><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="PineBioML.model.supervised.Regression.LightGBM_tuner.using_earlystopping"><code class="name flex">
+<span>def <span class="ident">using_earlystopping</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def using_earlystopping(self):
+    &#34;&#34;&#34;
+    Returns:
+        bool: To activate earlystopping recorder in base class.
+    &#34;&#34;&#34;
+    return True</code></pre>
+</details>
+<div class="desc"><h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>To activate earlystopping recorder in base class.</dd>
+</dl></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></b></code>:
+<ul class="hlist">
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.check_task" href="index.html#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.clr_best_iteration" href="index.html#PineBioML.model.supervised.Basic_tuner.clr_best_iteration">clr_best_iteration</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.create_model" href="#PineBioML.model.supervised.Regression.Regression_tuner.create_model">create_model</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.detail" href="index.html#PineBioML.model.supervised.Basic_tuner.detail">detail</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.get_scorer" href="index.html#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.is_regression" href="#PineBioML.model.supervised.Regression.Regression_tuner.is_regression">is_regression</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.name" href="#PineBioML.model.supervised.Regression.Regression_tuner.name">name</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.optimize_fit" href="index.html#PineBioML.model.supervised.Basic_tuner.optimize_fit">optimize_fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.parms_range" href="index.html#PineBioML.model.supervised.Basic_tuner.parms_range">parms_range</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.plot" href="index.html#PineBioML.model.supervised.Basic_tuner.plot">plot</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.reference" href="index.html#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="PineBioML.model.supervised.Regression.RandomForest_tuner"><code class="flex name class">
+<span>class <span class="ident">RandomForest_tuner</span></span>
+<span>(</span><span>using_oob=True,<br>n_try=50,<br>n_cv=5,<br>target='mse',<br>kernel_seed=None,<br>valid_seed=None,<br>optuna_seed=None,<br>validate_penalty=True)</span>
+</code></dt>
+<dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1500,48 +767,43 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
 
         return refer
 
-    def create_model(self, trial, default=False):
-        if default:
-            parms = {
-                &#34;bootstrap&#34;: self.using_oob,
-                &#34;oob_score&#34;: self.using_oob,
-                &#34;n_jobs&#34;: -1,
-                &#34;random_state&#34;: self.kernel_seed,
-                &#34;verbose&#34;: 0,
-            }
-        else:
-            parms = {
-                &#34;n_estimators&#34;:
-                trial.suggest_int(&#39;n_estimators&#39;, 32, 1024, log=True),
-                &#34;max_depth&#34;:
-                trial.suggest_int(&#39;max_depth&#39;, 4, 16, log=True),
-                &#34;min_samples_leaf&#34;:
-                trial.suggest_int(&#39;min_samples_leaf&#39;, 1, 32, log=True),
-                &#34;ccp_alpha&#34;:
-                trial.suggest_float(&#39;ccp_alpha&#39;, 1e-4, 1e-1, log=True),
-                &#34;max_samples&#34;:
-                trial.suggest_float(&#39;max_samples&#39;, 0.5, 0.9, log=True),
-                &#34;bootstrap&#34;:
-                self.using_oob,
-                &#34;oob_score&#34;:
-                self.using_oob,
-                &#34;n_jobs&#34;:
-                -1,
-                &#34;random_state&#34;:
-                self.kernel_seed_tape[trial.number],
-                &#34;verbose&#34;:
-                0,
-            }
+    def parms_range(self) -&gt; dict:
+        return {
+            &#34;n_estimators&#34;: (&#39;n_estimators&#39;, &#34;int&#34;, 32, 512),
+            &#39;min_samples_leaf&#39;:
+            (&#39;min_samples_leaf&#39;, &#34;int&#34;, 1, round(np.sqrt(self.n_sample) / 2)),
+            &#39;ccp_alpha&#39;:
+            (&#39;ccp_alpha&#39;, &#34;float&#34;, 1e-1 / self.n_sample, 1e+2 / self.n_sample),
+            &#39;max_samples&#39;: (&#39;max_samples&#39;, &#34;float&#34;, 0.4, 0.8),
+            &#34;max_depth&#34;:
+            (&#34;max_depth&#34;, &#34;int&#34;, round(np.log2(self.n_sample) / 2),
+             int(np.log2(self.n_sample)) + 2)
+        }
 
+    def create_model(self, trial, default=False, training=False):
+        parms = {
+            &#34;bootstrap&#34;: self.using_oob,
+            &#34;oob_score&#34;: self.using_oob,
+            &#34;n_jobs&#34;: -1,
+            &#34;random_state&#34;: self.kernel_seed,
+            &#34;verbose&#34;: 0,
+        }
+
+        if not default:
+            parms_to_tune = self.parms_range()
+            for par in parms_to_tune:
+                parms[par] = self.parms_range_sparser(trial,
+                                                      parms_to_tune[par])
+            parms[&#34;random_state&#34;] = self.kernel_seed_tape[trial.number]
         rf = RandomForestRegressor(**parms)
         return rf
 
-    def evaluate(self, trial, default=False):
+    def evaluate(self, trial, default=False, training=False):
         regressor_obj = self.create_model(trial, default)
 
         if self.using_oob:
             # oob predict
-            with parallel_backend(&#39;loky&#39;):
+            with parallel_config(backend=&#39;loky&#39;):
                 regressor_obj.fit(self.x, self.y)
             y_pred = regressor_obj.oob_prediction_
 
@@ -1552,34 +814,32 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
                 # if not great is better, then multiply -1
                 score *= -1
         else:
-            # cv score
-            cv = StratifiedKFold(
-                n_splits=self.n_cv,
-                shuffle=True,
-                random_state=self.valid_seed_tape[trial.number])
-            score = []
-
-            for i, (train_ind, test_ind) in enumerate(cv.split(self.x,
-                                                               self.y)):
-                x_train = self.x.iloc[train_ind]
-                y_train = self.y.iloc[train_ind]
-                x_test = self.x.iloc[test_ind]
-                y_test = self.y.iloc[test_ind]
-
-                with parallel_backend(&#39;loky&#39;):
-                    regressor_obj.fit(self.x, self.y)
-
-                test_score = self.metric(regressor_obj, x_test, y_test)
-                train_score = self.metric(regressor_obj, x_train, y_train)
-
-                if self.validate_penalty:
-                    score.append(test_score + 0.1 * (test_score - train_score))
-                else:
-                    score.append(test_score)
-
-            score = sum(score) / self.n_cv
+            with parallel_config(backend=&#39;loky&#39;):
+                score = super().evaluate(trial=trial, default=default)
         return score</code></pre>
 </details>
+<div class="desc"><p>Tuning a random forest model.
+<br>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html">sklearn.ensemble.RandomForestRegressor</a></p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>using_oob</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Using out of bag score as validation. Defaults to True.</dd>
+<dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The number of trials optuna should try. Defaults to 50.</dd>
+<dt><strong><code>n_cv</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.</dd>
+<dt><strong><code>target</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mse".</dd>
+<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for model. Defaults to None.</dd>
+<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for cross validation. Defaults to None.</dd>
+<dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for optuna's hyperparameter sampling. Defaults to None.</dd>
+<dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>True to penalty the overfitting by difference between training score and cv score. Defaults to True.</dd>
+</dl></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></li>
@@ -1591,49 +851,30 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
 <li><code><b><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></b></code>:
 <ul class="hlist">
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.check_task" href="index.html#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.clr_best_iteration" href="index.html#PineBioML.model.supervised.Basic_tuner.clr_best_iteration">clr_best_iteration</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.create_model" href="#PineBioML.model.supervised.Regression.Regression_tuner.create_model">create_model</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.detail" href="index.html#PineBioML.model.supervised.Basic_tuner.detail">detail</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.get_scorer" href="index.html#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.is_regression" href="#PineBioML.model.supervised.Regression.Regression_tuner.is_regression">is_regression</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.name" href="#PineBioML.model.supervised.Regression.Regression_tuner.name">name</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.optimize_fit" href="index.html#PineBioML.model.supervised.Basic_tuner.optimize_fit">optimize_fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.parms_range" href="index.html#PineBioML.model.supervised.Basic_tuner.parms_range">parms_range</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.plot" href="index.html#PineBioML.model.supervised.Basic_tuner.plot">plot</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.reference" href="index.html#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.using_earlystopping" href="index.html#PineBioML.model.supervised.Basic_tuner.using_earlystopping">using_earlystopping</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
 <dt id="PineBioML.model.supervised.Regression.Regression_tuner"><code class="flex name class">
 <span>class <span class="ident">Regression_tuner</span></span>
-<span>(</span><span>n_try, n_cv, target, validate_penalty, kernel_seed=None, valid_seed=None, optuna_seed=None)</span>
+<span>(</span><span>n_try,<br>n_cv,<br>target,<br>validate_penalty,<br>kernel_seed=None,<br>valid_seed=None,<br>optuna_seed=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>A subclass of Basic_tuner for regression task.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>n_try</code></strong> :&ensp;<code>int</code></dt>
-<dd>The number of trials optuna should try.</dd>
-<dt><strong><code>n_cv</code></strong> :&ensp;<code>int</code></dt>
-<dd>The number of folds to execute cross validation evaluation in iteration of optuna optimization.</dd>
-<dt><strong><code>target</code></strong> :&ensp;<code>str</code></dt>
-<dd>The target of optuna optimization. Notice that is different from the training loss of model.</dd>
-<dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code></dt>
-<dd>True to penalty the overfitting by difference between training score and cv score.</dd>
-<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Random seed for model. Defaults to None.</dd>
-<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Random seed for cross validation. Defaults to None.</dd>
-<dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Random seed for optuna's hyperparameter sampling. Defaults to None.</dd>
-</dl>
-<h2 id="todo">Todo</h2>
-<ol>
-<li>transfer the initialization of seed tape from <strong>init</strong> to fit.
-</li>
-<li>optuna pruner: See the section Acticating Pruners in <a href="https://optuna.readthedocs.io/en/stable/tutorial/10_key_features/003_efficient_optimization_algorithms.html">https://optuna.readthedocs.io/en/stable/tutorial/10_key_features/003_efficient_optimization_algorithms.html</a></li>
-<li>Winner's curse</li>
-</ol></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1700,7 +941,7 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
         pass
 
     @abstractmethod
-    def create_model(self, trial, default):
+    def create_model(self, trial, default, training):
         &#34;&#34;&#34;
         Create model based on default setting or optuna trial
 
@@ -1713,6 +954,31 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
         &#34;&#34;&#34;
         pass</code></pre>
 </details>
+<div class="desc"><p>A subclass of Basic_tuner for regression task.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>n_try</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of trials optuna should try.</dd>
+<dt><strong><code>n_cv</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of folds to execute cross validation evaluation in iteration of optuna optimization.</dd>
+<dt><strong><code>target</code></strong> :&ensp;<code>str</code></dt>
+<dd>The target of optuna optimization. Notice that is different from the training loss of model.</dd>
+<dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code></dt>
+<dd>True to penalty the overfitting by difference between training score and cv score.</dd>
+<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for model. Defaults to None.</dd>
+<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for cross validation. Defaults to None.</dd>
+<dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for optuna's hyperparameter sampling. Defaults to None.</dd>
+</dl>
+<h2 id="todo">Todo</h2>
+<ol>
+<li>transfer the initialization of seed tape from <strong>init</strong> to fit.
+</li>
+<li>optuna pruner: See the section Acticating Pruners in <a href="https://optuna.readthedocs.io/en/stable/tutorial/10_key_features/003_efficient_optimization_algorithms.html">https://optuna.readthedocs.io/en/stable/tutorial/10_key_features/003_efficient_optimization_algorithms.html</a></li>
+<li>Winner's curse</li>
+</ol></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></li>
@@ -1723,7 +989,7 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
 <li><a title="PineBioML.model.supervised.Regression.AdaBoost_tuner" href="#PineBioML.model.supervised.Regression.AdaBoost_tuner">AdaBoost_tuner</a></li>
 <li><a title="PineBioML.model.supervised.Regression.DecisionTree_tuner" href="#PineBioML.model.supervised.Regression.DecisionTree_tuner">DecisionTree_tuner</a></li>
 <li><a title="PineBioML.model.supervised.Regression.ElasticNet_tuner" href="#PineBioML.model.supervised.Regression.ElasticNet_tuner">ElasticNet_tuner</a></li>
-<li><a title="PineBioML.model.supervised.Regression.LighGBM_tuner" href="#PineBioML.model.supervised.Regression.LighGBM_tuner">LighGBM_tuner</a></li>
+<li><a title="PineBioML.model.supervised.Regression.LightGBM_tuner" href="#PineBioML.model.supervised.Regression.LightGBM_tuner">LightGBM_tuner</a></li>
 <li><a title="PineBioML.model.supervised.Regression.RandomForest_tuner" href="#PineBioML.model.supervised.Regression.RandomForest_tuner">RandomForest_tuner</a></li>
 <li><a title="PineBioML.model.supervised.Regression.SVM_tuner" href="#PineBioML.model.supervised.Regression.SVM_tuner">SVM_tuner</a></li>
 <li><a title="PineBioML.model.supervised.Regression.XGBoost_tuner" href="#PineBioML.model.supervised.Regression.XGBoost_tuner">XGBoost_tuner</a></li>
@@ -1731,25 +997,15 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
 <h3>Methods</h3>
 <dl>
 <dt id="PineBioML.model.supervised.Regression.Regression_tuner.create_model"><code class="name flex">
-<span>def <span class="ident">create_model</span></span>(<span>self, trial, default)</span>
+<span>def <span class="ident">create_model</span></span>(<span>self, trial, default, training)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Create model based on default setting or optuna trial</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>trial</code></strong> :&ensp;<code>optuna.trial.Trial</code></dt>
-<dd>optuna trial in this call.</dd>
-<dt><strong><code>default</code></strong> :&ensp;<code>bool</code></dt>
-<dd>To use default hyper parameter</dd>
-</dl>
-<p>Returns :
-sklearn.base.BaseEstimator: A sklearn style model object.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-def create_model(self, trial, default):
+def create_model(self, trial, default, training):
     &#34;&#34;&#34;
     Create model based on default setting or optuna trial
 
@@ -1762,17 +1018,21 @@ def create_model(self, trial, default):
     &#34;&#34;&#34;
     pass</code></pre>
 </details>
+<div class="desc"><p>Create model based on default setting or optuna trial</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>trial</code></strong> :&ensp;<code>optuna.trial.Trial</code></dt>
+<dd>optuna trial in this call.</dd>
+<dt><strong><code>default</code></strong> :&ensp;<code>bool</code></dt>
+<dd>To use default hyper parameter</dd>
+</dl>
+<p>Returns :
+sklearn.base.BaseEstimator: A sklearn style model object.</p></div>
 </dd>
 <dt id="PineBioML.model.supervised.Regression.Regression_tuner.is_regression"><code class="name flex">
 <span>def <span class="ident">is_regression</span></span>(<span>self) ‑> bool</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Yes, it is for regression.</p>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>bool</code></dt>
-<dd>True</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1786,17 +1046,17 @@ def create_model(self, trial, default):
     &#34;&#34;&#34;
     return True</code></pre>
 </details>
+<div class="desc"><p>Yes, it is for regression.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>True</dd>
+</dl></div>
 </dd>
 <dt id="PineBioML.model.supervised.Regression.Regression_tuner.name"><code class="name flex">
 <span>def <span class="ident">name</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
-<div class="desc"><p>To be determined.</p>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>str</code></dt>
-<dd>Name of this tuner.</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1811,6 +1071,12 @@ def name(self) -&gt; str:
     &#34;&#34;&#34;
     pass</code></pre>
 </details>
+<div class="desc"><p>To be determined.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>str</code></dt>
+<dd>Name of this tuner.</dd>
+</dl></div>
 </dd>
 </dl>
 <h3>Inherited members</h3>
@@ -1818,42 +1084,27 @@ def name(self) -&gt; str:
 <li><code><b><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></b></code>:
 <ul class="hlist">
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.check_task" href="index.html#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.clr_best_iteration" href="index.html#PineBioML.model.supervised.Basic_tuner.clr_best_iteration">clr_best_iteration</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.detail" href="index.html#PineBioML.model.supervised.Basic_tuner.detail">detail</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.get_scorer" href="index.html#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.optimize_fit" href="index.html#PineBioML.model.supervised.Basic_tuner.optimize_fit">optimize_fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.parms_range" href="index.html#PineBioML.model.supervised.Basic_tuner.parms_range">parms_range</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.plot" href="index.html#PineBioML.model.supervised.Basic_tuner.plot">plot</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.reference" href="index.html#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.using_earlystopping" href="index.html#PineBioML.model.supervised.Basic_tuner.using_earlystopping">using_earlystopping</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
 <dt id="PineBioML.model.supervised.Regression.SVM_tuner"><code class="flex name class">
 <span>class <span class="ident">SVM_tuner</span></span>
-<span>(</span><span>kernel: Literal['linear', 'poly', 'rbf', 'sigmoid'] = 'rbf', n_try=25, n_cv=5, target='mse', kernel_seed=None, valid_seed=None, optuna_seed=None, validate_penalty=True)</span>
+<span>(</span><span>kernel: Literal['linear', 'poly', 'rbf', 'sigmoid'] = 'rbf',<br>n_try=25,<br>n_cv=5,<br>target='mse',<br>kernel_seed=None,<br>valid_seed=None,<br>optuna_seed=None,<br>validate_penalty=True)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Tuning a support vector machine.
-<br>
-<a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html">sklearn.svm.SVR</a></p>
-<h2 id="args">Args</h2>
-<dl>
-<dt>kernel (Literal[&quot;linear&quot;, &quot;poly&quot;, &quot;rbf&quot;, &quot;sigmoid&quot;], optional): This will be passed to the attribute of SVC: "kernel". Defaults to "rbf".</dt>
-<dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>The number of trials optuna should try. Defaults to 25.</dd>
-<dt><strong><code>n_cv</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.</dd>
-<dt><strong><code>target</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mse".</dd>
-<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Random seed for model. Defaults to None.</dd>
-<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Random seed for cross validation. Defaults to None.</dd>
-<dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Random seed for optuna's hyperparameter sampling. Defaults to None.</dd>
-<dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>True to penalty the overfitting by difference between training score and cv score. Defaults to True.</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1917,68 +1168,33 @@ def name(self) -&gt; str:
 
         return refer
 
-    def create_model(self, trial, default=False):
-        if default:
-            parms = {
-                &#34;kernel&#34;: self.kernel,
-            }
-        else:
-            # scaling penalty: https://scikit-learn.org/stable/auto_examples/svm/plot_svm_scale_c.html#sphx-glr-auto-examples-svm-plot-svm-scale-c-py
-            parms = {
-                &#34;C&#34;:
-                trial.suggest_float(&#39;C&#39;,
-                                    1e-4 * np.sqrt(self.n_sample),
-                                    1e+2 * np.sqrt(self.n_sample),
-                                    log=True),
-                &#34;kernel&#34;:
-                self.kernel,
-                &#34;gamma&#34;:
-                &#34;auto&#34;,
-            }
+    def parms_range(self) -&gt; dict:
+        # scaling penalty: https://scikit-learn.org/stable/auto_examples/svm/plot_svm_scale_c.html#sphx-glr-auto-examples-svm-plot-svm-scale-c-py
+        return {
+            &#39;C&#39;: (&#39;C&#39;, &#34;float&#34;, 1e-3 * np.sqrt(self.n_sample),
+                  1e+2 * np.sqrt(self.n_sample))
+        }
+
+    def create_model(self, trial, default=False, training=False):
+        parms = {
+            &#34;kernel&#34;: self.kernel,
+        }
+        if not default:
+            parms_to_tune = self.parms_range()
+            for par in parms_to_tune:
+                parms[par] = self.parms_range_sparser(trial,
+                                                      parms_to_tune[par])
         svm = SVR(**parms)
         return svm</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></li>
-<li><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></li>
-<li>abc.ABC</li>
-</ul>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></b></code>:
-<ul class="hlist">
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.check_task" href="index.html#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.create_model" href="#PineBioML.model.supervised.Regression.Regression_tuner.create_model">create_model</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.get_scorer" href="index.html#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.is_regression" href="#PineBioML.model.supervised.Regression.Regression_tuner.is_regression">is_regression</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.name" href="#PineBioML.model.supervised.Regression.Regression_tuner.name">name</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.reference" href="index.html#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
-</ul>
-</li>
-</ul>
-</dd>
-<dt id="PineBioML.model.supervised.Regression.XGBoost_tuner"><code class="flex name class">
-<span>class <span class="ident">XGBoost_tuner</span></span>
-<span>(</span><span>n_try=75, n_cv=5, target='mse', kernel_seed=None, valid_seed=None, optuna_seed=None, validate_penalty=True)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Tuning a XGBoost classifier model.
+<div class="desc"><p>Tuning a support vector machine.
 <br>
-<a href="https://xgboost.readthedocs.io/en/stable/python/python_api.html">xgboost.XGBClassifier</a></p>
-<p>ToDo:
-<br>
-1. sample imbalance. (Done)
-2. early stop. (give up)
-3. efficiency (optuna.integration.XGBoostPruningCallback).</p>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html">sklearn.svm.SVR</a></p>
 <h2 id="args">Args</h2>
 <dl>
+<dt>kernel (Literal[&quot;linear&quot;, &quot;poly&quot;, &quot;rbf&quot;, &quot;sigmoid&quot;], optional): This will be passed to the attribute of SVC: "kernel". Defaults to "rbf".</dt>
 <dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>The number of trials optuna should try. Defaults to 75.</dd>
+<dd>The number of trials optuna should try. Defaults to 25.</dd>
 <dt><strong><code>n_cv</code></strong> :&ensp;<code>int</code>, optional</dt>
 <dd>The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.</dd>
 <dt><strong><code>target</code></strong> :&ensp;<code>str</code>, optional</dt>
@@ -1992,6 +1208,41 @@ def name(self) -&gt; str:
 <dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code>, optional</dt>
 <dd>True to penalty the overfitting by difference between training score and cv score. Defaults to True.</dd>
 </dl></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></li>
+<li><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></b></code>:
+<ul class="hlist">
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.check_task" href="index.html#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.clr_best_iteration" href="index.html#PineBioML.model.supervised.Basic_tuner.clr_best_iteration">clr_best_iteration</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.create_model" href="#PineBioML.model.supervised.Regression.Regression_tuner.create_model">create_model</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.detail" href="index.html#PineBioML.model.supervised.Basic_tuner.detail">detail</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.get_scorer" href="index.html#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.is_regression" href="#PineBioML.model.supervised.Regression.Regression_tuner.is_regression">is_regression</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.name" href="#PineBioML.model.supervised.Regression.Regression_tuner.name">name</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.optimize_fit" href="index.html#PineBioML.model.supervised.Basic_tuner.optimize_fit">optimize_fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.parms_range" href="index.html#PineBioML.model.supervised.Basic_tuner.parms_range">parms_range</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.plot" href="index.html#PineBioML.model.supervised.Basic_tuner.plot">plot</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.reference" href="index.html#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.using_earlystopping" href="index.html#PineBioML.model.supervised.Basic_tuner.using_earlystopping">using_earlystopping</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="PineBioML.model.supervised.Regression.XGBoost_tuner"><code class="flex name class">
+<span>class <span class="ident">XGBoost_tuner</span></span>
+<span>(</span><span>n_try=50,<br>n_cv=5,<br>target='mse',<br>kernel_seed=None,<br>valid_seed=None,<br>optuna_seed=None,<br>validate_penalty=True)</span>
+</code></dt>
+<dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2009,7 +1260,7 @@ def name(self) -&gt; str:
     &#34;&#34;&#34;
 
     def __init__(self,
-                 n_try=75,
+                 n_try=50,
                  n_cv=5,
                  target=&#34;mse&#34;,
                  kernel_seed=None,
@@ -2056,69 +1307,150 @@ def name(self) -&gt; str:
 
         return refer
 
-    def create_model(self, trial, default=False):
-        if default:
-            parms = {
-                &#34;n_jobs&#34;: None,
-                &#34;random_state&#34;: self.kernel_seed,
-                &#34;verbosity&#34;: 0
-            }
-        else:
-            if trial.suggest_categorical(&#34;use_subsample&#34;, [True, False]):
-                sampling_rate = trial.suggest_float(&#39;subsample&#39;,
-                                                    0.5,
-                                                    0.9,
-                                                    log=True)
-                col_sampling_rate = trial.suggest_float(
-                    &#39;colsample_bytree&#39;, 0.1, 0.9)
+    def parms_range(self) -&gt; dict:
+        return {
+            &#34;n_estimators&#34;: (&#39;n_estimators&#39;, &#34;int&#34;, 4, 256),
+            &#34;max_depth&#34;:
+            (&#34;max_depth&#34;, &#34;int&#34;, round(np.log2(self.n_sample) / 2),
+             int(np.log2(self.n_sample)) + 2),
+            &#34;gamma&#34;: (&#39;gamma&#39;, &#34;float&#34;, 1e-4, 1e-2),
+            &#34;min_child_weight&#34;: (&#34;min_child_weight&#34;, &#34;float&#34;, 0.5,
+                                 int(np.sqrt(self.n_sample) / 2)),
+            &#34;learning_rate&#34;: (&#39;learning_rate&#39;, &#34;float&#34;, 1e-1, 1.),
+            &#34;subsample&#34;: (&#39;subsample&#39;, &#34;float&#34;, 0.5, 1.),
+            &#34;colsample_bytree&#34;: (&#39;colsample_bytree&#39;, &#34;float&#34;, 0.5, 1),
+            &#34;reg_lambda&#34;: (&#39;reg_lambda&#39;, &#34;float&#34;, 1e-3, 1),
+            &#34;reg_alpha&#34;: (&#39;reg_alpha&#39;, &#34;float&#34;, 1e-4, 1.)
+        }
+
+    def create_model(self, trial, default=False, training=False):
+        parms = {
+            &#34;n_jobs&#34;: None,
+            &#34;random_state&#34;: self.kernel_seed,
+            &#34;verbosity&#34;: 0
+        }
+        if not default:
+            parms_to_tune = self.parms_range()
+            for par in parms_to_tune:
+                parms[par] = self.parms_range_sparser(trial,
+                                                      parms_to_tune[par])
+            parms[&#34;random_state&#34;] = self.kernel_seed_tape[trial.number]
+
+            if training:
+                # Adding early stopping callbacks
+                parms[&#34;early_stopping_rounds&#34;] = round(
+                    parms[&#34;n_estimators&#34;] * 0.1) + 2
             else:
-                sampling_rate = 1.
-                col_sampling_rate = 1.
-            parms = {
-                &#34;n_estimators&#34;:
-                trial.suggest_int(&#39;n_estimators&#39;, 16, 512, log=True),
-                &#34;max_depth&#34;:
-                trial.suggest_int(&#39;max_depth&#39;, 2, 16, log=True),
-                &#34;gamma&#34;:
-                trial.suggest_float(&#39;gamma&#39;, 5e-2, 2e+1, log=True),
-                &#34;learning_rate&#34;:
-                trial.suggest_float(&#39;learning_rate&#39;, 5e-2, 5e-1, log=True),
-                &#34;subsample&#34;:
-                sampling_rate,
-                &#34;colsample_bytree&#34;:
-                col_sampling_rate,
-                #&#34;min_child_weight&#34;:
-                #trial.suggest_float(&#39;min_child_weight&#39;, 1e-3, 1e+2, log=True),
-                &#34;reg_lambda&#34;:
-                trial.suggest_float(&#39;reg_lambda&#39;, 1e-2, 1e+1, log=True),
-                &#34;n_jobs&#34;:
-                None,
-                &#34;random_state&#34;:
-                self.kernel_seed_tape[trial.number],
-                &#34;verbosity&#34;:
-                0,
-            }
+                # not training, then overide the n_estimators by trial&#39;s early stopping point.
+                parms[&#34;n_estimators&#34;] = self.stop_points[trial.number]
 
         xgb = XGBRegressor(**parms)
-        return xgb</code></pre>
+        return xgb
+
+    def using_earlystopping(self):
+        &#34;&#34;&#34;
+        Returns:
+            bool: To activate earlystopping recorder in base class.
+        &#34;&#34;&#34;
+        return True
+
+    def clr_best_iteration(self, classifier):
+        return classifier.best_iteration
+
+    def optimize_fit(self, clr, train_data, sample_weight, valid_data):
+        &#34;&#34;&#34;
+        optimize_fit the polymorphism middle layer between model fitting and optuna optimize evaluate.    
+        Specifically, optimize_fit is used for XGBoost/lightGBM/Catboost early stopping which requires validation data in .fit .
+        However sklearn estimators such as randomforest does not provide such api.    
+
+        Args:
+            clr (classifier): classifier to fit.
+            train_data (tuple): (train_x, train_y) .
+            sample_weight (list-like): training sample weight.
+            valid_data (tuple): (valid_x, valid_y) .
+
+        Returns:
+            classification object: fitted object.
+        &#34;&#34;&#34;
+        train_x, train_y = train_data
+
+        return clr.fit(train_x,
+                       train_y,
+                       sample_weight=sample_weight,
+                       eval_set=[valid_data],
+                       verbose=False)</code></pre>
 </details>
+<div class="desc"><p>Tuning a XGBoost classifier model.
+<br>
+<a href="https://xgboost.readthedocs.io/en/stable/python/python_api.html">xgboost.XGBClassifier</a></p>
+<p>ToDo:
+<br>
+1. sample imbalance. (Done)
+2. early stop. (give up)
+3. efficiency (optuna.integration.XGBoostPruningCallback).</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>n_try</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The number of trials optuna should try. Defaults to 75.</dd>
+<dt><strong><code>n_cv</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.</dd>
+<dt><strong><code>target</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mse".</dd>
+<dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for model. Defaults to None.</dd>
+<dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for cross validation. Defaults to None.</dd>
+<dt><strong><code>optuna_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Random seed for optuna's hyperparameter sampling. Defaults to None.</dd>
+<dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>True to penalty the overfitting by difference between training score and cv score. Defaults to True.</dd>
+</dl></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></li>
 <li><a title="PineBioML.model.supervised.Basic_tuner" href="index.html#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></li>
 <li>abc.ABC</li>
 </ul>
+<h3>Methods</h3>
+<dl>
+<dt id="PineBioML.model.supervised.Regression.XGBoost_tuner.using_earlystopping"><code class="name flex">
+<span>def <span class="ident">using_earlystopping</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def using_earlystopping(self):
+    &#34;&#34;&#34;
+    Returns:
+        bool: To activate earlystopping recorder in base class.
+    &#34;&#34;&#34;
+    return True</code></pre>
+</details>
+<div class="desc"><h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>To activate earlystopping recorder in base class.</dd>
+</dl></div>
+</dd>
+</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="PineBioML.model.supervised.Regression.Regression_tuner" href="#PineBioML.model.supervised.Regression.Regression_tuner">Regression_tuner</a></b></code>:
 <ul class="hlist">
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.check_task" href="index.html#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.clr_best_iteration" href="index.html#PineBioML.model.supervised.Basic_tuner.clr_best_iteration">clr_best_iteration</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.create_model" href="#PineBioML.model.supervised.Regression.Regression_tuner.create_model">create_model</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.detail" href="index.html#PineBioML.model.supervised.Basic_tuner.detail">detail</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.evaluate" href="index.html#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.fit" href="index.html#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.get_scorer" href="index.html#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.is_regression" href="#PineBioML.model.supervised.Regression.Regression_tuner.is_regression">is_regression</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.name" href="#PineBioML.model.supervised.Regression.Regression_tuner.name">name</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.optimize_fit" href="index.html#PineBioML.model.supervised.Basic_tuner.optimize_fit">optimize_fit</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.parms_range" href="index.html#PineBioML.model.supervised.Basic_tuner.parms_range">parms_range</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.plot" href="index.html#PineBioML.model.supervised.Basic_tuner.plot">plot</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.predict" href="index.html#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.reference" href="index.html#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Regression.Regression_tuner.tune" href="index.html#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
@@ -2130,7 +1462,6 @@ def name(self) -&gt; str:
 </section>
 </article>
 <nav id="sidebar">
-<h1>Index</h1>
 <div class="toc">
 <ul></ul>
 </div>
@@ -2155,7 +1486,10 @@ def name(self) -&gt; str:
 </ul>
 </li>
 <li>
-<h4><code><a title="PineBioML.model.supervised.Regression.LighGBM_tuner" href="#PineBioML.model.supervised.Regression.LighGBM_tuner">LighGBM_tuner</a></code></h4>
+<h4><code><a title="PineBioML.model.supervised.Regression.LightGBM_tuner" href="#PineBioML.model.supervised.Regression.LightGBM_tuner">LightGBM_tuner</a></code></h4>
+<ul class="">
+<li><code><a title="PineBioML.model.supervised.Regression.LightGBM_tuner.using_earlystopping" href="#PineBioML.model.supervised.Regression.LightGBM_tuner.using_earlystopping">using_earlystopping</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="PineBioML.model.supervised.Regression.RandomForest_tuner" href="#PineBioML.model.supervised.Regression.RandomForest_tuner">RandomForest_tuner</a></code></h4>
@@ -2173,6 +1507,9 @@ def name(self) -&gt; str:
 </li>
 <li>
 <h4><code><a title="PineBioML.model.supervised.Regression.XGBoost_tuner" href="#PineBioML.model.supervised.Regression.XGBoost_tuner">XGBoost_tuner</a></code></h4>
+<ul class="">
+<li><code><a title="PineBioML.model.supervised.Regression.XGBoost_tuner.using_earlystopping" href="#PineBioML.model.supervised.Regression.XGBoost_tuner.using_earlystopping">using_earlystopping</a></code></li>
+</ul>
 </li>
 </ul>
 </li>
@@ -2180,7 +1517,7 @@ def name(self) -&gt; str:
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
 </footer>
 </body>
 </html>
