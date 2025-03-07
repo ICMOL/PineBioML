@@ -105,6 +105,14 @@ class imputer():
         x = self.transform(x)
         return x
 
+    def report(self):
+        state = {
+            "total features": len(self.not_too_empty),
+            "drop features":
+            len(self.not_too_empty) - self.not_too_empty.sum()
+        }
+        return state
+
 
 class knn_imputer(imputer):
     """

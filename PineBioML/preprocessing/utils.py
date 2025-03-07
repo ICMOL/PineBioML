@@ -14,7 +14,6 @@ class feature_extension():
                  pls=False,
                  cross=True,
                  ratio=True,
-                 power_transform=True,
                  name="extend "):
         self.name = name
         self.alpha = alpha
@@ -51,7 +50,6 @@ class feature_extension():
                     b = column_names[j]
                     tmp = x[a] * x[b]
                     tmp.name = a + " * " + b
-                    #results.append(tmp)
 
         if self.ratio:
             x = monotonic_x.copy()
@@ -63,12 +61,8 @@ class feature_extension():
                     b = column_names[j]
                     tmp = np.arctan2(x[a], x[b])
                     tmp.name = "arctan " + a + " / " + b
-                    #results.append(tmp)
 
         x = results[0].copy()
-        #self.mean = x.mean()
-        #self.std = x.std()
-        #x = (x-self.mean)/self.std
 
         # PCA
         if self.pca:
@@ -89,9 +83,10 @@ class feature_extension():
                                    self.name + "pc" + str(i)
                                    for i in range(self.pca.n_components_)
                                ])
-            #results.append(pcx)
 
         if self.pls:
+            if x.shape[1] < self.pls.n_components:
+                self.pls.n_components = x.shape[1]
             self.pls.fit(x, y)
 
             plsx = self.pls.transform(x)
@@ -99,7 +94,6 @@ class feature_extension():
                 plsx,
                 index=x.index,
                 columns=[self.name + "pls" + str(i) for i in range(4)])
-            #results.append(plsx)
 
         return self
 
@@ -133,7 +127,6 @@ class feature_extension():
                     results.append(tmp)
 
         x = results[0].copy()
-        #x = (x-self.mean)/self.std
 
         # PCA
         if self.pca:
@@ -159,3 +152,7 @@ class feature_extension():
     def fit_transform(self, x, y=None):
         self.fit(x, y)
         return self.transform(x)
+
+    def report(self):
+        state = {}
+        return state

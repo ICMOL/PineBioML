@@ -1,5 +1,18 @@
 ##########################################################
-### relative features
+### resource
+##########################################################
+sklaern universe:
+https://scikit-learn.org/1.6/related_projects.html
+
+joblib:
+if you want to have a good understanding of parallel computation in python, you can start from here.
+https://joblib.readthedocs.io/en/latest/parallel.html
+https://zhuanlan.zhihu.com/p/637640783
+
+
+
+##########################################################
+### features
 ##########################################################
 sklearn estimator guideline:
 https://scikit-learn.org/1.5/developers/develop.html#developer-api-for-html-representation
@@ -10,7 +23,7 @@ https://www.jeffchiou.com/blog/hyperparameter-optimization-optuna/
 imbalanced learn:
 https://imbalanced-learn.org/stable/user_guide.html
 
-fairlearn(***):
+fairlearn(*):
 https://fairlearn.org/v0.10/user_guide/index.html
 
 Boruta-shap(*):

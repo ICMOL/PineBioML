@@ -2,8 +2,9 @@ from . import Basic_tuner
 from abc import abstractmethod
 from typing import Literal
 
-from joblib import parallel_backend
+from joblib import parallel_config
 
+from sklearn.metrics import roc_curve
 from sklearn.model_selection import StratifiedKFold
 from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.svm import SVC
@@ -12,7 +13,7 @@ from sklearn.tree import DecisionTreeClassifier
 from statsmodels.discrete.discrete_model import Logit
 from sklearn.linear_model import LogisticRegression
 from xgboost import XGBClassifier
-from lightgbm import LGBMClassifier
+from lightgbm import LGBMClassifier, early_stopping
 from catboost import CatBoostClassifier, Pool
 
 import numpy as np
@@ -82,7 +83,7 @@ class Classification_tuner(Basic_tuner):
         pass
 
     @abstractmethod
-    def create_model(self, trial, default):
+    def create_model(self, trial, default, training):
         """
         Create model based on default setting or optuna trial
 
@@ -171,13 +172,13 @@ class ElasticLogit_tuner(Classification_tuner):
             "l1_ratio": ('l1_ratio', "float", 0, 1)
         }
 
-    def create_model(self, trial, default=False):
+    def create_model(self, trial, default=False, training=False):
         parms = {
             "C": 1.0,
             "l1_ratio": 0.5,
             "penalty": self.penalty,
             "solver": self.kernel,
-            "random_state": self.kernel_seed_tape[trial.number],
+            "random_state": self.kernel_seed,
             "verbose": 0
         }
         if not default:
@@ -185,6 +186,7 @@ class ElasticLogit_tuner(Classification_tuner):
             for par in parms_to_tune:
                 parms[par] = self.parms_range_sparser(trial,
                                                       parms_to_tune[par])
+            parms["random_state"] = self.kernel_seed_tape[trial.number]
         lg = LogisticRegression(**parms)
         return lg
 
@@ -272,17 +274,16 @@ class RandomForest_tuner(Classification_tuner):
         return {
             "n_estimators": ('n_estimators', "int", 32, 1024),
             'min_samples_leaf': ('min_samples_leaf', "int", 1, 32),
-            'ccp_alpha': ('ccp_alpha', "float", 1e-4, 1e-1),
-            'max_samples': ('max_samples', "float", 0.5, 0.9),
-            "max_depth": ("max_depth", "int", 2, 20)
+            'ccp_alpha': ('ccp_alpha', "float", 1e-6, 1e-1),
+            'max_samples': ('max_samples', "float", 0.4, 0.8),
         }
 
-    def create_model(self, trial, default=False):
+    def create_model(self, trial, default=False, training=False):
         parms = {
-            "bootstrap": self.using_oob,
+            "bootstrap": True,
             "oob_score": self.using_oob,
             "n_jobs": -1,
-            "random_state": self.kernel_seed_tape[trial.number],
+            "random_state": self.kernel_seed,
             "verbose": 0,
         }
 
@@ -291,11 +292,12 @@ class RandomForest_tuner(Classification_tuner):
             for par in parms_to_tune:
                 parms[par] = self.parms_range_sparser(trial,
                                                       parms_to_tune[par])
+            parms["random_state"] = self.kernel_seed_tape[trial.number]
 
         rf = RandomForestClassifier(**parms)
         return rf
 
-    def evaluate(self, trial, default=False):
+    def evaluate(self, trial, default=False, training=False):
         """
         RF needs oob and we have it.
         
@@ -310,60 +312,44 @@ class RandomForest_tuner(Classification_tuner):
         if self.using_oob:
             # oob predict
             # there is a bug that default sklaern randomforest parallel_backend using thread where others use "loky", see joblib.parallel_backend.
-            with parallel_backend('loky'):
+            with parallel_config(backend='loky'):
                 classifier_obj.fit(self.x,
                                    self.y,
                                    sample_weight=compute_sample_weight(
                                        class_weight="balanced", y=self.y))
 
             # oob prediction
-            y_pred = classifier_obj.oob_decision_function_
+            y_prob = classifier_obj.oob_decision_function_
+
+            # tune a threshold via roc for Binary classification
+            if self.is_binary and not self.is_regression():
+                fpr, tpr, thr = roc_curve(self.y, y_prob[:, 1])
+                self.thresholds[trial.number] = thr[abs(tpr - fpr).argmax()]
+
             if self.metric_name == "roc_auc":
                 # roc_auc can only be used on binary classification. Do not try ovr, ovo. forget them.
-                y_pred = y_pred[:, 1]
+                y_prob = y_prob[:, 1]
 
             # oob score
             ### manual scorer wraper.
             if self.metric_using_proba:
-                score = self.metric._score_func(self.y, y_pred,
+                score = self.metric._score_func(self.y, y_prob,
                                                 **self.scorer_kargs)
             else:
                 # revert to class symbols.
-                y_pred = classifier_obj.classes_[y_pred.argmax(axis=-1)]
+                if self.is_binary and not self.is_regression():
+                    y_pred = classifier_obj.classes_[np.where(
+                        y_prob[:, 1] > self.thresholds[-1], 1, 0)]
+                else:
+                    y_pred = classifier_obj.classes_[y_prob.argmax(axis=-1)]
                 score = self.metric._score_func(self.y, y_pred,
                                                 **self.scorer_kargs)
             if not self.metric_great_better:
                 # if not great is better, then multiply -1
                 score *= -1
         else:
-            # cv score
-            cv = StratifiedKFold(
-                n_splits=self.n_cv,
-                shuffle=True,
-                random_state=self.valid_seed_tape[trial.number])
-
-            score = []
-            for i, (train_ind, test_ind) in enumerate(cv.split(self.x,
-                                                               self.y)):
-                x_train = self.x.iloc[train_ind]
-                y_train = self.y.iloc[train_ind]
-                x_test = self.x.iloc[test_ind]
-                y_test = self.y.iloc[test_ind]
-
-                with parallel_backend('loky'):
-                    classifier_obj.fit(x_train,
-                                       y_train,
-                                       sample_weight=compute_sample_weight(
-                                           class_weight="balanced", y=y_train))
-
-                test_score = self.metric(classifier_obj, x_test, y_test)
-                train_score = self.metric(classifier_obj, x_train, y_train)
-                if self.validate_penalty:
-                    score.append(test_score + 0.1 * (test_score - train_score))
-                else:
-                    score.append(test_score)
-
-            score = sum(score) / self.n_cv
+            with parallel_config(backend='loky'):
+                score = super().evaluate(trial=trial, default=default)
         return score
 
 
@@ -432,10 +418,10 @@ class SVM_tuner(Classification_tuner):
                   1e+2 * np.sqrt(self.n_sample))
         }
 
-    def create_model(self, trial, default=False):
+    def create_model(self, trial, default=False, training=False):
         parms = {
             "kernel": self.kernel,
-            "random_state": self.kernel_seed_tape[trial.number],
+            #"random_state": self.kernel_seed,
             "probability": True,
             "gamma": "auto"
         }
@@ -444,6 +430,7 @@ class SVM_tuner(Classification_tuner):
             for par in parms_to_tune:
                 parms[par] = self.parms_range_sparser(trial,
                                                       parms_to_tune[par])
+            #parms["random_state"] = self.kernel_seed_tape[trial.number]
         svm = SVC(**parms)
         return svm
 
@@ -457,8 +444,6 @@ class XGBoost_tuner(Classification_tuner):
 
     ToDo:    
         1. sample imbalance. (we have temporary solution)    
-        2. early stop.    
-        3. efficiency (optuna.integration.XGBoostPruningCallback).    
 
     """
 
@@ -512,19 +497,20 @@ class XGBoost_tuner(Classification_tuner):
 
     def parms_range(self) -> dict:
         return {
-            "n_estimators": ('n_estimators', "int", 16, 256),
-            "max_depth": ('max_depth', "int", 2, 16),
-            "gamma": ('gamma', "float", 5e-2, 2e+1),
-            "learning_rate": ('learning_rate', "float", 5e-2, 5e-1),
+            "n_estimators": ('n_estimators', "int", 4, 256),
+            "max_depth": ('max_depth', "int", 3, 14),
+            "gamma": ('gamma', "float", 1e-3, 1e-1),
+            "learning_rate": ('learning_rate', "float", 1e-2, 1.),
             "subsample": ('subsample', "float", 0.5, 1),
-            "colsample_bytree": ('colsample_bytree', "float", 0.1, 0.9),
-            "reg_lambda": ('reg_lambda', "float", 1e-2, 1e+1)
+            "colsample_bytree": ('colsample_bytree', "float", 0.5, 1),
+            "reg_lambda": ('reg_lambda', "float", 1e-3, 1e+1),
+            "reg_alpha": ('reg_alpha', "float", 1e-4, 1.)
         }
 
-    def create_model(self, trial, default=False):
+    def create_model(self, trial, default=False, training=False):
         parms = {
             "n_jobs": None,
-            "random_state": self.kernel_seed_tape[trial.number],
+            "random_state": self.kernel_seed,
             "verbosity": 0
         }
         if not default:
@@ -532,13 +518,55 @@ class XGBoost_tuner(Classification_tuner):
             for par in parms_to_tune:
                 parms[par] = self.parms_range_sparser(trial,
                                                       parms_to_tune[par])
+            parms["random_state"] = self.kernel_seed_tape[trial.number]
+
+            if training:
+                # Adding early stopping callbacks
+                parms["early_stopping_rounds"] = round(
+                    parms["n_estimators"] * 0.1) + 2
+            else:
+                # not training, then overide the n_estimators by trial's early stopping point.
+                parms["n_estimators"] = self.stop_points[trial.number]
 
         xgb = XGBClassifier(**parms)
         return xgb
 
+    def using_earlystopping(self):
+        """
+        Returns:
+            bool: To activate earlystopping recorder in base class.
+        """
+        return True
+
+    def clr_best_iteration(self, classifier):
+        return classifier.best_iteration
+
+    def optimize_fit(self, clr, train_data, sample_weight, valid_data):
+        """
+        optimize_fit the polymorphism middle layer between model fitting and optuna optimize evaluate.    
+        Specifically, optimize_fit is used for XGBoost/lightGBM/Catboost early stopping which requires validation data in .fit .
+        However sklearn estimators such as randomforest does not provide such api.    
+
+        Args:
+            clr (classifier): classifier to fit.
+            train_data (tuple): (train_x, train_y) .
+            sample_weight (list-like): training sample weight.
+            valid_data (tuple): (valid_x, valid_y) .
+
+        Returns:
+            classification object: fitted object.
+        """
+        train_x, train_y = train_data
+
+        return clr.fit(train_x,
+                       train_y,
+                       sample_weight=sample_weight,
+                       eval_set=[valid_data],
+                       verbose=False)
+
 
 # lightGBM
-class LighGBM_tuner(Classification_tuner):
+class LightGBM_tuner(Classification_tuner):
     """
     Tuning a LighGBM classifier model.    
     [lightgbm.LGBMClassifier](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html)     
@@ -597,18 +625,20 @@ class LighGBM_tuner(Classification_tuner):
 
     def parms_range(self) -> dict:
         return {
-            "n_estimators": ('n_estimators', "int", 16, 256),
-            "max_depth": ('max_depth', "int", 4, 16),
-            "learning_rate": ('learning_rate', "float", 1e-2, 1),
-            "subsample": ('subsample', "float", 0.5, 1),
-            "colsample_bytree": ('colsample_bytree', "float", 0.1, 0.9),
-            "reg_lambda": ('reg_lambda', "float", 5e-3, 1e+1)
+            "n_estimators": ('n_estimators', "int", 4, 256),
+            "max_depth": ('max_depth', "int", 3, 14),
+            "min_split_gain": ("min_split_gain", "float", 1e-3, 1e-1),
+            "learning_rate": ('learning_rate', "float", 1e-2, 1.),
+            "subsample": ('subsample', "float", 0.5, 1.),
+            "colsample_bytree": ('colsample_bytree', "float", 0.5, 1.),
+            "reg_lambda": ('reg_lambda', "float", 1e-3, 1e+1),
+            "reg_alpha": ('reg_alpha', "float", 1e-4, 1.)
         }
 
-    def create_model(self, trial, default=False):
+    def create_model(self, trial, default=False, training=False):
         parms = {
             "n_jobs": None,
-            "random_state": self.kernel_seed_tape[trial.number],
+            "random_state": self.kernel_seed,
             "verbosity": -1,
             "subsample_freq": 1
         }
@@ -617,9 +647,49 @@ class LighGBM_tuner(Classification_tuner):
             for par in parms_to_tune:
                 parms[par] = self.parms_range_sparser(trial,
                                                       parms_to_tune[par])
+            parms["random_state"] = self.kernel_seed_tape[trial.number]
+            if not training:
+                # not training, then overide the n_estimators by trial's early stopping point.
+                parms["n_estimators"] = self.stop_points[trial.number]
 
         lgbm = LGBMClassifier(**parms)
         return lgbm
+
+    def using_earlystopping(self):
+        """
+        Returns:
+            bool: To activate earlystopping recorder in base class.
+        """
+        return True
+
+    def clr_best_iteration(self, classifier):
+        return classifier.best_iteration_
+
+    def optimize_fit(self, clr, train_data, sample_weight, valid_data):
+        """
+        optimize_fit the polymorphism middle layer between model fitting and optuna optimize evaluate.    
+        Specifically, optimize_fit is used for XGBoost/lightGBM/Catboost early stopping which requires validation data in .fit .
+        However sklearn estimators such as randomforest does not provide such api.    
+
+        Args:
+            clr (classifier): classifier to fit.
+            train_data (tuple): (train_x, train_y) .
+            sample_weight (list-like): training sample weight.
+            valid_data (tuple): (valid_x, valid_y) .
+
+        Returns:
+            classification object: fitted object.
+        """
+        train_x, train_y = train_data
+
+        return clr.fit(train_x,
+                       train_y,
+                       sample_weight=sample_weight,
+                       eval_set=[valid_data],
+                       callbacks=[
+                           early_stopping(round(clr.n_estimators * 0.1) + 2,
+                                          verbose=False)
+                       ])
 
 
 # Adaboost
@@ -681,20 +751,20 @@ class AdaBoost_tuner(Classification_tuner):
 
     def parms_range(self) -> dict:
         return {
-            "n_estimators": ('n_estimators', "int", 8, 256),
-            "learning_rate": ('learning_rate', "float", 1e-2, 1)
+            "n_estimators": ('n_estimators', "int", 4, 256),
+            "learning_rate": ('learning_rate', "float", 1e-2, 1.)
         }
 
-    def create_model(self, trial, default=False):
+    def create_model(self, trial, default=False, training=False):
         parms = {
-            "algorithm": "SAMME",
-            "random_state": self.kernel_seed_tape[trial.number]
+            "random_state": self.kernel_seed,
         }
         if not default:
             parms_to_tune = self.parms_range()
             for par in parms_to_tune:
                 parms[par] = self.parms_range_sparser(trial,
                                                       parms_to_tune[par])
+            parms["random_state"] = self.kernel_seed_tape[trial.number]
         ada = AdaBoostClassifier(**parms)
         return ada
 
@@ -755,19 +825,20 @@ class DecisionTree_tuner(Classification_tuner):
 
     def parms_range(self) -> dict:
         return {
-            "max_depth": ('max_depth', "int", 2, 16),
+            "max_depth": ('max_depth', "int", 3, 16),
             "min_samples_split": ('min_samples_split', "int", 2, 32),
             "min_samples_leaf": ('min_samples_leaf', "int", 1, 16),
-            "ccp_alpha": ('ccp_alpha', "float", 1e-3, 1e-1),
+            "ccp_alpha": ('ccp_alpha', "float", 1e-5, 1e-1),
         }
 
-    def create_model(self, trial, default=False):
-        parms = {"random_state": self.kernel_seed_tape[trial.number]}
+    def create_model(self, trial, default=False, training=False):
+        parms = {"random_state": self.kernel_seed}
         if not default:
             parms_to_tune = self.parms_range()
             for par in parms_to_tune:
                 parms[par] = self.parms_range_sparser(trial,
                                                       parms_to_tune[par])
+            parms["random_state"] = self.kernel_seed_tape[trial.number]
         DT = DecisionTreeClassifier(**parms)
         return DT
 
@@ -783,7 +854,7 @@ class CatBoost_tuner(Classification_tuner):
     """
 
     def __init__(self,
-                 n_try=75,
+                 n_try=50,
                  n_cv=5,
                  target="mcc",
                  kernel_seed=None,
@@ -831,17 +902,17 @@ class CatBoost_tuner(Classification_tuner):
 
     def parms_range(self) -> dict:
         return {
-            "n_estimators": ('n_estimators', "int", 16, 256),
-            "learning_rate": ('learning_rate', "float", 1e-2, 1),
-            "max_depth": ('max_depth', "int", 3, 16),
-            "reg_lambda": ('reg_lambda', "float", 5e-3, 1e+1),
-            "colsample_bylevel": ('colsample_bytree', "float", 0.1, 0.9),
-            "subsample": ('subsample', "float", 0.5, 1)
+            "n_estimators": ('n_estimators', "int", 4, 256),
+            "learning_rate": ('learning_rate', "float", 1e-2, 1.),
+            "max_depth": ('max_depth', "int", 3, 14),
+            "reg_lambda": ('reg_lambda', "float", 1e-3, 1e+1),
+            "colsample_bylevel": ('colsample_bytree', "float", 0.5, 1.),
+            "subsample": ('subsample', "float", 0.5, 1.)
         }
 
-    def create_model(self, trial, default=False):
+    def create_model(self, trial, default=False, training=False):
         parms = {
-            "random_seed": self.kernel_seed_tape[trial.number],
+            "random_state": self.kernel_seed,
             "verbose": False,
         }
         if not default:
@@ -849,11 +920,11 @@ class CatBoost_tuner(Classification_tuner):
             for par in parms_to_tune:
                 parms[par] = self.parms_range_sparser(trial,
                                                       parms_to_tune[par])
-
+            parms["random_state"] = self.kernel_seed_tape[trial.number]
         cat = CatBoostClassifier(**parms)
         return cat
 
-    def evaluate(self, trial, default=False):
+    def evaluate(self, trial, default=False, training=True):
         """
         To evaluate the score of this trial. you should call create_model instead of creating model manually in this function.    
         catboost need to be used with pool.
@@ -870,24 +941,54 @@ class CatBoost_tuner(Classification_tuner):
                              shuffle=True,
                              random_state=self.valid_seed_tape[trial.number])
 
-        score = []
+        # do cv
+        score = np.zeros(self.n_cv)
+        # thresholds not None only if  self.is_binary and not self.is_regression
+        cv_thresholds = np.zeros(self.n_cv)
+        cv_stoppoint = np.zeros(self.n_cv)
         for i, (train_ind, test_ind) in enumerate(cv.split(self.x, self.y)):
             x_train = self.x.iloc[train_ind]
             y_train = self.y.iloc[train_ind]
             pool_train = Pool(x_train, y_train)
-
             x_test = self.x.iloc[test_ind]
             y_test = self.y.iloc[test_ind]
-            #pool_test = Pool(x_test, y_test)
+            pool_test = Pool(x_test, y_test)
 
-            classifier_obj.fit(pool_train)  #, eval_set=pool_test
+            # sample_weight for imbalanced class.
+            if self.is_regression():
+                sample_weight = None
+            else:
+                sample_weight = compute_sample_weight(class_weight="balanced",
+                                                      y=y_train)
+
+            classifier_obj.fit(pool_train,
+                               sample_weight=sample_weight,
+                               eval_set=pool_test,
+                               verbose=False,
+                               early_stopping_rounds=round(
+                                   classifier_obj.n_estimators * 0.1) + 2)
+
+            if self.using_earlystopping() and training:
+                cv_stoppoint[i] = self.clr_best_iteration(classifier_obj)
 
             train_score = self.metric(classifier_obj, x_train, y_train)
             test_score = self.metric(classifier_obj, x_test, y_test)
-            if self.validate_penalty:
-                score.append(test_score + 0.1 * (test_score - train_score))
-            else:
-                score.append(test_score)
 
-        score = sum(score) / self.n_cv
-        return score
+            if self.validate_penalty:
+                score[i] = test_score + 0.1 * (test_score - train_score)
+            else:
+                score[i] = test_score
+
+        # averaging over cv
+        self.thresholds[trial.number] = cv_thresholds.sum() / self.n_cv
+        self.stop_points[trial.number] = round(cv_stoppoint.sum() /
+                                               (self.n_cv - 1))
+
+        return score.mean()
+
+    def using_earlystopping(self):
+        """
+        Returns:
+            bool: To activate earlystopping recorder in base class.
+        """
+        return True

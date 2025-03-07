@@ -2,17 +2,37 @@ import sklearn.metrics as metrics
 from sklearn.base import BaseEstimator
 import optuna
 from abc import ABC, abstractmethod
+from sklearn.base import ClassifierMixin
 from sklearn.model_selection import StratifiedKFold
 from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.preprocessing import LabelEncoder
 from optuna.samplers import TPESampler
 from numpy.random import RandomState, randint
+from numpy import where, zeros
 from pandas import Series, DataFrame, concat
 
 from sklearn.exceptions import ConvergenceWarning
 
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 ConvergenceWarning('ignore')
+
+
+class Binary_threshold_wrapper(ClassifierMixin):
+
+    def __init__(self, kernel, threshold):
+        self.threshold = threshold
+        self.kernel = kernel
+        self.classes_ = kernel.classes_
+
+    def fit(self, x, y):
+        pass
+
+    def predict(self, x):
+        decision = self.kernel.predict_proba(x)[:, 1] > self.threshold
+        return where(decision, 1, 0)
+
+    def predict_proba(self, x):
+        return self.kernel.predict_proba(x)
 
 
 class Basic_tuner(ABC):
@@ -88,9 +108,18 @@ class Basic_tuner(ABC):
         # Get the scorer
         self.metric = self.get_scorer(target)
 
+        # the model optuna tuned
         self.optuna_model = None
+        # the model with default params
         self.default_model = None
+        # the better one of self.default_model or self.optuna_model
         self.best_model = None
+        # the thresholds for binary classification along optuna tuning
+        self.thresholds = zeros(self.n_try)
+        # the threshold coresponding to the best optuna trial
+        self.best_threshold = 0.5
+        # the stopping point of early stopping for Boosting methods.
+        self.stop_points = zeros(self.n_try, dtype=int)
 
     def reference(self) -> dict[str, str]:
         """
@@ -125,6 +154,14 @@ class Basic_tuner(ABC):
             bool: True if the task of tuner is a regression task.
         """
         pass
+
+    def using_earlystopping(self) -> bool:
+        """
+
+        Returns:
+            bool: True if applying earlystopping in optimizing training.
+        """
+        return False
 
     @abstractmethod
     def parms_range(self) -> dict:
@@ -162,20 +199,54 @@ class Basic_tuner(ABC):
         return param
 
     @abstractmethod
-    def create_model(self, trial, default) -> BaseEstimator:
+    def create_model(self, trial, default, training) -> BaseEstimator:
         """
         Create model based on default setting or optuna trial over search range.
 
         Args:
             trial (optuna.trial.Trial): optuna trial in this call.
             default (bool): set True to use default hyper parameter
+            training (bool): set True to when training.
             
         Returns :
             sklearn.base.BaseEstimator: A sklearn style model object.
         """
         pass
 
-    def evaluate(self, trial, default=False) -> float:
+    def optimize_fit(self, clr, train_data, sample_weight, valid_data):
+        """
+        optimize_fit the polymorphism middle layer between model fitting and optuna optimize evaluate.    
+        Specifically, optimize_fit is used for XGBoost/lightGBM/Catboost early stopping which requires validation data in .fit .
+        However sklearn estimators such as randomforest does not provide such api.    
+
+        Args:
+            clr (classifier): classifier to fit.
+            train_data (tuple): (train_x, train_y) .
+            sample_weight (list-like): training sample weight.
+            valid_data (tuple): (valid_x, valid_y) .
+
+        Returns:
+            classification object: fitted object.
+        """
+        train_x, train_y = train_data
+        valid_x, valid_y = valid_data
+
+        return clr.fit(train_x, train_y, sample_weight=sample_weight)
+
+    def clr_best_iteration(self, classifier) -> int:
+        """
+        the polymorphism to call classifier's early stopping rounds/iteration/point.    
+        only need to be overide when subclass is implemented with early stopping.
+
+        Args:
+            classifier: the classifier object.
+
+        Returns:
+            int: the stopping point/rounds/iteration.
+        """
+        pass
+
+    def evaluate(self, trial, default=False, training=True) -> float:
         """
         To evaluate the score of this trial. you should call create_model instead of creating model manually in this function.
         
@@ -186,7 +257,7 @@ class Basic_tuner(ABC):
             float: The score. Decided by optimization target.
         """
         # create the model using from this trial
-        classifier_obj = self.create_model(trial, default)
+        classifier_obj = self.create_model(trial, default, training=True)
 
         # create cross validation
         cv = StratifiedKFold(n_splits=self.n_cv,
@@ -194,7 +265,10 @@ class Basic_tuner(ABC):
                              random_state=self.valid_seed_tape[trial.number])
 
         # do cv
-        score = []
+        score = zeros(self.n_cv)
+        # thresholds not None only if  self.is_binary and not self.is_regression
+        cv_thresholds = zeros(self.n_cv)
+        cv_stoppoint = zeros(self.n_cv)
         for i, (train_ind, test_ind) in enumerate(cv.split(self.x, self.y)):
             # train test split
             x_train = self.x.iloc[train_ind]
@@ -210,21 +284,38 @@ class Basic_tuner(ABC):
                                                       y=y_train)
 
             # fit the model on training fold
-            classifier_obj.fit(x_train, y_train, sample_weight=sample_weight)
+            fitted_clr = self.optimize_fit(clr=classifier_obj,
+                                           train_data=(x_train, y_train),
+                                           sample_weight=sample_weight,
+                                           valid_data=(x_test, y_test))
+
+            # record the stopping point of early stopping.
+            if self.using_earlystopping() and training:
+                cv_stoppoint[i] = self.clr_best_iteration(fitted_clr)
+
+            # tune a threshold via roc for Binary classification
+            if self.is_binary and not self.is_regression():
+                y_prob = fitted_clr.predict_proba(x_test)[:, 1]
+                fpr, tpr, thr = metrics.roc_curve(y_test, y_prob)
+                ### TODO: flexible threshold picker for various metrics.
+                cv_thresholds[i] = thr[abs(tpr - fpr).argmax()]
+                fitted_clr = Binary_threshold_wrapper(fitted_clr,
+                                                      cv_thresholds[-1])
 
             # evaluate on testing fold
-            test_score = self.metric(classifier_obj, x_test, y_test)
-            train_score = self.metric(classifier_obj, x_train, y_train)
+            test_score = self.metric(fitted_clr, x_test, y_test)
+            train_score = self.metric(fitted_clr, x_train, y_train)
 
             if self.validate_penalty:
-                score.append(test_score + 0.1 * (test_score - train_score))
+                score[i] = test_score + 0.1 * (test_score - train_score)
             else:
-                score.append(test_score)
+                score[i] = test_score
 
-        # averaging cv scores
-        score = sum(score) / self.n_cv
-        #print(score)
-        return score
+        # averaging over cv
+        self.thresholds[trial.number] = cv_thresholds.sum() / self.n_cv
+        self.stop_points[trial.number] = round(cv_stoppoint.sum() /
+                                               (self.n_cv - 1))
+        return score.mean()
 
     def tune(self, x, y) -> None:
         """
@@ -258,14 +349,17 @@ class Basic_tuner(ABC):
                             n_trials=self.n_try,
                             show_progress_bar=False)
         self.optuna_model = self.create_model(self.study.best_trial,
-                                              default=False)
+                                              default=False,
+                                              training=False)
 
         # using default hyper parameter
         # the best_trial here is only a placeholder. It's not functional.
         self.default_performance = self.evaluate(self.study.best_trial,
-                                                 default=True)
+                                                 default=True,
+                                                 training=False)
         self.default_model = self.create_model(self.study.best_trial,
-                                               default=True)
+                                               default=True,
+                                               training=False)
         #print("    default performance: {:.3f}  |  best performance: {:.3f}".
         #      format(self.default_performance, self.study.best_trial.value))
         if self.default_performance > self.study.best_trial.value:
@@ -277,6 +371,11 @@ class Basic_tuner(ABC):
             print("    optuna is better, best trial: ",
                   self.study.best_trial.number)
             self.best_model = self.optuna_model
+
+            # threshold tuner for binary classification
+            if self.is_binary and not self.is_regression():
+                self.best_threshold = self.thresholds[
+                    self.study.best_trial.number]
 
         # release the datas
         self.x = None
@@ -324,7 +423,13 @@ class Basic_tuner(ABC):
             1D-array: prediction
         """
         # using the model.
-        y_pred = self.best_model.predict(x)
+        if self.is_binary and not self.is_regression():
+            y_pred = where(
+                self.best_model.predict_proba(x)[:, 1] > self.best_threshold,
+                1, 0)
+        else:
+            y_pred = self.best_model.predict(x)
+
         # label decoding
         if not self.is_regression():
             y_pred = self.y_mapping.inverse_transform(y_pred)
@@ -406,8 +511,8 @@ class Basic_tuner(ABC):
         """
         # Check auc score only be used in binary classification
         is_auc = self.metric_name == "roc_auc"
-        is_binary = len(self.y.value_counts()) == 2
-        if is_auc and not is_binary:
+        self.is_binary = len(self.y.value_counts()) == 2
+        if is_auc and not self.is_binary:
             # roc_auc only can be used on binary classification. Do not try ovr, ovo. forget them.
             raise ValueError(
                 "auc only support binary classification, but more than 2 values are detected in y. Try 'f1_macro'"
@@ -462,10 +567,19 @@ class Basic_tuner(ABC):
         Returns:
             pandas.DataFrame
         """
-        parms_range = DataFrame(self.parms_range()).drop(0).T.reset_index()
+        parms_range = DataFrame(self.parms_range()).drop(0)
+        if self.best_model is not None:
+            best_params = self.best_model.get_params()
+
+            parms_range.loc[4] = Series(
+                [best_params[param] for param in parms_range.columns],
+                index=parms_range.columns)
+
+        parms_range = parms_range.T.reset_index()
         parms_range.columns = [
-            "parameter", "dtype", "lower_bound", "upper_bound"
+            "parameter", "dtype", "lower_bound", "upper_bound", "result"
         ]
+
         parms_range.index = [" "] * parms_range.shape[0]
 
         name_holder = DataFrame({
@@ -473,7 +587,8 @@ class Basic_tuner(ABC):
                 "parameter": None,
                 "dtype": None,
                 "lower_bound": None,
-                "upper_bound": None
+                "upper_bound": None,
+                "result": None
             }
         }).T
         return concat([name_holder, parms_range], axis=0)

@@ -58,7 +58,7 @@ class SelectionPipeline:
 
     def Select(self, x, y):
         """
-        A functional stack of: Scoring -> Choosing    
+        A functional stack of: Scoring and Choosing    
         if k == None, choose k such that:    
             z-scores = (scores - scores.mean())/scores.std()    
             k = # (z-scores > 1)
@@ -131,12 +131,6 @@ class SelectionPipeline:
         }
 
         return refers
-
-    def Diagnose(self):
-        """
-        Give diagnose of selection.
-        """
-        #pass
 
     def Report(self):
         """

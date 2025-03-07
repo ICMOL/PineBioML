@@ -1,3 +1,4 @@
+numpy
 pandas
 openpyxl
 xlrd
@@ -9,7 +10,11 @@ jupyterlab
 joblib
 optuna
 scikit-learn
+scikit-learn-intelex
 umap-learn
 statsmodels
-mljar-supervised
+xgboost
+lightgbm
+catboost
+pyarrow
 gprofiler-official
