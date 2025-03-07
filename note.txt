@@ -80,3 +80,19 @@ https://pychemauth.readthedocs.io/en/latest/index.html
 
 awesome-automl
 https://github.com/windmaple/awesome-AutoML
+
+
+##########################################################
+### commands
+##########################################################
+
+# pdoc3
+> pdoc --html --output-dir ./documents/API PineBioML
+
+# to publish
+requirement: setuptools twine wheel
+  (remove early version in dist/*)
+
+python setup.py sdist bdist_wheel
+python -m twine check dist/*
+python -m twine upload dist/*

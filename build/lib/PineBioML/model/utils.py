@@ -97,19 +97,23 @@ class classification_scorer():
         self.target_label = target_label
         self.multi_class_extra = multi_class_extra
 
-    def score(self, y_true: Series,
-              y_pred_prob: DataFrame) -> dict[str, float]:
+    def score(self,
+              y_true: Series,
+              y_pred_prob: DataFrame,
+              y_pred: Series = None) -> dict[str, float]:
         """
         Scoring y_true and y_pred_prob.
 
         Args:
             y_true (Series): The ground True.
             y_pred_prob (DataFrame): The prediction from an estimator. Shape should be (n_sample, n_classes)
+            y_pred (Series, optional): The prediction made by model. For Binary classification models, the prediction may differ from prob.argmax because of threshold tuning. Defaults to None.
 
         Returns:
             dict[str, float]: The result stored in a dict, be like {'score_name': score}.
         """
-        y_pred = y_pred_prob.idxmax(axis=1)
+        if y_pred is None:
+            y_pred = y_pred_prob.idxmax(axis=1)
 
         result = {}
         if not self.target_label is None:
@@ -170,13 +174,17 @@ class regression_scorer():
 
         self.prefix = prefix
 
-    def score(self, y_true: Series, y_pred: Series) -> dict[str, float]:
+    def score(self,
+              y_true: Series,
+              y_pred: Series,
+              place_holder=None) -> dict[str, float]:
         """
         calculate the scores
 
         Args:
-            y_true (Series): Ground true
-            y_pred (Series): predicted values
+            y_true (Series): Ground true.
+            y_pred (Series): predicted values.
+            place_holder (None): A placeholder corresponding to classification_scorer's pred argument.
 
         Returns:
             dict[str, float]: The result stored in a dict, be like {'score_name': score}.
@@ -202,27 +210,30 @@ class Pine():
     """
     Deep first traversal the given experiment setting.    
     the last step of experiment sould be model.    
-    Please refer to example_Pine.ipynb for usage.
+    Please refer to example_Pine.ipynb for usage.    
 
 
-    note: experiment step and experiment stage is the same thing.
+    note: experiment step and experiment stage is the same thing.    
     """
 
     def __init__(self,
                  experiment: list[tuple[str, dict[str, object]]],
                  target_label: str = None,
-                 cv_result: bool = False):
+                 cv_result: bool = False,
+                 evaluate_ncv: int = 5):
         """
         Args:
             experiment (list[tuple[str, dict[str, object]]]): list of experiment steps. step should be in the form: ('step_name', {'method_name': method}). it could be several method in one step and they will fork in deep first traversal. Each method should be either sklearn estimator or transformer.
             target_label (str, optional): the name of target_label. For example, the label in a binary classification task might be {'pos', 'neg'}. Then you can assign 'neg' to target_label, and the result will contain sensitivity, specificity and roc-auc score of label 'neg'. Defaults to None.
             cv_result (bool, optional): Rcording the scores and prediction of cross validation. Defaults to False.
+            evaluate_cv (int, optional): The number of folds to evaluate cv_result after pipeline tuned. Defaults to 5.
         """
 
         self.experiment = experiment
         self.total_stage = len(experiment)
         self.target_label = target_label
         self.cv_result = cv_result
+        self.evaluate_ncv = evaluate_ncv
 
         self.result = []
 
@@ -259,6 +270,8 @@ class Pine():
                 processed_train_x = opt.fit_transform(train_x, train_y)
                 if test_x is not None:
                     processed_test_x = opt.transform(test_x)
+                else:
+                    processed_test_x = test_x
 
                 # reccursivly call
                 self.do_stage(processed_train_x, train_y, processed_test_x,
@@ -281,18 +294,24 @@ class Pine():
 
                 # compute the training score
                 train_pred = f(train_x)
+                # compute the prediction for those who has a tuned threshold in binary classification task.
+                train_prediction = model.predict(train_x)
+
                 self.train_pred.append(train_pred)
                 train_scores = scorer(prefix="train_",
                                       target_label=self.target_label).score(
-                                          train_y, train_pred)
+                                          train_y, train_pred,
+                                          train_prediction)
 
                 if test_x is not None:
                     # if there is testing data, compute the testing score.
                     test_pred = f(test_x)
+                    test_prediction = model.predict(test_x)
                     self.test_pred.append(test_pred)
                     test_scores = scorer(prefix="test_",
                                          target_label=self.target_label).score(
-                                             test_y, test_pred)
+                                             test_y, test_pred,
+                                             test_prediction)
                 else:
                     test_scores = {}
 
@@ -300,9 +319,10 @@ class Pine():
                     # compute the cross validation score on training set
                     fold_scores = []
                     cv_pred = []
-                    cross_validation = StratifiedKFold(n_splits=5,
-                                                       shuffle=True,
-                                                       random_state=133)
+                    cross_validation = StratifiedKFold(
+                        n_splits=self.evaluate_ncv,
+                        shuffle=True,
+                        random_state=133)
                     for (train_idx, valid_idx) in cross_validation.split(
                             train_x, train_y):
 
@@ -313,19 +333,14 @@ class Pine():
 
                         # score on testing fold
                         fold_pred = f(train_x.iloc[valid_idx])
+                        #fold_prediction = model.predict(train_x.iloc[valid_idx])
+
                         cv_pred.append(fold_pred)
                         fold_scores.append(
                             scorer(prefix="cv_",
                                    target_label=self.target_label).score(
                                        train_y.iloc[valid_idx], fold_pred))
                     # average the fold scores
-                    """
-                    valid_scores = {}
-                    for metric_name in fold_scores[0].keys():
-                        valid_scores[metric_name] = np.array([
-                            fold_scores[cv][metric_name] for cv in range(5)
-                        ]).mean()
-                    """
                     self.cv_pred.append(concat(cv_pred, axis=0))
                     valid_scores = DataFrame(fold_scores).mean().to_dict()
                 else:

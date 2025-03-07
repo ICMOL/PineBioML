@@ -2,18 +2,32 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.5">
 <title>PineBioML.model.utils API documentation</title>
-<meta name="description" content="" />
-<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
-<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
-<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
-<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
-<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
 </head>
 <body>
 <main>
@@ -22,404 +36,6 @@
 <h1 class="title">Module <code>PineBioML.model.utils</code></h1>
 </header>
 <section id="section-intro">
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">from sklearn import metrics
-from sklearn.model_selection import StratifiedKFold
-from sklearn.pipeline import Pipeline
-from pandas import DataFrame, Series, concat
-
-
-class sklearn_esitimator_wrapper():
-    &#34;&#34;&#34;
-    A basic wrapper for sklearn_esitimator. It transfer the data pipeline of sklearn from numpy.array to pandas.DataFrame.    
-    If you want to pass any model with api in sklearn style into Pine, you should wrap it in wrapper.
-    &#34;&#34;&#34;
-
-    def __init__(self, kernel: object):
-        &#34;&#34;&#34;
-
-        Args:
-            kernel (object): a sklearn esitimator. for example: sklearn.ensemble.RandomForestClassifier or sklearn.ensemble.RandomForestRegressor
-        &#34;&#34;&#34;
-
-        self.kernel = kernel
-
-    def fit(self, x: DataFrame, y: Series, retune=True) -&gt; object:
-        &#34;&#34;&#34;
-        sklearn esitimator api: fit
-
-        Args:
-            x (DataFrame): feature
-            y (Series): label
-            retune (bool, optional): To retune the model or not. For sklearn_esitimator_wrapper, it is just a placeholder without acutual facility. Defaults to True.
-
-        Returns:
-            object: A sklearn_esitimator within pandas data flow.
-        &#34;&#34;&#34;
-        self.label_name = y.name
-        self.kernel.fit(x, y)
-        return self
-
-    def predict(self, x: DataFrame) -&gt; Series:
-        &#34;&#34;&#34;
-        sklearn esitimator api: predict
-
-        Args:
-            x (DataFrame): feature
-
-        Returns:
-            Series: kernel prediction
-        &#34;&#34;&#34;
-
-        return Series(self.kernel.predict(x),
-                      index=x.index,
-                      name=self.label_name)
-
-    def predict_proba(self, x: DataFrame) -&gt; DataFrame:
-        &#34;&#34;&#34;
-        sklearn esitimator api: predict_proba for classification
-
-        Args:
-            x (DataFrame): feature
-
-        Raises:
-            NotImplementedError: Regression has no attribute &#39;predict_proba&#39;
-
-        Returns:
-            DataFrame: predicted probability with shape (n_sample, n_class)
-        &#34;&#34;&#34;
-        if &#34;predict_proba&#34; in dir(self.kernel):
-            return DataFrame(self.kernel.predict_proba(x),
-                             index=x.index,
-                             columns=self.kernel.classes_)
-        else:
-            raise NotImplementedError(
-                &#34;{} do not have attribute &#39;predict_proba&#39;.&#34;.format(
-                    self.kernel.__str__()))
-
-
-class classification_scorer():
-    &#34;&#34;&#34;
-    A utility to calculate classification scores.    
-    The result will contain mcc(matthews corrcoef), acc(accuracy) and support(the number of samples), furthermore:    
-        if target_label was given(not None), then sensitivity, specificity and coresponding roc-auc score will be added to result.    
-        if multi_class_extra is True, then one vs rest macro_auc, cross_entropy and cohen_kappa will be added to result.    
-    &#34;&#34;&#34;
-
-    def __init__(self,
-                 target_label: str = None,
-                 prefix: str = &#34;&#34;,
-                 multi_class_extra: bool = False):
-        &#34;&#34;&#34;
-
-        Args:
-            target_label (str, optional): the name of target_label. For example, the label in a binary classification task might be {&#39;pos&#39;, &#39;neg&#39;}. Then you can assign &#39;neg&#39; to target_label, and the result will contain sensitivity, specificity and roc-auc score of label &#39;neg&#39;. Defaults to None.
-            prefix (str, optional): prefix before score names. For example suppose prefix=&#34;Train_&#34;, then all the scores in result will be like &#34;Train_mcc&#34;. Defaults to &#34;&#34;.
-            multi_class_extra (bool, optional): _description_. Defaults to False.
-        &#34;&#34;&#34;
-
-        self.prefix = prefix
-        self.target_label = target_label
-        self.multi_class_extra = multi_class_extra
-
-    def score(self, y_true: Series,
-              y_pred_prob: DataFrame) -&gt; dict[str, float]:
-        &#34;&#34;&#34;
-        Scoring y_true and y_pred_prob.
-
-        Args:
-            y_true (Series): The ground True.
-            y_pred_prob (DataFrame): The prediction from an estimator. Shape should be (n_sample, n_classes)
-
-        Returns:
-            dict[str, float]: The result stored in a dict, be like {&#39;score_name&#39;: score}.
-        &#34;&#34;&#34;
-        y_pred = y_pred_prob.idxmax(axis=1)
-
-        result = {}
-        if not self.target_label is None:
-            (_, result[&#34;sensitivity&#34;], result[&#34;f1&#34;],
-             _) = metrics.precision_recall_fscore_support(
-                 y_true=(y_true == self.target_label),
-                 y_pred=(y_pred == self.target_label),
-                 average=&#34;binary&#34;,
-                 pos_label=True)
-
-            (_, result[&#34;specificity&#34;], _,
-             _) = metrics.precision_recall_fscore_support(
-                 y_true=(y_true == self.target_label),
-                 y_pred=(y_pred == self.target_label),
-                 average=&#34;binary&#34;,
-                 pos_label=False)
-
-            # binary
-            result[&#34;auc&#34;] = metrics.roc_auc_score(
-                y_true == self.target_label, y_pred_prob[self.target_label])
-
-        if self.multi_class_extra:
-            result[&#34;macro_auc&#34;] = metrics.roc_auc_score(
-                y_true,
-                y_pred_prob,
-                multi_class=&#34;ovr&#34;,
-                labels=y_pred_prob.columns)
-            result[&#34;macro_f1&#34;] = metrics.f1_score(y_true,
-                                                  y_pred,
-                                                  average=&#34;macro&#34;)
-            result[&#34;cross_entropy&#34;] = metrics.log_loss(y_true, y_pred_prob)
-            result[&#34;cohen_kappa&#34;] = metrics.cohen_kappa_score(y_true, y_pred)
-
-        result[&#34;mcc&#34;] = metrics.matthews_corrcoef(y_true, y_pred)
-        result[&#34;accuracy&#34;] = metrics.accuracy_score(y_true, y_pred)
-        result[&#34;support&#34;] = len(y_true)
-
-        prefix_result = {}
-        for score in result:
-            prefix_result[self.prefix + score] = result[score]
-
-        return prefix_result
-
-
-class regression_scorer():
-    &#34;&#34;&#34;
-    A utility to calculate regression scores. rmse(rooted mean squared error), r2(R squared) and support(the number of samples) are included.    
-    if y_true and y_pred are all positive, then mape(mean absolute percentage error) will be added.    
-    &#34;&#34;&#34;
-
-    def __init__(self, prefix: str = &#34;&#34;, target_label: str = None):
-        &#34;&#34;&#34;
-
-        Args:
-            prefix (str, optional): prefix before score names. For example suppose prefix=&#34;Train_&#34;, then all the scores in result will be like &#34;Train_mse&#34;. Defaults to &#34;&#34;.
-            target_label (str, optional): A placehold without any facility. Defaults to None.
-        &#34;&#34;&#34;
-
-        self.prefix = prefix
-
-    def score(self, y_true: Series, y_pred: Series) -&gt; dict[str, float]:
-        &#34;&#34;&#34;
-        calculate the scores
-
-        Args:
-            y_true (Series): Ground true
-            y_pred (Series): predicted values
-
-        Returns:
-            dict[str, float]: The result stored in a dict, be like {&#39;score_name&#39;: score}.
-        &#34;&#34;&#34;
-
-        result = {}
-        result[&#34;rmse&#34;] = metrics.root_mean_squared_error(y_true, y_pred)
-        result[&#34;r2&#34;] = metrics.r2_score(y_true, y_pred)
-        if (y_true &gt; 0).all() and (y_pred &gt; 0).all():
-            result[&#34;mape&#34;] = metrics.mean_absolute_percentage_error(
-                y_true, y_pred)
-        result[&#34;support&#34;] = len(y_true)
-
-        prefix_result = {}
-        for score in result:
-            prefix_result[self.prefix + score] = result[score]
-
-        return prefix_result
-
-
-# ToDo: the Integration of .predict and .transform
-class Pine():
-    &#34;&#34;&#34;
-    Deep first traversal the given experiment setting.    
-    the last step of experiment sould be model.    
-    Please refer to example_Pine.ipynb for usage.
-
-
-    note: experiment step and experiment stage is the same thing.
-    &#34;&#34;&#34;
-
-    def __init__(self,
-                 experiment: list[tuple[str, dict[str, object]]],
-                 target_label: str = None,
-                 cv_result: bool = False):
-        &#34;&#34;&#34;
-        Args:
-            experiment (list[tuple[str, dict[str, object]]]): list of experiment steps. step should be in the form: (&#39;step_name&#39;, {&#39;method_name&#39;: method}). it could be several method in one step and they will fork in deep first traversal. Each method should be either sklearn estimator or transformer.
-            target_label (str, optional): the name of target_label. For example, the label in a binary classification task might be {&#39;pos&#39;, &#39;neg&#39;}. Then you can assign &#39;neg&#39; to target_label, and the result will contain sensitivity, specificity and roc-auc score of label &#39;neg&#39;. Defaults to None.
-            cv_result (bool, optional): Rcording the scores and prediction of cross validation. Defaults to False.
-        &#34;&#34;&#34;
-
-        self.experiment = experiment
-        self.total_stage = len(experiment)
-        self.target_label = target_label
-        self.cv_result = cv_result
-
-        self.result = []
-
-        self.train_pred = []
-        self.cv_pred = []
-        self.test_pred = []
-
-    def do_stage(self, train_x: DataFrame, train_y: Series, test_x: DataFrame,
-                 test_y: Series, stage: int, record: dict) -&gt; None:
-        &#34;&#34;&#34;
-        the recursive function to traversal the experiment.    
-        the socres and path will be stored in self.result amd self.____pred, so there is no return in recursive function.     
-
-        Args:
-            train_x (pd.DataFrame): training x
-            train_y (pd.Series): training y
-            test_x (pd.DataFrame): training x
-            test_y (pd.Series): training y
-            stage (int): the order of current stage in the experiment setting
-            record (dict): record the traversal path in a dict of str
-        &#34;&#34;&#34;
-
-        # unzip the stage, stage = (stage_name, {operator_name: operator})
-        stage_name, operators = self.experiment[stage]
-
-        # fork to next stage according to the diffirent operator (opt)
-        for opt_name in operators:
-            record[stage_name] = opt_name
-            opt = operators[opt_name]
-
-            # if not the last stage
-            if stage &lt; self.total_stage - 1:
-                # transform by operators
-                processed_train_x = opt.fit_transform(train_x, train_y)
-                if test_x is not None:
-                    processed_test_x = opt.transform(test_x)
-
-                # reccursivly call
-                self.do_stage(processed_train_x, train_y, processed_test_x,
-                              test_y, stage + 1, record)
-
-            # the last layer, it should be models
-            else:
-                model = opt
-                if &#34;predict_proba&#34; in dir(model):
-                    # is not regression
-                    f = model.predict_proba
-                    scorer = classification_scorer
-                else:
-                    # is regression
-                    f = model.predict
-                    scorer = regression_scorer
-
-                # tune/fit the model on training data
-                model.fit(train_x, train_y)
-
-                # compute the training score
-                train_pred = f(train_x)
-                self.train_pred.append(train_pred)
-                train_scores = scorer(prefix=&#34;train_&#34;,
-                                      target_label=self.target_label).score(
-                                          train_y, train_pred)
-
-                if test_x is not None:
-                    # if there is testing data, compute the testing score.
-                    test_pred = f(test_x)
-                    self.test_pred.append(test_pred)
-                    test_scores = scorer(prefix=&#34;test_&#34;,
-                                         target_label=self.target_label).score(
-                                             test_y, test_pred)
-                else:
-                    test_scores = {}
-
-                if self.cv_result:
-                    # compute the cross validation score on training set
-                    fold_scores = []
-                    cv_pred = []
-                    cross_validation = StratifiedKFold(n_splits=5,
-                                                       shuffle=True,
-                                                       random_state=133)
-                    for (train_idx, valid_idx) in cross_validation.split(
-                            train_x, train_y):
-
-                        # fit on training fold
-                        model.fit(train_x.iloc[train_idx],
-                                  train_y.iloc[train_idx],
-                                  retune=False)
-
-                        # score on testing fold
-                        fold_pred = f(train_x.iloc[valid_idx])
-                        cv_pred.append(fold_pred)
-                        fold_scores.append(
-                            scorer(prefix=&#34;cv_&#34;,
-                                   target_label=self.target_label).score(
-                                       train_y.iloc[valid_idx], fold_pred))
-                    # average the fold scores
-                    &#34;&#34;&#34;
-                    valid_scores = {}
-                    for metric_name in fold_scores[0].keys():
-                        valid_scores[metric_name] = np.array([
-                            fold_scores[cv][metric_name] for cv in range(5)
-                        ]).mean()
-                    &#34;&#34;&#34;
-                    self.cv_pred.append(concat(cv_pred, axis=0))
-                    valid_scores = DataFrame(fold_scores).mean().to_dict()
-                else:
-                    valid_scores = {}
-
-                # concatenate the score dicts
-                all_scores = dict(**record, **train_scores, **valid_scores,
-                                  **test_scores)
-                self.result.append(all_scores)
-
-    def do_experiment(self, train_x, train_y, test_x=None, test_y=None):
-        &#34;&#34;&#34;
-        the first call of recurssive fuction.
-
-        Args:
-            train_x (pd.DataFrame): training x
-            train_y (pd.Series): training y
-            test_x (pd.DataFrame): training x
-            test_y (pd.Series): training y
-
-        Returns:
-            pd.DataFrame: the result
-        &#34;&#34;&#34;
-        # clear the results.
-        self.result = []
-
-        self.do_stage(train_x, train_y, test_x, test_y, 0, {})
-        return self.experiment_results()
-
-    def experiment_results(self) -&gt; DataFrame:
-        &#34;&#34;&#34;
-
-        Returns:
-            DataFrame: The experiment results.
-        &#34;&#34;&#34;
-        return DataFrame(self.result)
-
-    def experiment_predictions(self):
-        &#34;&#34;&#34;
-        cv_pred will be empty if cv_result was False in initialization.
-
-        Returns:
-            train_pred, cv_pred, test_pred: the prediction of training set, cross validation and  testing set
-        &#34;&#34;&#34;
-        return self.train_pred, self.cv_pred, self.test_pred
-
-    def recall_model(self, id):
-        &#34;&#34;&#34;
-        query the last experiment result by id and build the pipeline object.
-
-        Todo: A proper way to fit the pipeline object.
-
-        Args:
-            id (int): the order of experiment path.
-
-        Returns:
-            sklearn.pipeline.Pipeline: ready to use object.
-        &#34;&#34;&#34;
-
-        model_spec = self.result[id]
-        model_pipeline = []
-        for (step_name, methods) in self.experiment:
-            using_method = model_spec[step_name]
-            model_pipeline.append((step_name, methods[using_method]))
-        return Pipeline(model_pipeline)</code></pre>
-</details>
 </section>
 <section>
 </section>
@@ -432,24 +48,9 @@ class Pine():
 <dl>
 <dt id="PineBioML.model.utils.Pine"><code class="flex name class">
 <span>class <span class="ident">Pine</span></span>
-<span>(</span><span>experiment: list[tuple[str, dict[str, object]]], target_label: str = None, cv_result: bool = False)</span>
+<span>(</span><span>experiment: list[tuple[str, dict[str, object]]],<br>target_label: str = None,<br>cv_result: bool = False,<br>evaluate_ncv: int = 5)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Deep first traversal the given experiment setting.
-<br>
-the last step of experiment sould be model.
-<br>
-Please refer to example_Pine.ipynb for usage.</p>
-<p>note: experiment step and experiment stage is the same thing.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>experiment</code></strong> :&ensp;<code>list[tuple[str, dict[str, object]]]</code></dt>
-<dd>list of experiment steps. step should be in the form: ('step_name', {'method_name': method}). it could be several method in one step and they will fork in deep first traversal. Each method should be either sklearn estimator or transformer.</dd>
-<dt><strong><code>target_label</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>the name of target_label. For example, the label in a binary classification task might be {'pos', 'neg'}. Then you can assign 'neg' to target_label, and the result will contain sensitivity, specificity and roc-auc score of label 'neg'. Defaults to None.</dd>
-<dt><strong><code>cv_result</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>Rcording the scores and prediction of cross validation. Defaults to False.</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -458,27 +59,30 @@ Please refer to example_Pine.ipynb for usage.</p>
     &#34;&#34;&#34;
     Deep first traversal the given experiment setting.    
     the last step of experiment sould be model.    
-    Please refer to example_Pine.ipynb for usage.
+    Please refer to example_Pine.ipynb for usage.    
 
 
-    note: experiment step and experiment stage is the same thing.
+    note: experiment step and experiment stage is the same thing.    
     &#34;&#34;&#34;
 
     def __init__(self,
                  experiment: list[tuple[str, dict[str, object]]],
                  target_label: str = None,
-                 cv_result: bool = False):
+                 cv_result: bool = False,
+                 evaluate_ncv: int = 5):
         &#34;&#34;&#34;
         Args:
             experiment (list[tuple[str, dict[str, object]]]): list of experiment steps. step should be in the form: (&#39;step_name&#39;, {&#39;method_name&#39;: method}). it could be several method in one step and they will fork in deep first traversal. Each method should be either sklearn estimator or transformer.
             target_label (str, optional): the name of target_label. For example, the label in a binary classification task might be {&#39;pos&#39;, &#39;neg&#39;}. Then you can assign &#39;neg&#39; to target_label, and the result will contain sensitivity, specificity and roc-auc score of label &#39;neg&#39;. Defaults to None.
             cv_result (bool, optional): Rcording the scores and prediction of cross validation. Defaults to False.
+            evaluate_cv (int, optional): The number of folds to evaluate cv_result after pipeline tuned. Defaults to 5.
         &#34;&#34;&#34;
 
         self.experiment = experiment
         self.total_stage = len(experiment)
         self.target_label = target_label
         self.cv_result = cv_result
+        self.evaluate_ncv = evaluate_ncv
 
         self.result = []
 
@@ -515,6 +119,8 @@ Please refer to example_Pine.ipynb for usage.</p>
                 processed_train_x = opt.fit_transform(train_x, train_y)
                 if test_x is not None:
                     processed_test_x = opt.transform(test_x)
+                else:
+                    processed_test_x = test_x
 
                 # reccursivly call
                 self.do_stage(processed_train_x, train_y, processed_test_x,
@@ -537,18 +143,24 @@ Please refer to example_Pine.ipynb for usage.</p>
 
                 # compute the training score
                 train_pred = f(train_x)
+                # compute the prediction for those who has a tuned threshold in binary classification task.
+                train_prediction = model.predict(train_x)
+
                 self.train_pred.append(train_pred)
                 train_scores = scorer(prefix=&#34;train_&#34;,
                                       target_label=self.target_label).score(
-                                          train_y, train_pred)
+                                          train_y, train_pred,
+                                          train_prediction)
 
                 if test_x is not None:
                     # if there is testing data, compute the testing score.
                     test_pred = f(test_x)
+                    test_prediction = model.predict(test_x)
                     self.test_pred.append(test_pred)
                     test_scores = scorer(prefix=&#34;test_&#34;,
                                          target_label=self.target_label).score(
-                                             test_y, test_pred)
+                                             test_y, test_pred,
+                                             test_prediction)
                 else:
                     test_scores = {}
 
@@ -556,9 +168,10 @@ Please refer to example_Pine.ipynb for usage.</p>
                     # compute the cross validation score on training set
                     fold_scores = []
                     cv_pred = []
-                    cross_validation = StratifiedKFold(n_splits=5,
-                                                       shuffle=True,
-                                                       random_state=133)
+                    cross_validation = StratifiedKFold(
+                        n_splits=self.evaluate_ncv,
+                        shuffle=True,
+                        random_state=133)
                     for (train_idx, valid_idx) in cross_validation.split(
                             train_x, train_y):
 
@@ -569,19 +182,14 @@ Please refer to example_Pine.ipynb for usage.</p>
 
                         # score on testing fold
                         fold_pred = f(train_x.iloc[valid_idx])
+                        #fold_prediction = model.predict(train_x.iloc[valid_idx])
+
                         cv_pred.append(fold_pred)
                         fold_scores.append(
                             scorer(prefix=&#34;cv_&#34;,
                                    target_label=self.target_label).score(
                                        train_y.iloc[valid_idx], fold_pred))
                     # average the fold scores
-                    &#34;&#34;&#34;
-                    valid_scores = {}
-                    for metric_name in fold_scores[0].keys():
-                        valid_scores[metric_name] = np.array([
-                            fold_scores[cv][metric_name] for cv in range(5)
-                        ]).mean()
-                    &#34;&#34;&#34;
                     self.cv_pred.append(concat(cv_pred, axis=0))
                     valid_scores = DataFrame(fold_scores).mean().to_dict()
                 else:
@@ -646,31 +254,49 @@ Please refer to example_Pine.ipynb for usage.</p>
         for (step_name, methods) in self.experiment:
             using_method = model_spec[step_name]
             model_pipeline.append((step_name, methods[using_method]))
-        return Pipeline(model_pipeline)</code></pre>
+        return Pipeline(model_pipeline)
+
+    def experiment_detail(self):
+        &#34;&#34;&#34;
+        show the experiment settings including:    
+            1. models parameters searching range.    
+
+        Returns:
+            pandas.DataFrame
+        &#34;&#34;&#34;
+        _, models = self.experiment[-1]
+
+        tmp = []
+        for n in list(models)[1:]:
+            m = models[n]
+            tmp.append(m.detail())
+        return concat(tmp, axis=0)</code></pre>
 </details>
+<div class="desc"><p>Deep first traversal the given experiment setting.
+<br>
+the last step of experiment sould be model.
+<br>
+Please refer to example_Pine.ipynb for usage.
+</p>
+<p>note: experiment step and experiment stage is the same thing.
+</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>experiment</code></strong> :&ensp;<code>list[tuple[str, dict[str, object]]]</code></dt>
+<dd>list of experiment steps. step should be in the form: ('step_name', {'method_name': method}). it could be several method in one step and they will fork in deep first traversal. Each method should be either sklearn estimator or transformer.</dd>
+<dt><strong><code>target_label</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>the name of target_label. For example, the label in a binary classification task might be {'pos', 'neg'}. Then you can assign 'neg' to target_label, and the result will contain sensitivity, specificity and roc-auc score of label 'neg'. Defaults to None.</dd>
+<dt><strong><code>cv_result</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Rcording the scores and prediction of cross validation. Defaults to False.</dd>
+<dt><strong><code>evaluate_cv</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The number of folds to evaluate cv_result after pipeline tuned. Defaults to 5.</dd>
+</dl></div>
 <h3>Methods</h3>
 <dl>
 <dt id="PineBioML.model.utils.Pine.do_experiment"><code class="name flex">
 <span>def <span class="ident">do_experiment</span></span>(<span>self, train_x, train_y, test_x=None, test_y=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>the first call of recurssive fuction.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>train_x</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
-<dd>training x</dd>
-<dt><strong><code>train_y</code></strong> :&ensp;<code>pd.Series</code></dt>
-<dd>training y</dd>
-<dt><strong><code>test_x</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
-<dd>training x</dd>
-<dt><strong><code>test_y</code></strong> :&ensp;<code>pd.Series</code></dt>
-<dd>training y</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>pd.DataFrame</code></dt>
-<dd>the result</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -694,15 +320,7 @@ Please refer to example_Pine.ipynb for usage.</p>
     self.do_stage(train_x, train_y, test_x, test_y, 0, {})
     return self.experiment_results()</code></pre>
 </details>
-</dd>
-<dt id="PineBioML.model.utils.Pine.do_stage"><code class="name flex">
-<span>def <span class="ident">do_stage</span></span>(<span>self, train_x: pandas.core.frame.DataFrame, train_y: pandas.core.series.Series, test_x: pandas.core.frame.DataFrame, test_y: pandas.core.series.Series, stage: int, record: dict) ‑> None</span>
-</code></dt>
-<dd>
-<div class="desc"><p>the recursive function to traversal the experiment.
-<br>
-the socres and path will be stored in self.result amd self.____pred, so there is no return in recursive function.
-</p>
+<div class="desc"><p>the first call of recurssive fuction.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>train_x</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
@@ -713,11 +331,17 @@ the socres and path will be stored in self.result amd self.____pred, so there is
 <dd>training x</dd>
 <dt><strong><code>test_y</code></strong> :&ensp;<code>pd.Series</code></dt>
 <dd>training y</dd>
-<dt><strong><code>stage</code></strong> :&ensp;<code>int</code></dt>
-<dd>the order of current stage in the experiment setting</dd>
-<dt><strong><code>record</code></strong> :&ensp;<code>dict</code></dt>
-<dd>record the traversal path in a dict of str</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pd.DataFrame</code></dt>
+<dd>the result</dd>
 </dl></div>
+</dd>
+<dt id="PineBioML.model.utils.Pine.do_stage"><code class="name flex">
+<span>def <span class="ident">do_stage</span></span>(<span>self,<br>train_x: pandas.core.frame.DataFrame,<br>train_y: pandas.core.series.Series,<br>test_x: pandas.core.frame.DataFrame,<br>test_y: pandas.core.series.Series,<br>stage: int,<br>record: dict) ‑> None</span>
+</code></dt>
+<dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -751,6 +375,8 @@ the socres and path will be stored in self.result amd self.____pred, so there is
             processed_train_x = opt.fit_transform(train_x, train_y)
             if test_x is not None:
                 processed_test_x = opt.transform(test_x)
+            else:
+                processed_test_x = test_x
 
             # reccursivly call
             self.do_stage(processed_train_x, train_y, processed_test_x,
@@ -773,18 +399,24 @@ the socres and path will be stored in self.result amd self.____pred, so there is
 
             # compute the training score
             train_pred = f(train_x)
+            # compute the prediction for those who has a tuned threshold in binary classification task.
+            train_prediction = model.predict(train_x)
+
             self.train_pred.append(train_pred)
             train_scores = scorer(prefix=&#34;train_&#34;,
                                   target_label=self.target_label).score(
-                                      train_y, train_pred)
+                                      train_y, train_pred,
+                                      train_prediction)
 
             if test_x is not None:
                 # if there is testing data, compute the testing score.
                 test_pred = f(test_x)
+                test_prediction = model.predict(test_x)
                 self.test_pred.append(test_pred)
                 test_scores = scorer(prefix=&#34;test_&#34;,
                                      target_label=self.target_label).score(
-                                         test_y, test_pred)
+                                         test_y, test_pred,
+                                         test_prediction)
             else:
                 test_scores = {}
 
@@ -792,9 +424,10 @@ the socres and path will be stored in self.result amd self.____pred, so there is
                 # compute the cross validation score on training set
                 fold_scores = []
                 cv_pred = []
-                cross_validation = StratifiedKFold(n_splits=5,
-                                                   shuffle=True,
-                                                   random_state=133)
+                cross_validation = StratifiedKFold(
+                    n_splits=self.evaluate_ncv,
+                    shuffle=True,
+                    random_state=133)
                 for (train_idx, valid_idx) in cross_validation.split(
                         train_x, train_y):
 
@@ -805,19 +438,14 @@ the socres and path will be stored in self.result amd self.____pred, so there is
 
                     # score on testing fold
                     fold_pred = f(train_x.iloc[valid_idx])
+                    #fold_prediction = model.predict(train_x.iloc[valid_idx])
+
                     cv_pred.append(fold_pred)
                     fold_scores.append(
                         scorer(prefix=&#34;cv_&#34;,
                                target_label=self.target_label).score(
                                    train_y.iloc[valid_idx], fold_pred))
                 # average the fold scores
-                &#34;&#34;&#34;
-                valid_scores = {}
-                for metric_name in fold_scores[0].keys():
-                    valid_scores[metric_name] = np.array([
-                        fold_scores[cv][metric_name] for cv in range(5)
-                    ]).mean()
-                &#34;&#34;&#34;
                 self.cv_pred.append(concat(cv_pred, axis=0))
                 valid_scores = DataFrame(fold_scores).mean().to_dict()
             else:
@@ -828,18 +456,61 @@ the socres and path will be stored in self.result amd self.____pred, so there is
                               **test_scores)
             self.result.append(all_scores)</code></pre>
 </details>
+<div class="desc"><p>the recursive function to traversal the experiment.
+<br>
+the socres and path will be stored in self.result amd self.____pred, so there is no return in recursive function.
+</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>train_x</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>training x</dd>
+<dt><strong><code>train_y</code></strong> :&ensp;<code>pd.Series</code></dt>
+<dd>training y</dd>
+<dt><strong><code>test_x</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>training x</dd>
+<dt><strong><code>test_y</code></strong> :&ensp;<code>pd.Series</code></dt>
+<dd>training y</dd>
+<dt><strong><code>stage</code></strong> :&ensp;<code>int</code></dt>
+<dd>the order of current stage in the experiment setting</dd>
+<dt><strong><code>record</code></strong> :&ensp;<code>dict</code></dt>
+<dd>record the traversal path in a dict of str</dd>
+</dl></div>
+</dd>
+<dt id="PineBioML.model.utils.Pine.experiment_detail"><code class="name flex">
+<span>def <span class="ident">experiment_detail</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def experiment_detail(self):
+    &#34;&#34;&#34;
+    show the experiment settings including:    
+        1. models parameters searching range.    
+
+    Returns:
+        pandas.DataFrame
+    &#34;&#34;&#34;
+    _, models = self.experiment[-1]
+
+    tmp = []
+    for n in list(models)[1:]:
+        m = models[n]
+        tmp.append(m.detail())
+    return concat(tmp, axis=0)</code></pre>
+</details>
+<div class="desc"><p>show the experiment settings including:
+<br>
+1. models parameters searching range.
+</p>
+<h2 id="returns">Returns</h2>
+<p>pandas.DataFrame</p></div>
 </dd>
 <dt id="PineBioML.model.utils.Pine.experiment_predictions"><code class="name flex">
 <span>def <span class="ident">experiment_predictions</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>cv_pred will be empty if cv_result was False in initialization.</p>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>train_pred, cv_pred, test_pred</code></dt>
-<dd>the prediction of training set, cross validation and
-testing set</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -853,16 +524,18 @@ testing set</dd>
     &#34;&#34;&#34;
     return self.train_pred, self.cv_pred, self.test_pred</code></pre>
 </details>
+<div class="desc"><p>cv_pred will be empty if cv_result was False in initialization.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>train_pred, cv_pred, test_pred</code></dt>
+<dd>the prediction of training set, cross validation and
+testing set</dd>
+</dl></div>
 </dd>
 <dt id="PineBioML.model.utils.Pine.experiment_results"><code class="name flex">
 <span>def <span class="ident">experiment_results</span></span>(<span>self) ‑> pandas.core.frame.DataFrame</span>
 </code></dt>
 <dd>
-<div class="desc"><h2 id="returns">Returns</h2>
-<dl>
-<dt><code>DataFrame</code></dt>
-<dd>The experiment results.</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -875,23 +548,16 @@ testing set</dd>
     &#34;&#34;&#34;
     return DataFrame(self.result)</code></pre>
 </details>
+<div class="desc"><h2 id="returns">Returns</h2>
+<dl>
+<dt><code>DataFrame</code></dt>
+<dd>The experiment results.</dd>
+</dl></div>
 </dd>
 <dt id="PineBioML.model.utils.Pine.recall_model"><code class="name flex">
 <span>def <span class="ident">recall_model</span></span>(<span>self, id)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>query the last experiment result by id and build the pipeline object.</p>
-<p>Todo: A proper way to fit the pipeline object.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>id</code></strong> :&ensp;<code>int</code></dt>
-<dd>the order of experiment path.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>sklearn.pipeline.Pipeline</code></dt>
-<dd>ready to use object.</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -916,6 +582,18 @@ testing set</dd>
         model_pipeline.append((step_name, methods[using_method]))
     return Pipeline(model_pipeline)</code></pre>
 </details>
+<div class="desc"><p>query the last experiment result by id and build the pipeline object.</p>
+<p>Todo: A proper way to fit the pipeline object.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>id</code></strong> :&ensp;<code>int</code></dt>
+<dd>the order of experiment path.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>sklearn.pipeline.Pipeline</code></dt>
+<dd>ready to use object.</dd>
+</dl></div>
 </dd>
 </dl>
 </dd>
@@ -924,23 +602,6 @@ testing set</dd>
 <span>(</span><span>target_label: str = None, prefix: str = '', multi_class_extra: bool = False)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>A utility to calculate classification scores.
-<br>
-The result will contain mcc(matthews corrcoef), acc(accuracy) and support(the number of samples), furthermore:
-<br>
-if target_label was given(not None), then sensitivity, specificity and coresponding roc-auc score will be added to result.
-<br>
-if multi_class_extra is True, then one vs rest macro_auc, cross_entropy and cohen_kappa will be added to result.
-</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>target_label</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>the name of target_label. For example, the label in a binary classification task might be {'pos', 'neg'}. Then you can assign 'neg' to target_label, and the result will contain sensitivity, specificity and roc-auc score of label 'neg'. Defaults to None.</dd>
-<dt><strong><code>prefix</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>prefix before score names. For example suppose prefix="Train_", then all the scores in result will be like "Train_mcc". Defaults to "".</dd>
-<dt><strong><code>multi_class_extra</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd><em>description</em>. Defaults to False.</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -969,19 +630,23 @@ if multi_class_extra is True, then one vs rest macro_auc, cross_entropy and cohe
         self.target_label = target_label
         self.multi_class_extra = multi_class_extra
 
-    def score(self, y_true: Series,
-              y_pred_prob: DataFrame) -&gt; dict[str, float]:
+    def score(self,
+              y_true: Series,
+              y_pred_prob: DataFrame,
+              y_pred: Series = None) -&gt; dict[str, float]:
         &#34;&#34;&#34;
         Scoring y_true and y_pred_prob.
 
         Args:
             y_true (Series): The ground True.
             y_pred_prob (DataFrame): The prediction from an estimator. Shape should be (n_sample, n_classes)
+            y_pred (Series, optional): The prediction made by model. For Binary classification models, the prediction may differ from prob.argmax because of threshold tuning. Defaults to None.
 
         Returns:
             dict[str, float]: The result stored in a dict, be like {&#39;score_name&#39;: score}.
         &#34;&#34;&#34;
-        y_pred = y_pred_prob.idxmax(axis=1)
+        if y_pred is None:
+            y_pred = y_pred_prob.idxmax(axis=1)
 
         result = {}
         if not self.target_label is None:
@@ -1025,42 +690,50 @@ if multi_class_extra is True, then one vs rest macro_auc, cross_entropy and cohe
 
         return prefix_result</code></pre>
 </details>
+<div class="desc"><p>A utility to calculate classification scores.
+<br>
+The result will contain mcc(matthews corrcoef), acc(accuracy) and support(the number of samples), furthermore:
+<br>
+if target_label was given(not None), then sensitivity, specificity and coresponding roc-auc score will be added to result.
+<br>
+if multi_class_extra is True, then one vs rest macro_auc, cross_entropy and cohen_kappa will be added to result.
+</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>target_label</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>the name of target_label. For example, the label in a binary classification task might be {'pos', 'neg'}. Then you can assign 'neg' to target_label, and the result will contain sensitivity, specificity and roc-auc score of label 'neg'. Defaults to None.</dd>
+<dt><strong><code>prefix</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>prefix before score names. For example suppose prefix="Train_", then all the scores in result will be like "Train_mcc". Defaults to "".</dd>
+<dt><strong><code>multi_class_extra</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd><em>description</em>. Defaults to False.</dd>
+</dl></div>
 <h3>Methods</h3>
 <dl>
 <dt id="PineBioML.model.utils.classification_scorer.score"><code class="name flex">
-<span>def <span class="ident">score</span></span>(<span>self, y_true: pandas.core.series.Series, y_pred_prob: pandas.core.frame.DataFrame) ‑> dict[str, float]</span>
+<span>def <span class="ident">score</span></span>(<span>self,<br>y_true: pandas.core.series.Series,<br>y_pred_prob: pandas.core.frame.DataFrame,<br>y_pred: pandas.core.series.Series = None) ‑> dict[str, float]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Scoring y_true and y_pred_prob.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>y_true</code></strong> :&ensp;<code>Series</code></dt>
-<dd>The ground True.</dd>
-<dt><strong><code>y_pred_prob</code></strong> :&ensp;<code>DataFrame</code></dt>
-<dd>The prediction from an estimator. Shape should be (n_sample, n_classes)</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>dict[str, float]</code></dt>
-<dd>The result stored in a dict, be like {'score_name': score}.</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def score(self, y_true: Series,
-          y_pred_prob: DataFrame) -&gt; dict[str, float]:
+<pre><code class="python">def score(self,
+          y_true: Series,
+          y_pred_prob: DataFrame,
+          y_pred: Series = None) -&gt; dict[str, float]:
     &#34;&#34;&#34;
     Scoring y_true and y_pred_prob.
 
     Args:
         y_true (Series): The ground True.
         y_pred_prob (DataFrame): The prediction from an estimator. Shape should be (n_sample, n_classes)
+        y_pred (Series, optional): The prediction made by model. For Binary classification models, the prediction may differ from prob.argmax because of threshold tuning. Defaults to None.
 
     Returns:
         dict[str, float]: The result stored in a dict, be like {&#39;score_name&#39;: score}.
     &#34;&#34;&#34;
-    y_pred = y_pred_prob.idxmax(axis=1)
+    if y_pred is None:
+        y_pred = y_pred_prob.idxmax(axis=1)
 
     result = {}
     if not self.target_label is None:
@@ -1104,6 +777,21 @@ if multi_class_extra is True, then one vs rest macro_auc, cross_entropy and cohe
 
     return prefix_result</code></pre>
 </details>
+<div class="desc"><p>Scoring y_true and y_pred_prob.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>y_true</code></strong> :&ensp;<code>Series</code></dt>
+<dd>The ground True.</dd>
+<dt><strong><code>y_pred_prob</code></strong> :&ensp;<code>DataFrame</code></dt>
+<dd>The prediction from an estimator. Shape should be (n_sample, n_classes)</dd>
+<dt><strong><code>y_pred</code></strong> :&ensp;<code>Series</code>, optional</dt>
+<dd>The prediction made by model. For Binary classification models, the prediction may differ from prob.argmax because of threshold tuning. Defaults to None.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dict[str, float]</code></dt>
+<dd>The result stored in a dict, be like {'score_name': score}.</dd>
+</dl></div>
 </dd>
 </dl>
 </dd>
@@ -1112,17 +800,6 @@ if multi_class_extra is True, then one vs rest macro_auc, cross_entropy and cohe
 <span>(</span><span>prefix: str = '', target_label: str = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>A utility to calculate regression scores. rmse(rooted mean squared error), r2(R squared) and support(the number of samples) are included.
-<br>
-if y_true and y_pred are all positive, then mape(mean absolute percentage error) will be added.
-</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>prefix</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>prefix before score names. For example suppose prefix="Train_", then all the scores in result will be like "Train_mse". Defaults to "".</dd>
-<dt><strong><code>target_label</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>A placehold without any facility. Defaults to None.</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1143,13 +820,17 @@ if y_true and y_pred are all positive, then mape(mean absolute percentage error)
 
         self.prefix = prefix
 
-    def score(self, y_true: Series, y_pred: Series) -&gt; dict[str, float]:
+    def score(self,
+              y_true: Series,
+              y_pred: Series,
+              place_holder=None) -&gt; dict[str, float]:
         &#34;&#34;&#34;
         calculate the scores
 
         Args:
-            y_true (Series): Ground true
-            y_pred (Series): predicted values
+            y_true (Series): Ground true.
+            y_pred (Series): predicted values.
+            place_holder (None): A placeholder corresponding to classification_scorer&#39;s pred argument.
 
         Returns:
             dict[str, float]: The result stored in a dict, be like {&#39;score_name&#39;: score}.
@@ -1169,36 +850,38 @@ if y_true and y_pred are all positive, then mape(mean absolute percentage error)
 
         return prefix_result</code></pre>
 </details>
+<div class="desc"><p>A utility to calculate regression scores. rmse(rooted mean squared error), r2(R squared) and support(the number of samples) are included.
+<br>
+if y_true and y_pred are all positive, then mape(mean absolute percentage error) will be added.
+</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>prefix</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>prefix before score names. For example suppose prefix="Train_", then all the scores in result will be like "Train_mse". Defaults to "".</dd>
+<dt><strong><code>target_label</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>A placehold without any facility. Defaults to None.</dd>
+</dl></div>
 <h3>Methods</h3>
 <dl>
 <dt id="PineBioML.model.utils.regression_scorer.score"><code class="name flex">
-<span>def <span class="ident">score</span></span>(<span>self, y_true: pandas.core.series.Series, y_pred: pandas.core.series.Series) ‑> dict[str, float]</span>
+<span>def <span class="ident">score</span></span>(<span>self,<br>y_true: pandas.core.series.Series,<br>y_pred: pandas.core.series.Series,<br>place_holder=None) ‑> dict[str, float]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>calculate the scores</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>y_true</code></strong> :&ensp;<code>Series</code></dt>
-<dd>Ground true</dd>
-<dt><strong><code>y_pred</code></strong> :&ensp;<code>Series</code></dt>
-<dd>predicted values</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>dict[str, float]</code></dt>
-<dd>The result stored in a dict, be like {'score_name': score}.</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def score(self, y_true: Series, y_pred: Series) -&gt; dict[str, float]:
+<pre><code class="python">def score(self,
+          y_true: Series,
+          y_pred: Series,
+          place_holder=None) -&gt; dict[str, float]:
     &#34;&#34;&#34;
     calculate the scores
 
     Args:
-        y_true (Series): Ground true
-        y_pred (Series): predicted values
+        y_true (Series): Ground true.
+        y_pred (Series): predicted values.
+        place_holder (None): A placeholder corresponding to classification_scorer&#39;s pred argument.
 
     Returns:
         dict[str, float]: The result stored in a dict, be like {&#39;score_name&#39;: score}.
@@ -1218,6 +901,21 @@ if y_true and y_pred are all positive, then mape(mean absolute percentage error)
 
     return prefix_result</code></pre>
 </details>
+<div class="desc"><p>calculate the scores</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>y_true</code></strong> :&ensp;<code>Series</code></dt>
+<dd>Ground true.</dd>
+<dt><strong><code>y_pred</code></strong> :&ensp;<code>Series</code></dt>
+<dd>predicted values.</dd>
+<dt><strong><code>place_holder</code></strong> :&ensp;<code>None</code></dt>
+<dd>A placeholder corresponding to classification_scorer's pred argument.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dict[str, float]</code></dt>
+<dd>The result stored in a dict, be like {'score_name': score}.</dd>
+</dl></div>
 </dd>
 </dl>
 </dd>
@@ -1226,14 +924,6 @@ if y_true and y_pred are all positive, then mape(mean absolute percentage error)
 <span>(</span><span>kernel: object)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>A basic wrapper for sklearn_esitimator. It transfer the data pipeline of sklearn from numpy.array to pandas.DataFrame.
-<br>
-If you want to pass any model with api in sklearn style into Pine, you should wrap it in wrapper.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>kernel</code></strong> :&ensp;<code>object</code></dt>
-<dd>a sklearn esitimator. for example: sklearn.ensemble.RandomForestClassifier or sklearn.ensemble.RandomForestRegressor</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1306,27 +996,20 @@ If you want to pass any model with api in sklearn style into Pine, you should wr
                 &#34;{} do not have attribute &#39;predict_proba&#39;.&#34;.format(
                     self.kernel.__str__()))</code></pre>
 </details>
+<div class="desc"><p>A basic wrapper for sklearn_esitimator. It transfer the data pipeline of sklearn from numpy.array to pandas.DataFrame.
+<br>
+If you want to pass any model with api in sklearn style into Pine, you should wrap it in wrapper.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>kernel</code></strong> :&ensp;<code>object</code></dt>
+<dd>a sklearn esitimator. for example: sklearn.ensemble.RandomForestClassifier or sklearn.ensemble.RandomForestRegressor</dd>
+</dl></div>
 <h3>Methods</h3>
 <dl>
 <dt id="PineBioML.model.utils.sklearn_esitimator_wrapper.fit"><code class="name flex">
 <span>def <span class="ident">fit</span></span>(<span>self, x: pandas.core.frame.DataFrame, y: pandas.core.series.Series, retune=True) ‑> object</span>
 </code></dt>
 <dd>
-<div class="desc"><p>sklearn esitimator api: fit</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>x</code></strong> :&ensp;<code>DataFrame</code></dt>
-<dd>feature</dd>
-<dt><strong><code>y</code></strong> :&ensp;<code>Series</code></dt>
-<dd>label</dd>
-<dt><strong><code>retune</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>To retune the model or not. For sklearn_esitimator_wrapper, it is just a placeholder without acutual facility. Defaults to True.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>object</code></dt>
-<dd>A sklearn_esitimator within pandas data flow.</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1347,22 +1030,26 @@ If you want to pass any model with api in sklearn style into Pine, you should wr
     self.kernel.fit(x, y)
     return self</code></pre>
 </details>
+<div class="desc"><p>sklearn esitimator api: fit</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>DataFrame</code></dt>
+<dd>feature</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>Series</code></dt>
+<dd>label</dd>
+<dt><strong><code>retune</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>To retune the model or not. For sklearn_esitimator_wrapper, it is just a placeholder without acutual facility. Defaults to True.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>object</code></dt>
+<dd>A sklearn_esitimator within pandas data flow.</dd>
+</dl></div>
 </dd>
 <dt id="PineBioML.model.utils.sklearn_esitimator_wrapper.predict"><code class="name flex">
 <span>def <span class="ident">predict</span></span>(<span>self, x: pandas.core.frame.DataFrame) ‑> pandas.core.series.Series</span>
 </code></dt>
 <dd>
-<div class="desc"><p>sklearn esitimator api: predict</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>x</code></strong> :&ensp;<code>DataFrame</code></dt>
-<dd>feature</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>Series</code></dt>
-<dd>kernel prediction</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1382,27 +1069,22 @@ If you want to pass any model with api in sklearn style into Pine, you should wr
                   index=x.index,
                   name=self.label_name)</code></pre>
 </details>
-</dd>
-<dt id="PineBioML.model.utils.sklearn_esitimator_wrapper.predict_proba"><code class="name flex">
-<span>def <span class="ident">predict_proba</span></span>(<span>self, x: pandas.core.frame.DataFrame) ‑> pandas.core.frame.DataFrame</span>
-</code></dt>
-<dd>
-<div class="desc"><p>sklearn esitimator api: predict_proba for classification</p>
+<div class="desc"><p>sklearn esitimator api: predict</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>x</code></strong> :&ensp;<code>DataFrame</code></dt>
 <dd>feature</dd>
 </dl>
-<h2 id="raises">Raises</h2>
-<dl>
-<dt><code>NotImplementedError</code></dt>
-<dd>Regression has no attribute 'predict_proba'</dd>
-</dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><code>DataFrame</code></dt>
-<dd>predicted probability with shape (n_sample, n_class)</dd>
+<dt><code>Series</code></dt>
+<dd>kernel prediction</dd>
 </dl></div>
+</dd>
+<dt id="PineBioML.model.utils.sklearn_esitimator_wrapper.predict_proba"><code class="name flex">
+<span>def <span class="ident">predict_proba</span></span>(<span>self, x: pandas.core.frame.DataFrame) ‑> pandas.core.frame.DataFrame</span>
+</code></dt>
+<dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1429,6 +1111,22 @@ If you want to pass any model with api in sklearn style into Pine, you should wr
             &#34;{} do not have attribute &#39;predict_proba&#39;.&#34;.format(
                 self.kernel.__str__()))</code></pre>
 </details>
+<div class="desc"><p>sklearn esitimator api: predict_proba for classification</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>DataFrame</code></dt>
+<dd>feature</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>NotImplementedError</code></dt>
+<dd>Regression has no attribute 'predict_proba'</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>DataFrame</code></dt>
+<dd>predicted probability with shape (n_sample, n_class)</dd>
+</dl></div>
 </dd>
 </dl>
 </dd>
@@ -1436,7 +1134,6 @@ If you want to pass any model with api in sklearn style into Pine, you should wr
 </section>
 </article>
 <nav id="sidebar">
-<h1>Index</h1>
 <div class="toc">
 <ul></ul>
 </div>
@@ -1453,6 +1150,7 @@ If you want to pass any model with api in sklearn style into Pine, you should wr
 <ul class="">
 <li><code><a title="PineBioML.model.utils.Pine.do_experiment" href="#PineBioML.model.utils.Pine.do_experiment">do_experiment</a></code></li>
 <li><code><a title="PineBioML.model.utils.Pine.do_stage" href="#PineBioML.model.utils.Pine.do_stage">do_stage</a></code></li>
+<li><code><a title="PineBioML.model.utils.Pine.experiment_detail" href="#PineBioML.model.utils.Pine.experiment_detail">experiment_detail</a></code></li>
 <li><code><a title="PineBioML.model.utils.Pine.experiment_predictions" href="#PineBioML.model.utils.Pine.experiment_predictions">experiment_predictions</a></code></li>
 <li><code><a title="PineBioML.model.utils.Pine.experiment_results" href="#PineBioML.model.utils.Pine.experiment_results">experiment_results</a></code></li>
 <li><code><a title="PineBioML.model.utils.Pine.recall_model" href="#PineBioML.model.utils.Pine.recall_model">recall_model</a></code></li>
@@ -1484,7 +1182,7 @@ If you want to pass any model with api in sklearn style into Pine, you should wr
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
 </footer>
 </body>
 </html>

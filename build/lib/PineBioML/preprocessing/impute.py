@@ -18,8 +18,8 @@ class imputer():
 
         Args:
             threshold (float): float from (0, 1]. If missing value rate of a feature is higher than threshold, it will be deleted. Defaults to 0.333
-            center (bool, optional): _description_. Defaults to True.
-            scale (bool, optional): _description_. Defaults to True.
+            center (bool, optional): To centralize data or not. Defaults to True.
+            scale (bool, optional): To scale data or not. Defaults to True.
 
         Raises:
             ValueError: missing value threshold must be a float in (0, 1]
@@ -104,6 +104,14 @@ class imputer():
         self.fit(x, y)
         x = self.transform(x)
         return x
+
+    def report(self):
+        state = {
+            "total features": len(self.not_too_empty),
+            "drop features":
+            len(self.not_too_empty) - self.not_too_empty.sum()
+        }
+        return state
 
 
 class knn_imputer(imputer):

@@ -9,11 +9,11 @@ jupyter
 jupyterlab
 joblib
 optuna
-scikit-learn
-scikit-learn-intelex
+scikit-learn==1.6.1
+scikit-learn-intelex==2025.0.1
 umap-learn
 statsmodels
-xgboost
+xgboost==2.1.4
 lightgbm
 catboost
 pyarrow

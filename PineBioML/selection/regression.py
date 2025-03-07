@@ -531,11 +531,12 @@ class RF_selection(SelectionPipeline):
 
         self.kernel = RandomForestRegressor(n_estimators=trees,
                                             n_jobs=-1,
-                                            max_samples=0.75,
+                                            max_samples=0.7,
                                             criterion=strategy,
                                             verbose=0,
                                             ccp_alpha=1e-2,
-                                            random_state=142)
+                                            random_state=142,
+                                            min_samples_leaf=3)
         self.name = "RandomForest_" + self.strategy
 
     def reference(self) -> dict[str, str]:
@@ -816,7 +817,7 @@ class ensemble_selector(SelectionPipeline):
     def transform(self, x):
         z_scores = (self.selected_score - self.selected_score.mean()) / (
             self.selected_score.std() + 1e-4)
-        z_scores = z_scores.mean(axis=1).sort_values(ascending=False)
+        z_scores = z_scores.sum(axis=1).sort_values(ascending=False)
 
         if self.z_importance_threshold is None:
             return x[z_scores.index[:self.k]]

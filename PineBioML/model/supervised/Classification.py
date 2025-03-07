@@ -272,10 +272,15 @@ class RandomForest_tuner(Classification_tuner):
 
     def parms_range(self) -> dict:
         return {
-            "n_estimators": ('n_estimators', "int", 32, 1024),
-            'min_samples_leaf': ('min_samples_leaf', "int", 1, 32),
-            'ccp_alpha': ('ccp_alpha', "float", 1e-6, 1e-1),
+            "n_estimators": ('n_estimators', "int", 32, 512),
+            'min_samples_leaf':
+            ('min_samples_leaf', "int", 1, round(np.sqrt(self.n_sample) / 2)),
+            'ccp_alpha':
+            ('ccp_alpha', "float", 1e-1 / self.n_sample, 1e+2 / self.n_sample),
             'max_samples': ('max_samples', "float", 0.4, 0.8),
+            "max_depth":
+            ("max_depth", "int", round(np.log2(self.n_sample) / 2),
+             int(np.log2(self.n_sample)) + 2)
         }
 
     def create_model(self, trial, default=False, training=False):
@@ -414,7 +419,7 @@ class SVM_tuner(Classification_tuner):
     def parms_range(self) -> dict:
         # scaling penalty: https://scikit-learn.org/stable/auto_examples/svm/plot_svm_scale_c.html#sphx-glr-auto-examples-svm-plot-svm-scale-c-py
         return {
-            'C': ('C', "float", 1e-4 * np.sqrt(self.n_sample),
+            'C': ('C', "float", 1e-3 * np.sqrt(self.n_sample),
                   1e+2 * np.sqrt(self.n_sample))
         }
 
@@ -498,12 +503,16 @@ class XGBoost_tuner(Classification_tuner):
     def parms_range(self) -> dict:
         return {
             "n_estimators": ('n_estimators', "int", 4, 256),
-            "max_depth": ('max_depth', "int", 3, 14),
-            "gamma": ('gamma', "float", 1e-3, 1e-1),
-            "learning_rate": ('learning_rate', "float", 1e-2, 1.),
+            "max_depth":
+            ("max_depth", "int", round(np.log2(self.n_sample) / 2),
+             int(np.log2(self.n_sample)) + 2),
+            "gamma": ('gamma', "float", 1e-4, 1e-2),
+            "min_child_weight": ("min_child_weight", "float", 0.5,
+                                 int(np.sqrt(self.n_sample) / 2)),
+            "learning_rate": ('learning_rate', "float", 1e-1, 1.),
             "subsample": ('subsample', "float", 0.5, 1),
             "colsample_bytree": ('colsample_bytree', "float", 0.5, 1),
-            "reg_lambda": ('reg_lambda', "float", 1e-3, 1e+1),
+            "reg_lambda": ('reg_lambda', "float", 1e-3, 1),
             "reg_alpha": ('reg_alpha', "float", 1e-4, 1.)
         }
 
@@ -576,7 +585,7 @@ class LightGBM_tuner(Classification_tuner):
     """
 
     def __init__(self,
-                 n_try=75,
+                 n_try=50,
                  n_cv=5,
                  target="mcc",
                  kernel_seed=None,
@@ -626,12 +635,16 @@ class LightGBM_tuner(Classification_tuner):
     def parms_range(self) -> dict:
         return {
             "n_estimators": ('n_estimators', "int", 4, 256),
-            "max_depth": ('max_depth', "int", 3, 14),
-            "min_split_gain": ("min_split_gain", "float", 1e-3, 1e-1),
+            "max_depth":
+            ("max_depth", "int", round(np.log2(self.n_sample) / 2),
+             int(np.log2(self.n_sample)) + 2),
+            "min_child_samples":
+            ("min_child_samples", "int", 2, int(np.sqrt(self.n_sample) / 2)),
+            "min_split_gain": ("min_split_gain", "float", 1e-4, 1e-2),
             "learning_rate": ('learning_rate', "float", 1e-2, 1.),
             "subsample": ('subsample', "float", 0.5, 1.),
             "colsample_bytree": ('colsample_bytree', "float", 0.5, 1.),
-            "reg_lambda": ('reg_lambda', "float", 1e-3, 1e+1),
+            "reg_lambda": ('reg_lambda', "float", 1e-3, 1),
             "reg_alpha": ('reg_alpha', "float", 1e-4, 1.)
         }
 
@@ -825,10 +838,13 @@ class DecisionTree_tuner(Classification_tuner):
 
     def parms_range(self) -> dict:
         return {
-            "max_depth": ('max_depth', "int", 3, 16),
+            "max_depth":
+            ("max_depth", "int", round(np.log2(self.n_sample) / 2),
+             int(np.log2(self.n_sample)) + 2),
             "min_samples_split": ('min_samples_split', "int", 2, 32),
             "min_samples_leaf": ('min_samples_leaf', "int", 1, 16),
-            "ccp_alpha": ('ccp_alpha', "float", 1e-5, 1e-1),
+            'ccp_alpha':
+            ('ccp_alpha', "float", 1e-1 / self.n_sample, 1e+2 / self.n_sample),
         }
 
     def create_model(self, trial, default=False, training=False):
@@ -903,9 +919,11 @@ class CatBoost_tuner(Classification_tuner):
     def parms_range(self) -> dict:
         return {
             "n_estimators": ('n_estimators', "int", 4, 256),
-            "learning_rate": ('learning_rate', "float", 1e-2, 1.),
-            "max_depth": ('max_depth', "int", 3, 14),
-            "reg_lambda": ('reg_lambda', "float", 1e-3, 1e+1),
+            "learning_rate": ('learning_rate', "float", 1e-1, 1.),
+            "max_depth":
+            ("max_depth", "int", round(np.log2(self.n_sample) / 2),
+             int(np.log2(self.n_sample)) + 2),
+            "reg_lambda": ('reg_lambda', "float", 1e-3, 1.),
             "colsample_bylevel": ('colsample_bytree', "float", 0.5, 1.),
             "subsample": ('subsample', "float", 0.5, 1.)
         }

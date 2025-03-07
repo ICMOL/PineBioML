@@ -13,8 +13,6 @@ from sklearn.cross_decomposition import PLSRegression
 from sklearn.preprocessing import OneHotEncoder
 import sklearn.metrics as metrics
 
-from umap import UMAP
-
 
 class basic_plot(ABC):
     """
@@ -270,6 +268,8 @@ class pls_plot(basic_plot):
             OneHot_y = OneHotEncoder(sparse_output=False).fit_transform(
                 y.to_numpy().reshape(-1, 1))
             # fit pls regression
+            OneHot_y = (OneHot_y - OneHot_y.mean(
+                axis=0, keepdims=True)) / OneHot_y.std(axis=0, keepdims=True)
             pls = PLSRegression(n_components=2).fit(x, OneHot_y)
         else:
             if y.dtype == "O":
@@ -277,7 +277,8 @@ class pls_plot(basic_plot):
                     "the dtype of y can't be object while is_classification was setting to False, which means it is a regression task and y should be float or int."
                 )
             # fit pls regression
-            pls = PLSRegression(n_components=2).fit(x, y)
+            pls = PLSRegression(n_components=2).fit(x,
+                                                    (y - y.mean()) / y.std())
 
         # project x
         plscs = pls.transform(x)
@@ -388,6 +389,7 @@ class umap_plot(basic_plot):
             x (pd.DataFrame): feature    
             y (pd.Series, optional): label. Defaults to None.    
         """
+        from umap import UMAP
 
         # fit a umap for x, you can change n_neighbors to any other feasible value.
         umapcs = UMAP(n_neighbors=round(np.log2(x.shape[0])),
@@ -577,10 +579,11 @@ class roc_plot(basic_plot):
 
         # ROC curve
         if len(y_true.value_counts()) <= 2:
+            if self.pos_label is None:
+                self.pos_label = y_true.iloc[0]
             # binary ROC curve
-            fpr, tpr, threshold = metrics.roc_curve(y_true,
-                                                    y_pred_prob.iloc[:, 1],
-                                                    pos_label=self.pos_label)
+            fpr, tpr, threshold = metrics.roc_curve(
+                y_true, y_pred_prob[self.pos_label], pos_label=self.pos_label)
             roc_auc = metrics.auc(fpr, tpr)
             plt.plot(fpr, tpr, 'b', label='AUC = %0.3f' % roc_auc)
             plt.title(self.prefix + 'ROC curve')
@@ -699,18 +702,39 @@ def classification_summary(y_true,
         3. support to regression
     """
     y_pred = y_pred_prob.idxmax(axis=1)
-    print("\n", prefix)
-    print(metrics.classification_report(y_true, y_pred))
+    #print("\n", prefix)
+    #print(metrics.classification_report(y_true, y_pred))
+
+    report = metrics.classification_report(y_true, y_pred, output_dict=True)
+    acc = report.pop("accuracy")
+    report = pd.DataFrame(report).T
+    report.loc["accuracy"] = [" ", " ", acc, y_true.count()]
 
     if not target_label is None:
         # binary classification
-        confusion_scores = metrics.classification_report(
-            y_true == target_label, y_pred == target_label, output_dict=True)
-        sensitivity = confusion_scores["True"]["recall"]
-        specificity = confusion_scores["False"]["recall"]
+        prf1 = metrics.classification_report(y_true == target_label,
+                                             y_pred == target_label,
+                                             output_dict=True)
 
-        print("sensitivity: {:.3f}".format(sensitivity))
-        print("specificity: {:.3f}".format(specificity))
+        report.loc["sensitivity"] = [
+            " ", " ", prf1["True"]["recall"], prf1["True"]["support"]
+        ]
+        report.loc["specificity"] = [
+            " ", " ", prf1["False"]["recall"], prf1["True"]["support"]
+        ]
+
+        #print("sensitivity: {:.3f}".format(sensitivity))
+        #print("specificity: {:.3f}".format(specificity))
+
+    # insert an empty row to split
+    tmp = report.loc[y_pred_prob.columns.astype(str)]
+    tmp.loc["   "] = [" ", " ", " ", " "]
+    report = pd.concat([tmp, report.drop(y_pred_prob.columns.astype(str))],
+                       axis=0)
+
+    print(report)
+    if save_fig:
+        report.to_csv(save_path + "{} scores.csv".format(prefix))
 
     # confusion matrix
     confusion_matrix_plot(prefix=prefix,
@@ -746,19 +770,24 @@ def regression_summary(y_true: pd.Series,
         save_fig (bool, optional): To export the figure or not. Defaults to True.
         show_fig (bool, optional): To show the figure before export or not. Defaults to True.
     """
-    residual = y_true - y_pred
+
+    scores = pd.Series(
+        {
+            "rmse": metrics.root_mean_squared_error(y_true, y_pred),
+            "r2": metrics.r2_score(y_true, y_pred),
+            "mae": metrics.mean_absolute_error(y_true, y_pred),
+        },
+        name="performance")
+    if (y_true > 0).all():
+        scores["mape"] = metrics.mean_absolute_percentage_error(y_true, y_pred)
+    scores["support"] = len(y_true)
 
     print("\n", prefix, " performance:")
-    print("    r2     : {:.3f}".format(
-        metrics.root_mean_squared_error(y_true, y_pred)))
-    print("    rmse   : {:.3f}".format(metrics.r2_score(y_true, y_pred)))
-    print("    mae    : {:.3f}".format(
-        metrics.mean_absolute_error(y_true, y_pred)))
-    if (y_true > 0).all():
-        print("    mape   : {:.3f}".format(
-            metrics.mean_absolute_percentage_error(y_true, y_pred)))
-    print("    support: {:.3f}".format(len(y_true)))
+    print(scores)
+    if save_fig:
+        scores.to_csv(save_path + "{} scores.csv".format(prefix))
 
+    residual = y_true - y_pred
     if not x is None:
         pca_plot(n_pc=2,
                  discrete_legend=False,

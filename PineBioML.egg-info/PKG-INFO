@@ -1,6 +1,6 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.2
 Name: PineBioML
-Version: 1.2.2
+Version: 1.2.4
 Summary: PineBioML is a easy use ML toolkit.
 Home-page: https://github.com/ICMOL/PineBioML
 Classifier: Programming Language :: Python :: 3
@@ -9,6 +9,33 @@ Classifier: Operating System :: OS Independent
 Requires-Python: >=3.6.0
 Description-Content-Type: text/markdown
 License-File: LICENSE
+Requires-Dist: numpy
+Requires-Dist: pandas
+Requires-Dist: openpyxl
+Requires-Dist: xlrd
+Requires-Dist: tqdm
+Requires-Dist: seaborn
+Requires-Dist: plotly
+Requires-Dist: jupyter
+Requires-Dist: jupyterlab
+Requires-Dist: joblib
+Requires-Dist: optuna
+Requires-Dist: scikit-learn==1.6.1
+Requires-Dist: scikit-learn-intelex==2025.0.1
+Requires-Dist: umap-learn
+Requires-Dist: statsmodels
+Requires-Dist: xgboost==2.1.4
+Requires-Dist: lightgbm
+Requires-Dist: catboost
+Requires-Dist: pyarrow
+Requires-Dist: gprofiler-official
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
 
 # Overview
 This package aims to help analysising biomedical data using ML method in python.    
