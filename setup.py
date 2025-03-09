@@ -34,7 +34,7 @@ if __name__ == "__main__":
           ])
     # to publish
     # requirement: setuptools twine wheel
-    # remove early version in dist/*
+    # (remove early version in dist/*)
     #
     # python setup.py sdist bdist_wheel
     # python -m twine check dist/*

@@ -1,3 +1,8 @@
+2024/3/9 v1.2.5:
+    description:
+        1. rollback: threshold picking for binary classification.
+
+
 2024/3/5 v1.2.4:
     description:
         1. change the backend of Lasso_selection from LassoRegression to LassoLars. there is still some numerical issue when penalty is low. 

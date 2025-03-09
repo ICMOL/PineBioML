@@ -305,8 +305,12 @@ class Basic_tuner(ABC):
                 else:
                     cv_thresholds[i] = self.thresholds[trial.number]
 
-                fitted_clr = Binary_threshold_wrapper(fitted_clr,
-                                                      cv_thresholds[i])
+                if not default:
+                    fitted_clr = Binary_threshold_wrapper(
+                        fitted_clr, cv_thresholds[i])
+                else:
+                    fitted_clr = Binary_threshold_wrapper(fitted_clr, 0.5)
+
             # evaluate on testing fold
             test_score = self.metric(fitted_clr, x_test, y_test)
             train_score = self.metric(fitted_clr, x_train, y_train)
@@ -317,9 +321,10 @@ class Basic_tuner(ABC):
                 score[i] = test_score
 
         # averaging over cv
-        self.thresholds[trial.number] = cv_thresholds.sum() / self.n_cv
-        self.stop_points[trial.number] = round(cv_stoppoint.sum() /
-                                               (self.n_cv - 1))
+        if training:
+            self.thresholds[trial.number] = cv_thresholds.sum() / self.n_cv
+            self.stop_points[trial.number] = round(cv_stoppoint.sum() /
+                                                   (self.n_cv - 1))
         return score.mean()
 
     def tune(self, x, y) -> None:
