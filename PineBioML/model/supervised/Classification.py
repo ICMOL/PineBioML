@@ -302,7 +302,7 @@ class RandomForest_tuner(Classification_tuner):
         rf = RandomForestClassifier(**parms)
         return rf
 
-    def evaluate(self, trial, default=False, training=False):
+    def evaluate(self, trial, default=None, training=None):
         """
         RF needs oob and we have it.
         
@@ -312,6 +312,10 @@ class RandomForest_tuner(Classification_tuner):
         Returns :
             float: The score.
         """
+        if default is None:
+            default = self.default
+        if training is None:
+            training = self.training
         classifier_obj = self.create_model(trial, default)
 
         if self.using_oob:
@@ -327,26 +331,35 @@ class RandomForest_tuner(Classification_tuner):
             y_prob = classifier_obj.oob_decision_function_
 
             # tune a threshold via roc for Binary classification
-            if self.is_binary and not self.is_regression():
-                fpr, tpr, thr = roc_curve(self.y, y_prob[:, 1])
-                self.thresholds[trial.number] = thr[abs(tpr - fpr).argmax()]
-
-            if self.metric_name == "roc_auc":
-                # roc_auc can only be used on binary classification. Do not try ovr, ovo. forget them.
-                y_prob = y_prob[:, 1]
+            """
+            if self.is_binary:
+                if training:
+                    fpr, tpr, thr = roc_curve(self.y, y_prob[:, 1])
+                    self.thresholds[trial.number] = thr[abs(tpr -
+                                                            fpr).argmax()]
+            """
 
             # oob score
             ### manual scorer wraper.
             if self.metric_using_proba:
+                if self.metric_name == "roc_auc":
+                    # roc_auc can only be used on binary classification. Do not try ovr, ovo. forget them.
+                    y_prob = y_prob[:, 1]
                 score = self.metric._score_func(self.y, y_prob,
                                                 **self.scorer_kargs)
             else:
                 # revert to class symbols.
-                if self.is_binary and not self.is_regression():
-                    y_pred = classifier_obj.classes_[np.where(
-                        y_prob[:, 1] > self.thresholds[-1], 1, 0)]
+                """
+                if self.is_binary:
+                    if default:
+                        t = 0.5
+                    else:
+                        t = self.thresholds[trial.number]
+                    y_pred = classifier_obj.classes_[(y_prob[:, 1]
+                                                      > t).astype(np.int16)]
                 else:
-                    y_pred = classifier_obj.classes_[y_prob.argmax(axis=-1)]
+                """
+                y_pred = classifier_obj.classes_[y_prob.argmax(axis=-1)]
                 score = self.metric._score_func(self.y, y_pred,
                                                 **self.scorer_kargs)
             if not self.metric_great_better:
@@ -354,7 +367,9 @@ class RandomForest_tuner(Classification_tuner):
                 score *= -1
         else:
             with parallel_config(backend='loky'):
-                score = super().evaluate(trial=trial, default=default)
+                score = super().evaluate(trial=trial,
+                                         default=default,
+                                         training=training)
         return score
 
 
@@ -942,7 +957,7 @@ class CatBoost_tuner(Classification_tuner):
         cat = CatBoostClassifier(**parms)
         return cat
 
-    def evaluate(self, trial, default=False, training=True):
+    def evaluate(self, trial, default=None, training=None):
         """
         To evaluate the score of this trial. you should call create_model instead of creating model manually in this function.    
         catboost need to be used with pool.
@@ -953,6 +968,10 @@ class CatBoost_tuner(Classification_tuner):
         Returns :
             float: The score.
         """
+        if default is None:
+            default = self.default
+        if training is None:
+            training = self.training
         classifier_obj = self.create_model(trial, default)
 
         cv = StratifiedKFold(n_splits=self.n_cv,
@@ -962,7 +981,7 @@ class CatBoost_tuner(Classification_tuner):
         # do cv
         score = np.zeros(self.n_cv)
         # thresholds not None only if  self.is_binary and not self.is_regression
-        cv_thresholds = np.zeros(self.n_cv)
+        #cv_thresholds = np.zeros(self.n_cv)
         cv_stoppoint = np.zeros(self.n_cv)
         for i, (train_ind, test_ind) in enumerate(cv.split(self.x, self.y)):
             x_train = self.x.iloc[train_ind]
@@ -998,7 +1017,7 @@ class CatBoost_tuner(Classification_tuner):
                 score[i] = test_score
 
         # averaging over cv
-        self.thresholds[trial.number] = cv_thresholds.sum() / self.n_cv
+        #self.thresholds[trial.number] = cv_thresholds.sum() / self.n_cv
         self.stop_points[trial.number] = round(cv_stoppoint.sum() /
                                                (self.n_cv - 1))
 
