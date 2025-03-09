@@ -15,8 +15,7 @@ from sklearn.exceptions import ConvergenceWarning
 
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 ConvergenceWarning('ignore')
-
-
+"""
 class Binary_threshold_wrapper(ClassifierMixin):
 
     def __init__(self, kernel, threshold):
@@ -29,10 +28,11 @@ class Binary_threshold_wrapper(ClassifierMixin):
 
     def predict(self, x):
         decision = self.kernel.predict_proba(x)[:, 1] > self.threshold
-        return where(decision, 1, 0)
+        return decision.astype(int)
 
     def predict_proba(self, x):
         return self.kernel.predict_proba(x)
+"""
 
 
 class Basic_tuner(ABC):
@@ -81,6 +81,8 @@ class Basic_tuner(ABC):
         self.n_cv = n_cv
         self.n_try = n_try
         self.n_sample = 1
+        self.default = False
+        self.training = True
 
         # initialize the random seeds
         if kernel_seed is None:
@@ -115,9 +117,9 @@ class Basic_tuner(ABC):
         # the better one of self.default_model or self.optuna_model
         self.best_model = None
         # the thresholds for binary classification along optuna tuning
-        self.thresholds = zeros(self.n_try)
+        #self.thresholds = zeros(self.n_try) + 0.5
         # the threshold coresponding to the best optuna trial
-        self.best_threshold = 0.5
+        #self.best_threshold = 0.5
         # the stopping point of early stopping for Boosting methods.
         self.stop_points = zeros(self.n_try, dtype=int)
 
@@ -246,7 +248,7 @@ class Basic_tuner(ABC):
         """
         pass
 
-    def evaluate(self, trial, default=False, training=True) -> float:
+    def evaluate(self, trial, default=None, training=None) -> float:
         """
         To evaluate the score of this trial. you should call create_model instead of creating model manually in this function.
         
@@ -257,6 +259,11 @@ class Basic_tuner(ABC):
         Returns :
             float: The score. Decided by optimization target.
         """
+        if default is None:
+            default = self.default
+        if training is None:
+            training = self.training
+
         # create the model using from this trial
         classifier_obj = self.create_model(trial, default, training=True)
 
@@ -268,7 +275,7 @@ class Basic_tuner(ABC):
         # do cv
         score = zeros(self.n_cv)
         # thresholds not None only if  self.is_binary and not self.is_regression
-        cv_thresholds = zeros(self.n_cv)
+        cv_thresholds = zeros(self.n_cv) + 0.5
         cv_stoppoint = zeros(self.n_cv)
         for i, (train_ind, test_ind) in enumerate(cv.split(self.x, self.y)):
             # train test split
@@ -295,21 +302,23 @@ class Basic_tuner(ABC):
                 cv_stoppoint[i] = self.clr_best_iteration(fitted_clr)
 
             # tune a threshold via roc for Binary classification
+            """
             if self.is_binary and not self.is_regression():
-                y_prob = fitted_clr.predict_proba(x_test)[:, 1]
-
                 if training:
-                    fpr, tpr, thr = metrics.roc_curve(y_test, y_prob)
+                    fpr, tpr, thr = metrics.roc_curve(
+                        y_test,
+                        fitted_clr.predict_proba(x_test)[:, 1])
                     ### TODO: flexible threshold picker for various metrics.
                     cv_thresholds[i] = thr[abs(tpr - fpr).argmax()]
                 else:
                     cv_thresholds[i] = self.thresholds[trial.number]
-
+                # wrap the classifier before calculate scores
                 if not default:
                     fitted_clr = Binary_threshold_wrapper(
                         fitted_clr, cv_thresholds[i])
                 else:
                     fitted_clr = Binary_threshold_wrapper(fitted_clr, 0.5)
+            """
 
             # evaluate on testing fold
             test_score = self.metric(fitted_clr, x_test, y_test)
@@ -322,7 +331,7 @@ class Basic_tuner(ABC):
 
         # averaging over cv
         if training:
-            self.thresholds[trial.number] = cv_thresholds.sum() / self.n_cv
+            #self.thresholds[trial.number] = cv_thresholds.sum() / self.n_cv
             self.stop_points[trial.number] = round(cv_stoppoint.sum() /
                                                    (self.n_cv - 1))
         return score.mean()
@@ -355,6 +364,8 @@ class Basic_tuner(ABC):
             .format(self=self))
         print("    {} start tuning. it will take a while.".format(self.name()))
         # using optuna tuning hyper parameter
+        self.training = True
+        self.default = False
         self.study.optimize(self.evaluate,
                             n_trials=self.n_try,
                             show_progress_bar=False)
@@ -381,11 +392,12 @@ class Basic_tuner(ABC):
             print("    optuna is better, best trial: ",
                   self.study.best_trial.number)
             self.best_model = self.optuna_model
-
+            """
             # threshold tuner for binary classification
             if self.is_binary and not self.is_regression():
                 self.best_threshold = self.thresholds[
                     self.study.best_trial.number]
+            """
 
         # release the datas
         self.x = None
@@ -433,12 +445,13 @@ class Basic_tuner(ABC):
             1D-array: prediction
         """
         # using the model.
+        """
         if self.is_binary and not self.is_regression():
-            y_pred = where(
-                self.best_model.predict_proba(x)[:, 1] > self.best_threshold,
-                1, 0)
+            y_pred = (self.best_model.predict_proba(x)[:, 1]
+                      > self.best_threshold).astype(int)
         else:
-            y_pred = self.best_model.predict(x)
+        """
+        y_pred = self.best_model.predict(x)
 
         # label decoding
         if not self.is_regression():

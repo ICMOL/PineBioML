@@ -285,7 +285,9 @@ class RandomForest_tuner(Regression_tuner):
                 score *= -1
         else:
             with parallel_config(backend='loky'):
-                score = super().evaluate(trial=trial, default=default)
+                score = super().evaluate(trial=trial,
+                                         default=default,
+                                         training=training)
         return score
 
 
