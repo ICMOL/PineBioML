@@ -23,7 +23,7 @@ if __name__ == "__main__":
           url="https://github.com/ICMOL/PineBioML",
           packages=find_packages(),
           install_requires=parse_requirements("requirements.txt"),
-          python_requires=">=3.6.0",
+          python_requires=">=3.9, <3.12",
           description="PineBioML is a easy use ML toolkit.",
           long_description=long_description,
           long_description_content_type="text/markdown",

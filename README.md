@@ -4,7 +4,7 @@ This package aims to help analysising biomedical data using ML method in python.
 ![image](./documents/images/workflow/PineBioML_workflow_v3.png) 
 
 # System requirements
-Python 3.10+
+Python 3.9, 3.10, 3.11
 
 # Installation
 PineBioML is available on PyPI. You can access it through:
