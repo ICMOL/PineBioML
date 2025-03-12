@@ -4,7 +4,7 @@ In today’s data-driven world, making informed decisions requires more than jus
 ![image](./documents/images/workflow/PineBioML_workflow_v3.png) 
 
 # System requirements
-Python 3.10 or above
+Python 3.9, 3.10, 3.11
 
 # Installation
 PineBioML is available on PyPI. You can access it through:
