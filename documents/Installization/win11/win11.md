@@ -7,13 +7,14 @@ Open Microsoft Store.
  Search for Python and choose a Python version >=3.9 . I recommand to use python 3.11 .
 ![image](./python_version.png)
 
-Click on get.
+Click on "Get".
 ![image](./python311.png)
 
 Then Python will be installed on your PC.    
 
 ### Step 2. Install PineBioML
 Open powershell.
+
 ![image](./open_powershell.png)
 
 It's how powershell looks like. Some versions are blue and that is ok.
