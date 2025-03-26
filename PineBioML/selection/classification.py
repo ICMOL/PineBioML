@@ -47,7 +47,6 @@ class Lasso_selection(SelectionPipeline):
         self.name = "LassoLars"
 
         self.important_path = None
-        self.result = []
 
     def reference(self) -> dict[str, str]:
         """
@@ -122,6 +121,7 @@ class Lasso_selection(SelectionPipeline):
             ### TODO: Multinomial classfication for Lars.
             task_set = range(y_train.shape[1])
 
+        result = []
         for i in task_set:
             y = y_train[:, i]
             y = (y - y.mean()) / y.std()
@@ -131,14 +131,15 @@ class Lasso_selection(SelectionPipeline):
             alpha = kernel.alphas_
             col = kernel.feature_names_in_
 
-            self.result.append(pd.DataFrame(coef, columns=col, index=alpha))
+            result.append(pd.DataFrame(coef, columns=col, index=alpha))
 
         coef_sur_time = []
-        for s in self.result:
+        for s in result:
             tmp = (s != 0).idxmax(axis=0).replace(s.index[0], 0)**2
             tmp = tmp / tmp.max()
             coef_sur_time.append(tmp)
 
+        self.result = result
         self.scores = np.sqrt(sum(coef_sur_time)).sort_values(ascending=False)
         self.scores.name = self.name
         return self.scores.copy()

@@ -36,7 +36,7 @@ Enter this command to install PineBioML, it will take about 10 minutes. You can 
 ![image](./terminal_install_PineBioML.png)
 
 ### Step 3. Download PineBioML examples
-Download the examples.zip from [here](https://github.com/ICMOL/PineBioML/releases/tag/v1.2.2) and unzip.
+Download the examples.zip from [here](https://github.com/ICMOL/PineBioML/releases/download/v1.2.4/examples124.zip) and unzip.
 
 ![image](./example.png)
 

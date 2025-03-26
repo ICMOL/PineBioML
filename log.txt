@@ -1,3 +1,7 @@
+v1.2.6:
+    fixed:
+        Lasso_selection's result didn't reset when it was reused.
+
 2024/3/9 v1.2.5:
     description:
         1. rollback: threshold picking for binary classification.
