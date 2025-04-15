@@ -14,10 +14,7 @@ from joblib import Parallel, parallel_config, delayed
 from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.linear_model import Lasso, LassoLars, LogisticRegression
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.svm import LinearSVC
-import xgboost as xgb
-import lightgbm as lgbm
 
 
 class Lasso_selection(SelectionPipeline):
@@ -47,7 +44,6 @@ class Lasso_selection(SelectionPipeline):
         self.name = "LassoLars"
 
         self.important_path = None
-        self.result = []
 
     def reference(self) -> dict[str, str]:
         """
@@ -122,6 +118,7 @@ class Lasso_selection(SelectionPipeline):
             ### TODO: Multinomial classfication for Lars.
             task_set = range(y_train.shape[1])
 
+        result = []
         for i in task_set:
             y = y_train[:, i]
             y = (y - y.mean()) / y.std()
@@ -131,15 +128,19 @@ class Lasso_selection(SelectionPipeline):
             alpha = kernel.alphas_
             col = kernel.feature_names_in_
 
-            self.result.append(pd.DataFrame(coef, columns=col, index=alpha))
+            result.append(pd.DataFrame(coef, columns=col, index=alpha))
 
-        coef_sur_time = []
-        for s in self.result:
+        var_dropout_alpha = []
+        for s in result:
             tmp = (s != 0).idxmax(axis=0).replace(s.index[0], 0)**2
-            tmp = tmp / tmp.max()
-            coef_sur_time.append(tmp)
 
-        self.scores = np.sqrt(sum(coef_sur_time)).sort_values(ascending=False)
+            # max normalize along sample axis for each output.
+            tmp = tmp / tmp.max()
+            var_dropout_alpha.append(tmp)
+
+        self.result = result
+        self.scores = np.sqrt(
+            sum(var_dropout_alpha)).sort_values(ascending=False)
         self.scores.name = self.name
         return self.scores.copy()
 
@@ -156,11 +157,14 @@ class Lasso_selection(SelectionPipeline):
 
         global_selected = self.selected_score.index
         for i_th in range(len(self.result)):
-            s = self.result[i_th]
+            s = self.result[-i_th - 1]
 
-            lifetime = (s != 0).sum(axis=0)
-            alive_col = s.columns[lifetime > 0]
-            active_col = lifetime.sort_values().tail(5).index
+            # get the features ever alive.
+            alive_col = s.columns[(s != 0).any(axis=0)]
+
+            # show the label of the top-5 long-lived features
+            noting_col = (s != 0).idxmax(axis=0).replace(
+                s.index[0], 0).sort_values().tail(5).index
 
             plt_cmap = plt.get_cmap("Blues")
             plt_norm = plt.Normalize(vmin=0, vmax=s.index[1])
@@ -172,7 +176,7 @@ class Lasso_selection(SelectionPipeline):
                     alpha=var_coef.index,
                     coef=var_coef.values,
                     global_selected=col in global_selected,
-                    coef_name=col if col in active_col else None,
+                    coef_name=col if col in noting_col else None,
                     cmap=plt_cmap,
                     norm=plt_norm,
                 )
@@ -341,7 +345,7 @@ class Lasso_bisection_selection(SelectionPipeline):
             self.sample_weights = np.ones_like(y_train)
 
         if self.k == -1:
-            self.k = round(np.sqrt(x.shape[0]) * 2)
+            self.k = min(x.shape[0], x.shape[1]) // 2
 
         y_train = OneHotEncoder(sparse_output=False).fit_transform(
             y_train.to_numpy().reshape(-1, 1))
@@ -438,7 +442,7 @@ class multi_Lasso_selection(SelectionPipeline):
         """
         result = []
         if self.k == -1:
-            self.k = round(np.sqrt(x.shape[0]) * 2)
+            self.k = min(x.shape[0], x.shape[1]) // 2
         batch_size = self.k // n + 1
 
         for i in range(n):
@@ -624,13 +628,14 @@ class RF_selection(SelectionPipeline):
 
     """
 
-    def __init__(self, k, trees=1024, unbalanced=True, strategy="gini"):
+    def __init__(self, k, unbalanced=True, strategy="gini"):
         """
         Args:
             trees (int, optional): Number of trees. Defaults to 1024*16.
             strategy (str, optional): Scoring strategy, one of {"gini", "entropy"}. Defaults to "gini".
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to True.
         """
+        from sklearn.ensemble import RandomForestClassifier
         super().__init__(k=k)
         self.strategy = strategy
         if unbalanced:
@@ -638,16 +643,15 @@ class RF_selection(SelectionPipeline):
         else:
             class_weight = None
 
-        with parallel_config(backend='loky'):
-            self.kernel = RandomForestClassifier(n_estimators=trees,
-                                                 n_jobs=-1,
-                                                 max_samples=0.7,
-                                                 class_weight=class_weight,
-                                                 criterion=strategy,
-                                                 verbose=0,
-                                                 ccp_alpha=1e-2,
-                                                 random_state=142,
-                                                 min_samples_leaf=3)
+        self.kernel = RandomForestClassifier(n_estimators=100,
+                                             n_jobs=-1,
+                                             max_samples=0.7,
+                                             class_weight=class_weight,
+                                             criterion=strategy,
+                                             verbose=0,
+                                             random_state=142,
+                                             min_samples_leaf=3)
+
         self.name = "RandomForest_" + self.strategy
 
     def reference(self) -> dict[str, str]:
@@ -682,6 +686,7 @@ class RF_selection(SelectionPipeline):
         Returns:
             pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
         """
+        self.kernel.n_estimators = round(np.sqrt(x.shape[1]) * 5)
         with parallel_config(backend='loky'):
             self.kernel.fit(x, y)
         score = self.kernel.feature_importances_
@@ -705,7 +710,9 @@ class XGboost_selection(SelectionPipeline):
         super().__init__(k=k)
         self.unbalanced = unbalanced
 
-        self.kernel = xgb.XGBClassifier(random_state=142, subsample=0.7)
+        from xgboost import XGBClassifier
+
+        self.kernel = XGBClassifier(random_state=142, subsample=0.7)
         self.name = "XGboost"
 
     def reference(self) -> dict[str, str]:
@@ -761,12 +768,13 @@ class Lightgbm_selection(SelectionPipeline):
         """
         super().__init__(k=k)
         self.unbalanced = unbalanced
+        from lightgbm import LGBMClassifier
 
-        self.kernel = lgbm.LGBMClassifier(learning_rate=0.01,
-                                          random_state=142,
-                                          subsample=0.7,
-                                          subsample_freq=1,
-                                          verbosity=-1)
+        self.kernel = LGBMClassifier(learning_rate=0.01,
+                                     random_state=142,
+                                     subsample=0.7,
+                                     subsample_freq=1,
+                                     verbosity=-1)
         self.name = "Lightgbm"
 
     def reference(self) -> dict[str, str]:
@@ -820,6 +828,7 @@ class AdaBoost_selection(SelectionPipeline):
             learning_rate (float, optional): boosting learning rate. Defaults to 0.01.
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
         """
+        from sklearn.ensemble import AdaBoostClassifier
         super().__init__(k=k)
         self.unbalanced = unbalanced
         self.kernel = AdaBoostClassifier(
@@ -877,10 +886,7 @@ class ensemble_selector(SelectionPipeline):
            else top k feature with averaging score will be selected.    
     """
 
-    def __init__(self,
-                 k=-1,
-                 RF_trees=1024,
-                 z_importance_threshold: int = None):
+    def __init__(self, k=-1, z_importance_threshold: int = None):
         """
 
         Args:
@@ -896,7 +902,7 @@ class ensemble_selector(SelectionPipeline):
 
         self.kernels = {
             "c45": DT_selection(k=k, strategy="c45"),
-            "RF_gini": RF_selection(k=k, strategy="gini", trees=RF_trees),
+            "RF_gini": RF_selection(k=k, strategy="gini"),
             "Lasso": Lasso_selection(k=k),
             "multi_Lasso": multi_Lasso_selection(k=k),
             "SVM": SVM_selection(k=k),
@@ -959,7 +965,11 @@ class ensemble_selector(SelectionPipeline):
     def transform(self, x):
         z_scores = (self.selected_score - self.selected_score.mean()) / (
             self.selected_score.std() + 1e-4)
-        z_scores = z_scores.sum(axis=1).sort_values(ascending=False)
+
+        scores = z_scores.sum(axis=1)
+
+        z_scores = (scores - scores.mean()) / (scores.std() + 1e-4)
+        z_scores = z_scores.sort_values(ascending=False)
 
         if self.z_importance_threshold is None:
             return x[z_scores.index[:self.k]]

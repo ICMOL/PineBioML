@@ -22,15 +22,23 @@ https://www.jeffchiou.com/blog/hyperparameter-optimization-optuna/
 
 imbalanced learn:
 https://imbalanced-learn.org/stable/user_guide.html
+ - label y imbalanced => imbalanced
 
 fairlearn(*):
 https://fairlearn.org/v0.10/user_guide/index.html
+ - subgroup of x has a imbalanced performance => imbalanced. The fairness-learning originates from social sciences.
+        KuangYi: The judgment might be very subjective. It is natural that different group has different learning difficaulty.
 
 Boruta-shap(*):
 https://github.com/Ekeany/Boruta-Shap
 
 smart pls
 https://www.smartpls.com/
+
+pandas read_excel:
+https://pandas.pydata.org/docs/reference/api/pandas.read_excel.html
+ - that requires openpyxl, xlrd, pyxlsb, calamine
+
 
 #########################################################
 ### plots
@@ -68,7 +76,12 @@ https://pycaret.org/
 
 JADBio
 https://support.jadbio.com/
- - AWS platform
+ - for bio
+ - cloud service using AWS platform
+
+Galaxy Machine Learning
+ - for bio
+https://galaxyproject.org/community/machine-learning/
 
 tsai
 https://timeseriesai.github.io/tsai/
@@ -80,15 +93,25 @@ https://pychemauth.readthedocs.io/en/latest/index.html
 
 awesome-automl
 https://github.com/windmaple/awesome-AutoML
+ - review
+
+pytabkit
+https://github.com/dholzmueller/pytabkit
+ - auto ml for tabular data
+
+AutoScore
+https://github.com/nliulab/AutoScore
+ - to automate the development of interpretable clinical scoring models.
 
 
 ##########################################################
 ### commands
 ##########################################################
-
+ - to generate the documents
 # pdoc3
-> pdoc --html --output-dir ./documents/API PineBioML
+> pdoc3 --html --output-dir ./documents/API PineBioML
 
+ - to push version onto pipy
 # to publish
 requirement: setuptools twine wheel
   (remove early version in dist/*)

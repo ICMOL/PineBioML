@@ -196,6 +196,8 @@ array([[ 8,  6,  9,  7], # random
         self.n_cv = n_cv
         self.n_try = n_try
         self.n_sample = 1
+        self.default = False
+        self.training = True
 
         # initialize the random seeds
         if kernel_seed is None:
@@ -230,9 +232,9 @@ array([[ 8,  6,  9,  7], # random
         # the better one of self.default_model or self.optuna_model
         self.best_model = None
         # the thresholds for binary classification along optuna tuning
-        self.thresholds = zeros(self.n_try)
+        #self.thresholds = zeros(self.n_try) + 0.5
         # the threshold coresponding to the best optuna trial
-        self.best_threshold = 0.5
+        #self.best_threshold = 0.5
         # the stopping point of early stopping for Boosting methods.
         self.stop_points = zeros(self.n_try, dtype=int)
 
@@ -290,26 +292,29 @@ array([[ 8,  6,  9,  7], # random
 
     def parms_range_sparser(self, trial, search_setting):
         parameter_name, parameter_dtype, lower_bound, upper_bound = search_setting
-        log = lower_bound &gt; 0 and upper_bound / lower_bound &gt; 10
+        param = None
 
-        if parameter_dtype == &#34;float&#34;:
-            param = trial.suggest_float(parameter_name,
-                                        lower_bound,
-                                        upper_bound,
-                                        log=log)
-        elif parameter_dtype == &#34;int&#34;:
-            param = trial.suggest_int(parameter_name,
-                                      lower_bound,
-                                      upper_bound,
-                                      log=log)
-        elif parameter_dtype == &#34;bool&#34;:
-            param = trial.suggest_categorical(parameter_name,
-                                              [lower_bound, upper_bound])
-        elif parameter_dtype == &#34;category&#34;:
-            param = trial.suggest_categorical(parameter_name, lower_bound)
+        if parameter_dtype in [&#34;float&#34;, &#34;int&#34;]:
+            log = lower_bound &gt; 0 and upper_bound / lower_bound &gt; 10
+            if parameter_dtype == &#34;float&#34;:
+                param = trial.suggest_float(parameter_name,
+                                            lower_bound,
+                                            upper_bound,
+                                            log=log)
+            elif parameter_dtype == &#34;int&#34;:
+                param = trial.suggest_int(parameter_name,
+                                          lower_bound,
+                                          upper_bound,
+                                          log=log)
         else:
+            if parameter_dtype == &#34;bool&#34;:
+                param = trial.suggest_categorical(parameter_name,
+                                                  [lower_bound, upper_bound])
+            elif parameter_dtype == &#34;category&#34;:
+                param = trial.suggest_categorical(parameter_name, lower_bound)
+        if param is None:
             raise ValueError(
-                &#34;parameter type not support, receaive parameter_dtype {}, parameter_name {}&#34;
+                &#34;parameter type not support, receaive parameter_dtype {}, parameter_name {}. Only one of [\&#34;float, int, bool, category] is supported.&#34;
                 .format(parameter_dtype, parameter_name))
         return param
 
@@ -361,7 +366,7 @@ array([[ 8,  6,  9,  7], # random
         &#34;&#34;&#34;
         pass
 
-    def evaluate(self, trial, default=False, training=True) -&gt; float:
+    def evaluate(self, trial, default=None, training=None) -&gt; float:
         &#34;&#34;&#34;
         To evaluate the score of this trial. you should call create_model instead of creating model manually in this function.
         
@@ -372,18 +377,29 @@ array([[ 8,  6,  9,  7], # random
         Returns :
             float: The score. Decided by optimization target.
         &#34;&#34;&#34;
+        if default is None:
+            default = self.default
+        if training is None:
+            training = self.training
+
         # create the model using from this trial
         classifier_obj = self.create_model(trial, default, training=True)
 
         # create cross validation
-        cv = StratifiedKFold(n_splits=self.n_cv,
-                             shuffle=True,
-                             random_state=self.valid_seed_tape[trial.number])
+        if self.is_regression():
+            cv = KFold(n_splits=self.n_cv,
+                       shuffle=True,
+                       random_state=self.valid_seed_tape[trial.number])
+        else:
+            cv = StratifiedKFold(
+                n_splits=self.n_cv,
+                shuffle=True,
+                random_state=self.valid_seed_tape[trial.number])
 
         # do cv
         score = zeros(self.n_cv)
         # thresholds not None only if  self.is_binary and not self.is_regression
-        cv_thresholds = zeros(self.n_cv)
+        cv_thresholds = zeros(self.n_cv) + 0.5
         cv_stoppoint = zeros(self.n_cv)
         for i, (train_ind, test_ind) in enumerate(cv.split(self.x, self.y)):
             # train test split
@@ -410,18 +426,24 @@ array([[ 8,  6,  9,  7], # random
                 cv_stoppoint[i] = self.clr_best_iteration(fitted_clr)
 
             # tune a threshold via roc for Binary classification
+            &#34;&#34;&#34;
             if self.is_binary and not self.is_regression():
-                y_prob = fitted_clr.predict_proba(x_test)[:, 1]
-
                 if training:
-                    fpr, tpr, thr = metrics.roc_curve(y_test, y_prob)
+                    fpr, tpr, thr = metrics.roc_curve(
+                        y_test,
+                        fitted_clr.predict_proba(x_test)[:, 1])
                     ### TODO: flexible threshold picker for various metrics.
                     cv_thresholds[i] = thr[abs(tpr - fpr).argmax()]
                 else:
                     cv_thresholds[i] = self.thresholds[trial.number]
+                # wrap the classifier before calculate scores
+                if not default:
+                    fitted_clr = Binary_threshold_wrapper(
+                        fitted_clr, cv_thresholds[i])
+                else:
+                    fitted_clr = Binary_threshold_wrapper(fitted_clr, 0.5)
+            &#34;&#34;&#34;
 
-                fitted_clr = Binary_threshold_wrapper(fitted_clr,
-                                                      cv_thresholds[i])
             # evaluate on testing fold
             test_score = self.metric(fitted_clr, x_test, y_test)
             train_score = self.metric(fitted_clr, x_train, y_train)
@@ -432,9 +454,10 @@ array([[ 8,  6,  9,  7], # random
                 score[i] = test_score
 
         # averaging over cv
-        self.thresholds[trial.number] = cv_thresholds.sum() / self.n_cv
-        self.stop_points[trial.number] = round(cv_stoppoint.sum() /
-                                               (self.n_cv - 1))
+        if training:
+            #self.thresholds[trial.number] = cv_thresholds.sum() / self.n_cv
+            self.stop_points[trial.number] = round(cv_stoppoint.sum() /
+                                                   (self.n_cv - 1))
         return score.mean()
 
     def tune(self, x, y) -&gt; None:
@@ -465,6 +488,8 @@ array([[ 8,  6,  9,  7], # random
             .format(self=self))
         print(&#34;    {} start tuning. it will take a while.&#34;.format(self.name()))
         # using optuna tuning hyper parameter
+        self.training = True
+        self.default = False
         self.study.optimize(self.evaluate,
                             n_trials=self.n_try,
                             show_progress_bar=False)
@@ -491,11 +516,12 @@ array([[ 8,  6,  9,  7], # random
             print(&#34;    optuna is better, best trial: &#34;,
                   self.study.best_trial.number)
             self.best_model = self.optuna_model
-
+            &#34;&#34;&#34;
             # threshold tuner for binary classification
             if self.is_binary and not self.is_regression():
                 self.best_threshold = self.thresholds[
                     self.study.best_trial.number]
+            &#34;&#34;&#34;
 
         # release the datas
         self.x = None
@@ -543,12 +569,13 @@ array([[ 8,  6,  9,  7], # random
             1D-array: prediction
         &#34;&#34;&#34;
         # using the model.
+        &#34;&#34;&#34;
         if self.is_binary and not self.is_regression():
-            y_pred = where(
-                self.best_model.predict_proba(x)[:, 1] &gt; self.best_threshold,
-                1, 0)
+            y_pred = (self.best_model.predict_proba(x)[:, 1]
+                      &gt; self.best_threshold).astype(int)
         else:
-            y_pred = self.best_model.predict(x)
+        &#34;&#34;&#34;
+        y_pred = self.best_model.predict(x)
 
         # label decoding
         if not self.is_regression():
@@ -969,14 +996,14 @@ sklearn.base.BaseEstimator: A sklearn style model object.</p></div>
 <p>pandas.DataFrame</p></div>
 </dd>
 <dt id="PineBioML.model.supervised.Basic_tuner.evaluate"><code class="name flex">
-<span>def <span class="ident">evaluate</span></span>(<span>self, trial, default=False, training=True) ‑> float</span>
+<span>def <span class="ident">evaluate</span></span>(<span>self, trial, default=None, training=None) ‑> float</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def evaluate(self, trial, default=False, training=True) -&gt; float:
+<pre><code class="python">def evaluate(self, trial, default=None, training=None) -&gt; float:
     &#34;&#34;&#34;
     To evaluate the score of this trial. you should call create_model instead of creating model manually in this function.
     
@@ -987,18 +1014,29 @@ sklearn.base.BaseEstimator: A sklearn style model object.</p></div>
     Returns :
         float: The score. Decided by optimization target.
     &#34;&#34;&#34;
+    if default is None:
+        default = self.default
+    if training is None:
+        training = self.training
+
     # create the model using from this trial
     classifier_obj = self.create_model(trial, default, training=True)
 
     # create cross validation
-    cv = StratifiedKFold(n_splits=self.n_cv,
-                         shuffle=True,
-                         random_state=self.valid_seed_tape[trial.number])
+    if self.is_regression():
+        cv = KFold(n_splits=self.n_cv,
+                   shuffle=True,
+                   random_state=self.valid_seed_tape[trial.number])
+    else:
+        cv = StratifiedKFold(
+            n_splits=self.n_cv,
+            shuffle=True,
+            random_state=self.valid_seed_tape[trial.number])
 
     # do cv
     score = zeros(self.n_cv)
     # thresholds not None only if  self.is_binary and not self.is_regression
-    cv_thresholds = zeros(self.n_cv)
+    cv_thresholds = zeros(self.n_cv) + 0.5
     cv_stoppoint = zeros(self.n_cv)
     for i, (train_ind, test_ind) in enumerate(cv.split(self.x, self.y)):
         # train test split
@@ -1025,18 +1063,24 @@ sklearn.base.BaseEstimator: A sklearn style model object.</p></div>
             cv_stoppoint[i] = self.clr_best_iteration(fitted_clr)
 
         # tune a threshold via roc for Binary classification
+        &#34;&#34;&#34;
         if self.is_binary and not self.is_regression():
-            y_prob = fitted_clr.predict_proba(x_test)[:, 1]
-
             if training:
-                fpr, tpr, thr = metrics.roc_curve(y_test, y_prob)
+                fpr, tpr, thr = metrics.roc_curve(
+                    y_test,
+                    fitted_clr.predict_proba(x_test)[:, 1])
                 ### TODO: flexible threshold picker for various metrics.
                 cv_thresholds[i] = thr[abs(tpr - fpr).argmax()]
             else:
                 cv_thresholds[i] = self.thresholds[trial.number]
+            # wrap the classifier before calculate scores
+            if not default:
+                fitted_clr = Binary_threshold_wrapper(
+                    fitted_clr, cv_thresholds[i])
+            else:
+                fitted_clr = Binary_threshold_wrapper(fitted_clr, 0.5)
+        &#34;&#34;&#34;
 
-            fitted_clr = Binary_threshold_wrapper(fitted_clr,
-                                                  cv_thresholds[i])
         # evaluate on testing fold
         test_score = self.metric(fitted_clr, x_test, y_test)
         train_score = self.metric(fitted_clr, x_train, y_train)
@@ -1047,9 +1091,10 @@ sklearn.base.BaseEstimator: A sklearn style model object.</p></div>
             score[i] = test_score
 
     # averaging over cv
-    self.thresholds[trial.number] = cv_thresholds.sum() / self.n_cv
-    self.stop_points[trial.number] = round(cv_stoppoint.sum() /
-                                           (self.n_cv - 1))
+    if training:
+        #self.thresholds[trial.number] = cv_thresholds.sum() / self.n_cv
+        self.stop_points[trial.number] = round(cv_stoppoint.sum() /
+                                               (self.n_cv - 1))
     return score.mean()</code></pre>
 </details>
 <div class="desc"><p>To evaluate the score of this trial. you should call create_model instead of creating model manually in this function.</p>
@@ -1325,26 +1370,29 @@ def parms_range(self) -&gt; dict:
 </summary>
 <pre><code class="python">def parms_range_sparser(self, trial, search_setting):
     parameter_name, parameter_dtype, lower_bound, upper_bound = search_setting
-    log = lower_bound &gt; 0 and upper_bound / lower_bound &gt; 10
+    param = None
 
-    if parameter_dtype == &#34;float&#34;:
-        param = trial.suggest_float(parameter_name,
-                                    lower_bound,
-                                    upper_bound,
-                                    log=log)
-    elif parameter_dtype == &#34;int&#34;:
-        param = trial.suggest_int(parameter_name,
-                                  lower_bound,
-                                  upper_bound,
-                                  log=log)
-    elif parameter_dtype == &#34;bool&#34;:
-        param = trial.suggest_categorical(parameter_name,
-                                          [lower_bound, upper_bound])
-    elif parameter_dtype == &#34;category&#34;:
-        param = trial.suggest_categorical(parameter_name, lower_bound)
+    if parameter_dtype in [&#34;float&#34;, &#34;int&#34;]:
+        log = lower_bound &gt; 0 and upper_bound / lower_bound &gt; 10
+        if parameter_dtype == &#34;float&#34;:
+            param = trial.suggest_float(parameter_name,
+                                        lower_bound,
+                                        upper_bound,
+                                        log=log)
+        elif parameter_dtype == &#34;int&#34;:
+            param = trial.suggest_int(parameter_name,
+                                      lower_bound,
+                                      upper_bound,
+                                      log=log)
     else:
+        if parameter_dtype == &#34;bool&#34;:
+            param = trial.suggest_categorical(parameter_name,
+                                              [lower_bound, upper_bound])
+        elif parameter_dtype == &#34;category&#34;:
+            param = trial.suggest_categorical(parameter_name, lower_bound)
+    if param is None:
         raise ValueError(
-            &#34;parameter type not support, receaive parameter_dtype {}, parameter_name {}&#34;
+            &#34;parameter type not support, receaive parameter_dtype {}, parameter_name {}. Only one of [\&#34;float, int, bool, category] is supported.&#34;
             .format(parameter_dtype, parameter_name))
     return param</code></pre>
 </details>
@@ -1392,12 +1440,13 @@ def parms_range(self) -&gt; dict:
         1D-array: prediction
     &#34;&#34;&#34;
     # using the model.
+    &#34;&#34;&#34;
     if self.is_binary and not self.is_regression():
-        y_pred = where(
-            self.best_model.predict_proba(x)[:, 1] &gt; self.best_threshold,
-            1, 0)
+        y_pred = (self.best_model.predict_proba(x)[:, 1]
+                  &gt; self.best_threshold).astype(int)
     else:
-        y_pred = self.best_model.predict(x)
+    &#34;&#34;&#34;
+    y_pred = self.best_model.predict(x)
 
     # label decoding
     if not self.is_regression():
@@ -1488,6 +1537,8 @@ If you want to access it in PineBioML api document, then click on the
         .format(self=self))
     print(&#34;    {} start tuning. it will take a while.&#34;.format(self.name()))
     # using optuna tuning hyper parameter
+    self.training = True
+    self.default = False
     self.study.optimize(self.evaluate,
                         n_trials=self.n_try,
                         show_progress_bar=False)
@@ -1514,11 +1565,12 @@ If you want to access it in PineBioML api document, then click on the
         print(&#34;    optuna is better, best trial: &#34;,
               self.study.best_trial.number)
         self.best_model = self.optuna_model
-
+        &#34;&#34;&#34;
         # threshold tuner for binary classification
         if self.is_binary and not self.is_regression():
             self.best_threshold = self.thresholds[
                 self.study.best_trial.number]
+        &#34;&#34;&#34;
 
     # release the datas
     self.x = None
@@ -1554,109 +1606,6 @@ If you want to access it in PineBioML api document, then click on the
 <dt><code>bool</code></dt>
 <dd>True if applying earlystopping in optimizing training.</dd>
 </dl></div>
-</dd>
-</dl>
-</dd>
-<dt id="PineBioML.model.supervised.Binary_threshold_wrapper"><code class="flex name class">
-<span>class <span class="ident">Binary_threshold_wrapper</span></span>
-<span>(</span><span>kernel, threshold)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class Binary_threshold_wrapper(ClassifierMixin):
-
-    def __init__(self, kernel, threshold):
-        self.threshold = threshold
-        self.kernel = kernel
-        self.classes_ = kernel.classes_
-
-    def fit(self, x, y):
-        pass
-
-    def predict(self, x):
-        decision = self.kernel.predict_proba(x)[:, 1] &gt; self.threshold
-        return where(decision, 1, 0)
-
-    def predict_proba(self, x):
-        return self.kernel.predict_proba(x)</code></pre>
-</details>
-<div class="desc"><p>Mixin class for all classifiers in scikit-learn.</p>
-<p>This mixin defines the following functionality:</p>
-<ul>
-<li>set estimator type to <code>"classifier"</code> through the <code>estimator_type</code> tag;</li>
-<li><code>score</code> method that default to :func:<code>~sklearn.metrics.accuracy_score</code>.</li>
-<li>enforce that <code>fit</code> requires <code>y</code> to be passed through the <code>requires_y</code> tag,
-which is done by setting the classifier type tag.</li>
-</ul>
-<p>Read more in the :ref:<code>User Guide &lt;rolling_your_own_estimator&gt;</code>.</p>
-<h2 id="examples">Examples</h2>
-<pre><code class="language-python-repl">&gt;&gt;&gt; import numpy as np
-&gt;&gt;&gt; from sklearn.base import BaseEstimator, ClassifierMixin
-&gt;&gt;&gt; # Mixin classes should always be on the left-hand side for a correct MRO
-&gt;&gt;&gt; class MyEstimator(ClassifierMixin, BaseEstimator):
-...     def __init__(self, *, param=1):
-...         self.param = param
-...     def fit(self, X, y=None):
-...         self.is_fitted_ = True
-...         return self
-...     def predict(self, X):
-...         return np.full(shape=X.shape[0], fill_value=self.param)
-&gt;&gt;&gt; estimator = MyEstimator(param=1)
-&gt;&gt;&gt; X = np.array([[1, 2], [2, 3], [3, 4]])
-&gt;&gt;&gt; y = np.array([1, 0, 1])
-&gt;&gt;&gt; estimator.fit(X, y).predict(X)
-array([1, 1, 1])
-&gt;&gt;&gt; estimator.score(X, y)
-0.66...
-</code></pre></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>sklearn.base.ClassifierMixin</li>
-</ul>
-<h3>Methods</h3>
-<dl>
-<dt id="PineBioML.model.supervised.Binary_threshold_wrapper.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, x, y)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def fit(self, x, y):
-    pass</code></pre>
-</details>
-<div class="desc"></div>
-</dd>
-<dt id="PineBioML.model.supervised.Binary_threshold_wrapper.predict"><code class="name flex">
-<span>def <span class="ident">predict</span></span>(<span>self, x)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def predict(self, x):
-    decision = self.kernel.predict_proba(x)[:, 1] &gt; self.threshold
-    return where(decision, 1, 0)</code></pre>
-</details>
-<div class="desc"></div>
-</dd>
-<dt id="PineBioML.model.supervised.Binary_threshold_wrapper.predict_proba"><code class="name flex">
-<span>def <span class="ident">predict_proba</span></span>(<span>self, x)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def predict_proba(self, x):
-    return self.kernel.predict_proba(x)</code></pre>
-</details>
-<div class="desc"></div>
 </dd>
 </dl>
 </dd>
@@ -1707,14 +1656,6 @@ array([1, 1, 1])
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.reference" href="#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.tune" href="#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.using_earlystopping" href="#PineBioML.model.supervised.Basic_tuner.using_earlystopping">using_earlystopping</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="PineBioML.model.supervised.Binary_threshold_wrapper" href="#PineBioML.model.supervised.Binary_threshold_wrapper">Binary_threshold_wrapper</a></code></h4>
-<ul class="">
-<li><code><a title="PineBioML.model.supervised.Binary_threshold_wrapper.fit" href="#PineBioML.model.supervised.Binary_threshold_wrapper.fit">fit</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Binary_threshold_wrapper.predict" href="#PineBioML.model.supervised.Binary_threshold_wrapper.predict">predict</a></code></li>
-<li><code><a title="PineBioML.model.supervised.Binary_threshold_wrapper.predict_proba" href="#PineBioML.model.supervised.Binary_threshold_wrapper.predict_proba">predict_proba</a></code></li>
 </ul>
 </li>
 </ul>

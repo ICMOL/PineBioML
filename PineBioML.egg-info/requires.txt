@@ -2,7 +2,10 @@ numpy
 pandas
 openpyxl
 xlrd
+pyxlsb
+calamine
 tqdm
+matplotlib
 seaborn
 plotly
 jupyter
@@ -10,10 +13,10 @@ jupyterlab
 joblib
 optuna
 scikit-learn==1.6.1
-scikit-learn-intelex==2025.0.1
+scikit-learn-intelex
 umap-learn
 statsmodels
-xgboost==2.1.4
+xgboost==3.0.0
 lightgbm
 catboost
 pyarrow

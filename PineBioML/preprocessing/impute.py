@@ -1,6 +1,7 @@
 from sklearn.impute import KNNImputer, SimpleImputer
 import pandas as pd
 from . import Normalizer
+from typing import Literal
 
 
 class imputer():
@@ -149,3 +150,56 @@ class simple_imputer(imputer):
         super().__init__(threshold, center=False, scale=False)
 
         self.kernel = SimpleImputer(strategy=strategy)
+
+
+class interative_imputer(imputer):
+    """
+    Using iterative imputer to impute missing value.
+    """
+
+    def __init__(self,
+                 threshold=0.333,
+                 max_iter=10,
+                 estimator: Literal["RandomForest",
+                                    "LightGBM"] = "RandomForest"):
+        """
+
+        Args:
+            threshold (float): float from (0, 1]. If missing value rate of a feature is higher than threshold, it will be deleted. Defaults to 0.333
+            max_iter (int, optional): The maximum number of imputation iteration. Defaults to 10.
+        """
+        super().__init__(threshold)
+
+        from sklearn.experimental import enable_iterative_imputer
+        from sklearn.impute import IterativeImputer
+
+        if estimator == "RandomForest":
+            from sklearn.ensemble import RandomForestRegressor
+
+            self.kernel = IterativeImputer(estimator=RandomForestRegressor(
+                n_estimators=256,
+                n_jobs=-1,
+                min_samples_leaf=3,
+                max_features="sqrt",
+                bootstrap=True,
+                max_samples=0.7,
+                random_state=143),
+                                           max_iter=max_iter,
+                                           imputation_order="random",
+                                           verbose=1)
+        elif estimator == "LightGBM":
+            from lightgbm import LGBMRegressor
+
+            self.kernel = IterativeImputer(estimator=LGBMRegressor(
+                n_estimators=100,
+                n_jobs=None,
+                min_child_samples=3,
+                verbosity=-1,
+                reg_lambda=0.1,
+                random_state=143),
+                                           max_iter=max_iter,
+                                           imputation_order="random",
+                                           verbose=1)
+        else:
+            raise ValueError(
+                "estimator must be one of [RandomForest, LightGBM]")

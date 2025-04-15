@@ -4,7 +4,6 @@ from typing import Literal
 
 from joblib import parallel_config
 
-from sklearn.metrics import roc_curve
 from sklearn.model_selection import StratifiedKFold
 from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.svm import SVC
@@ -381,7 +380,6 @@ class SVM_tuner(Classification_tuner):
     """
 
     def __init__(self,
-                 kernel: Literal["linear", "poly", "rbf", "sigmoid"] = "rbf",
                  n_try=25,
                  n_cv=5,
                  target="mcc",
@@ -408,10 +406,9 @@ class SVM_tuner(Classification_tuner):
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
                          validate_penalty=validate_penalty)
-        self.kernel = kernel  # rbf, linear, poly, sigmoid
 
     def name(self):
-        return self.kernel + "-SVM"
+        return "SVM"
 
     def reference(self) -> dict[str, str]:
         """
@@ -434,13 +431,15 @@ class SVM_tuner(Classification_tuner):
     def parms_range(self) -> dict:
         # scaling penalty: https://scikit-learn.org/stable/auto_examples/svm/plot_svm_scale_c.html#sphx-glr-auto-examples-svm-plot-svm-scale-c-py
         return {
+            "kernel":
+            ('kernel', "category", ["linear", "poly", "rbf", "sigmoid"], None),
             'C': ('C', "float", 1e-3 * np.sqrt(self.n_sample),
                   1e+2 * np.sqrt(self.n_sample))
         }
 
     def create_model(self, trial, default=False, training=False):
         parms = {
-            "kernel": self.kernel,
+            "kernel": "rbf",
             #"random_state": self.kernel_seed,
             "probability": True,
             "gamma": "auto"

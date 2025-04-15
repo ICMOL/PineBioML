@@ -1,7 +1,7 @@
 # Overview
 In today’s data-driven world, making informed decisions requires more than just raw data—it demands intelligent insights. PineBioML is designed to provide a comprehensive workflow that guides users through every step of data analysis, from preprocessing to visualization. Whether you are a data scientist, researcher, or biomedical data analyst, this software tool empowers you with state-of-the-art machine learning algorithms, advanced feature selection techniques, and dynamic data visualization tools to extract valuable insights effortlessly.
 
-![image](./documents/images/workflow/PineBioML_workflow_v3.png) 
+![image](./documents/images/workflow/PineBioML_workflow_v6.png) 
 
 # System requirements
 Python 3.9, 3.10, 3.11
@@ -17,7 +17,7 @@ For those who do not know how to use python, you can follow our step by step Ins
 # Examples
 After installation, you can download examples from release.
 
-> https://github.com/ICMOL/PineBioML/releases/download/v1.2.4/examples124.zip
+> https://github.com/ICMOL/PineBioML/releases/download/example/examples126.zip
 
 Chosse one of the following examples, double click it in jupyter interface:    
 | ID |     Name      |       Description                |

@@ -3,7 +3,7 @@ from sklearn.base import BaseEstimator
 import optuna
 from abc import ABC, abstractmethod
 from sklearn.base import ClassifierMixin
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, KFold
 from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.preprocessing import LabelEncoder
 from optuna.samplers import TPESampler
@@ -177,26 +177,29 @@ class Basic_tuner(ABC):
 
     def parms_range_sparser(self, trial, search_setting):
         parameter_name, parameter_dtype, lower_bound, upper_bound = search_setting
-        log = lower_bound > 0 and upper_bound / lower_bound > 10
+        param = None
 
-        if parameter_dtype == "float":
-            param = trial.suggest_float(parameter_name,
-                                        lower_bound,
-                                        upper_bound,
-                                        log=log)
-        elif parameter_dtype == "int":
-            param = trial.suggest_int(parameter_name,
-                                      lower_bound,
-                                      upper_bound,
-                                      log=log)
-        elif parameter_dtype == "bool":
-            param = trial.suggest_categorical(parameter_name,
-                                              [lower_bound, upper_bound])
-        elif parameter_dtype == "category":
-            param = trial.suggest_categorical(parameter_name, lower_bound)
+        if parameter_dtype in ["float", "int"]:
+            log = lower_bound > 0 and upper_bound / lower_bound > 10
+            if parameter_dtype == "float":
+                param = trial.suggest_float(parameter_name,
+                                            lower_bound,
+                                            upper_bound,
+                                            log=log)
+            elif parameter_dtype == "int":
+                param = trial.suggest_int(parameter_name,
+                                          lower_bound,
+                                          upper_bound,
+                                          log=log)
         else:
+            if parameter_dtype == "bool":
+                param = trial.suggest_categorical(parameter_name,
+                                                  [lower_bound, upper_bound])
+            elif parameter_dtype == "category":
+                param = trial.suggest_categorical(parameter_name, lower_bound)
+        if param is None:
             raise ValueError(
-                "parameter type not support, receaive parameter_dtype {}, parameter_name {}"
+                "parameter type not support, receaive parameter_dtype {}, parameter_name {}. Only one of [\"float, int, bool, category] is supported."
                 .format(parameter_dtype, parameter_name))
         return param
 
@@ -268,9 +271,15 @@ class Basic_tuner(ABC):
         classifier_obj = self.create_model(trial, default, training=True)
 
         # create cross validation
-        cv = StratifiedKFold(n_splits=self.n_cv,
-                             shuffle=True,
-                             random_state=self.valid_seed_tape[trial.number])
+        if self.is_regression():
+            cv = KFold(n_splits=self.n_cv,
+                       shuffle=True,
+                       random_state=self.valid_seed_tape[trial.number])
+        else:
+            cv = StratifiedKFold(
+                n_splits=self.n_cv,
+                shuffle=True,
+                random_state=self.valid_seed_tape[trial.number])
 
         # do cv
         score = zeros(self.n_cv)

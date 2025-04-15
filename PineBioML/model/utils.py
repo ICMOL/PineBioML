@@ -1,7 +1,37 @@
 from sklearn import metrics
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, KFold
 from sklearn.pipeline import Pipeline
 from pandas import DataFrame, Series, concat
+from sklearn.base import is_classifier, is_regressor
+
+#TODO: grouped cv
+
+
+class data_source():
+    """
+    The data_source is a placeholder for various data source. it will override the data flow of Pine.
+    Notice that the label y and the order should the same for each datasource.
+    """
+
+    def __init__(
+        self,
+        train_x: DataFrame,
+        test_x: DataFrame = None,
+    ):
+        self.train_x = train_x
+        self.test_x = test_x
+
+    def fit(self, x: DataFrame, y: Series):
+
+        return self
+
+    def transform(self, x: DataFrame):
+
+        return self.test_x
+
+    def fit_transform(self, x: DataFrame, y: Series):
+
+        return self.train_x
 
 
 class sklearn_esitimator_wrapper():
@@ -71,6 +101,12 @@ class sklearn_esitimator_wrapper():
             raise NotImplementedError(
                 "{} do not have attribute 'predict_proba'.".format(
                     self.kernel.__str__()))
+
+    def is_regression(self) -> bool:
+        return is_regressor(self.kernel)
+
+    def detail(self):
+        return None
 
 
 class classification_scorer():
@@ -319,10 +355,17 @@ class Pine():
                     # compute the cross validation score on training set
                     fold_scores = []
                     cv_pred = []
-                    cross_validation = StratifiedKFold(
-                        n_splits=self.evaluate_ncv,
-                        shuffle=True,
-                        random_state=133)
+
+                    if model.is_regression():
+                        cross_validation = KFold(n_splits=self.evaluate_ncv,
+                                                 shuffle=True,
+                                                 random_state=133)
+                    else:
+                        cross_validation = StratifiedKFold(
+                            n_splits=self.evaluate_ncv,
+                            shuffle=True,
+                            random_state=133)
+
                     for (train_idx, valid_idx) in cross_validation.split(
                             train_x, train_y):
 
@@ -417,8 +460,10 @@ class Pine():
         """
         _, models = self.experiment[-1]
 
-        tmp = []
-        for n in list(models)[1:]:
+        params = []
+        for n in list(models):
             m = models[n]
-            tmp.append(m.detail())
-        return concat(tmp, axis=0)
+            tmp = m.detail()
+            if tmp is not None:
+                params.append(tmp)
+        return concat(params, axis=0)
