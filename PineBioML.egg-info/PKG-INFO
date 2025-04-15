@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: PineBioML
-Version: 1.2.6
+Version: 1.2.6.1
 Summary: PineBioML is a easy use ML toolkit.
 Home-page: https://github.com/ICMOL/PineBioML
 Classifier: Programming Language :: Python :: 3
@@ -14,7 +14,7 @@ Requires-Dist: pandas
 Requires-Dist: openpyxl
 Requires-Dist: xlrd
 Requires-Dist: pyxlsb
-Requires-Dist: calamine
+Requires-Dist: python-calamine
 Requires-Dist: tqdm
 Requires-Dist: matplotlib
 Requires-Dist: seaborn
