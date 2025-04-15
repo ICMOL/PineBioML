@@ -4,8 +4,6 @@ from typing import Literal
 
 from joblib import parallel_config
 
-from sklearn.model_selection import StratifiedKFold
-
 from sklearn.svm import SVR
 from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor
 from sklearn.tree import DecisionTreeRegressor
@@ -257,6 +255,7 @@ class RandomForest_tuner(Regression_tuner):
             "n_jobs": -1,
             "random_state": self.kernel_seed,
             "verbose": 0,
+            "max_features": "sqrt",
         }
 
         if not default:
@@ -299,7 +298,6 @@ class SVM_tuner(Regression_tuner):
     """
 
     def __init__(self,
-                 kernel: Literal["linear", "poly", "rbf", "sigmoid"] = "rbf",
                  n_try=25,
                  n_cv=5,
                  target="mse",
@@ -325,10 +323,9 @@ class SVM_tuner(Regression_tuner):
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
                          validate_penalty=validate_penalty)
-        self.kernel = kernel
 
     def name(self):
-        return self.kernel + "-SVM"
+        return "SVM"
 
     def reference(self) -> dict[str, str]:
         """
@@ -354,13 +351,15 @@ class SVM_tuner(Regression_tuner):
     def parms_range(self) -> dict:
         # scaling penalty: https://scikit-learn.org/stable/auto_examples/svm/plot_svm_scale_c.html#sphx-glr-auto-examples-svm-plot-svm-scale-c-py
         return {
+            "kernel":
+            ('kernel', "category", ["linear", "poly", "rbf", "sigmoid"], None),
             'C': ('C', "float", 1e-3 * np.sqrt(self.n_sample),
                   1e+2 * np.sqrt(self.n_sample))
         }
 
     def create_model(self, trial, default=False, training=False):
         parms = {
-            "kernel": self.kernel,
+            "kernel": "rbf",
         }
         if not default:
             parms_to_tune = self.parms_range()

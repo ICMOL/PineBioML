@@ -2,6 +2,58 @@ import sklearn.preprocessing as skprpr
 from pandas import DataFrame
 
 
+class RemoveDummy():
+    """ 
+    Remove dummy features. Dummy features are those with a constant value.
+    """
+
+    def __init__(self):
+        self.to_drop = []
+
+    def fit(self, x, y=None):
+        """
+        Finding the dummy features.
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to normalize.
+            y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.
+
+        Returns:
+            remove: self after fitting.
+        """
+        self.to_drop = x.columns[x.nunique() <= 1]
+        return self
+
+    def transform(self, x):
+        """
+        Drop the dummy features. Only activates after "fit" was called.
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to drop dummy features.
+
+        Returns:
+            pandas.DataFrame or a 2D array: Cleared x.
+        """
+        x_dropped = x.drop(self.to_drop, axis=1)
+
+        return x_dropped
+
+    def fit_transform(self, x, y=None):
+        """
+        A functional stack of "fit" and "transform".
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to normalize.
+            y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.
+
+        Returns:
+            pandas.DataFrame or a 2D array: Cleared x.
+        """
+        self.fit(x, y)
+        x_dropped = self.transform(x)
+        return x_dropped
+
+
 class Normalizer():
     """ 
     A wrapper of sklearn normalizers. This will conserve pandas features.    

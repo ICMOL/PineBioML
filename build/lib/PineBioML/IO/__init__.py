@@ -24,10 +24,16 @@ def read_file(
     # sparse csv, tsv or excel
     file_type = file_path.split(".")[-1]
     if file_type == "csv":
-        file = read_csv(file_path, index_col=index_col)
+        file = read_csv(file_path, index_col=index_col, engine="pyarrow")
     elif file_type == "tsv":
-        file_a = read_csv(file_path, sep=" ", index_col=index_col)
-        file_b = read_csv(file_path, sep="\t", index_col=index_col)
+        file_a = read_csv(file_path,
+                          sep=" ",
+                          index_col=index_col,
+                          engine="pyarrow")
+        file_b = read_csv(file_path,
+                          sep="\t",
+                          index_col=index_col,
+                          engine="pyarrow")
         if file_a.isna().mean().mean() > file_b.isna().mean().mean():
             file = file_b
         else:
@@ -39,7 +45,7 @@ def read_file(
             file = file[list(file.keys())[0]]
 
     elif file_type == "txt":
-        file = read_table(file_path, index_col=index_col)
+        file = read_table(file_path, index_col=index_col, engine="pyarrow")
     else:
         raise NotImplementedError(
             "The type of target file is not supported. Must be one of .csv, .tsv, .xls, .xlsx or R table in .txt format."

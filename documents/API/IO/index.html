@@ -133,10 +133,16 @@ have exact the same result.</p>
     # sparse csv, tsv or excel
     file_type = file_path.split(&#34;.&#34;)[-1]
     if file_type == &#34;csv&#34;:
-        file = read_csv(file_path, index_col=index_col)
+        file = read_csv(file_path, index_col=index_col, engine=&#34;pyarrow&#34;)
     elif file_type == &#34;tsv&#34;:
-        file_a = read_csv(file_path, sep=&#34; &#34;, index_col=index_col)
-        file_b = read_csv(file_path, sep=&#34;\t&#34;, index_col=index_col)
+        file_a = read_csv(file_path,
+                          sep=&#34; &#34;,
+                          index_col=index_col,
+                          engine=&#34;pyarrow&#34;)
+        file_b = read_csv(file_path,
+                          sep=&#34;\t&#34;,
+                          index_col=index_col,
+                          engine=&#34;pyarrow&#34;)
         if file_a.isna().mean().mean() &gt; file_b.isna().mean().mean():
             file = file_b
         else:
@@ -148,7 +154,7 @@ have exact the same result.</p>
             file = file[list(file.keys())[0]]
 
     elif file_type == &#34;txt&#34;:
-        file = read_table(file_path, index_col=index_col)
+        file = read_table(file_path, index_col=index_col, engine=&#34;pyarrow&#34;)
     else:
         raise NotImplementedError(
             &#34;The type of target file is not supported. Must be one of .csv, .tsv, .xls, .xlsx or R table in .txt format.&#34;

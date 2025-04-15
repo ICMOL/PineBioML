@@ -2,8 +2,11 @@ from . import SelectionPipeline
 
 import pandas as pd
 import numpy as np
+#from tqdm import tqdm
+import time
 
 from joblib import parallel_config
+
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.cm import ScalarMappable
@@ -11,8 +14,6 @@ from matplotlib.cm import ScalarMappable
 from sklearn.linear_model import Lasso, LassoLars
 from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor
 from sklearn.svm import LinearSVR
-import xgboost as xgb
-import lightgbm as lgbm
 
 
 class Lasso_selection(SelectionPipeline):
@@ -105,21 +106,39 @@ class Lasso_selection(SelectionPipeline):
 
         kernel = self.create_kernel()
 
-        kernel.fit(x_train, y_train)
+        ### TODO: Sample weight for Lars.
+        if y_train.shape[1] == 2:
+            # Binary classification
+            task_set = [1]
+        else:
+            # multi-class classification
+            ### TODO: Multinomial classfication for Lars.
+            task_set = range(y_train.shape[1])
 
-        coef = np.clip(kernel.coef_path_.T, -1, 1)
-        alpha = kernel.alphas_
-        col = kernel.feature_names_in_
+        result = []
+        for i in task_set:
+            y = y_train[:, i]
+            y = (y - y.mean()) / y.std()
+            kernel.fit(x_train, y)
 
-        self.result.append(pd.DataFrame(coef, columns=col, index=alpha))
+            coef = np.clip(kernel.coef_path_.T, -1, 1)
+            alpha = kernel.alphas_
+            col = kernel.feature_names_in_
 
-        coef_sur_time = []
-        for s in self.result:
+            result.append(pd.DataFrame(coef, columns=col, index=alpha))
+
+        var_dropout_alpha = []
+        for s in result:
             tmp = (s != 0).idxmax(axis=0).replace(s.index[0], 0)**2
-            tmp = tmp / tmp.max()
-            coef_sur_time.append(tmp)
 
-        self.scores = np.sqrt(sum(coef_sur_time)).sort_values(ascending=False)
+            # max normalize along sample axis for each output.
+            tmp = tmp / tmp.max()
+            var_dropout_alpha.append(tmp)
+
+        self.result = result
+        self.scores = np.sqrt(
+            sum(var_dropout_alpha)).sort_values(ascending=False)
+        self.scores.name = self.name
         return self.scores.copy()
 
     def Plotting(self):
@@ -135,11 +154,14 @@ class Lasso_selection(SelectionPipeline):
 
         global_selected = self.selected_score.index
         for i_th in range(len(self.result)):
-            s = self.result[i_th]
+            s = self.result[-i_th - 1]
 
-            lifetime = (s != 0).sum(axis=0)
-            alive_col = s.columns[lifetime > 0]
-            active_col = lifetime.sort_values().tail(5).index
+            # get the features ever alive.
+            alive_col = s.columns[(s != 0).any(axis=0)]
+
+            # show the label of the top-5 long-lived features
+            noting_col = (s != 0).idxmax(axis=0).replace(
+                s.index[0], 0).sort_values().tail(5).index
 
             plt_cmap = plt.get_cmap("Blues")
             plt_norm = plt.Normalize(vmin=0, vmax=s.index[1])
@@ -151,7 +173,7 @@ class Lasso_selection(SelectionPipeline):
                     alpha=var_coef.index,
                     coef=var_coef.values,
                     global_selected=col in global_selected,
-                    coef_name=col if col in active_col else None,
+                    coef_name=col if col in noting_col else None,
                     cmap=plt_cmap,
                     norm=plt_norm,
                 )
@@ -159,7 +181,8 @@ class Lasso_selection(SelectionPipeline):
             plt.axhline(y=0, color="grey", linestyle="--")
             plt.xlabel("alpha")
             plt.ylabel("coefficient")
-            plt.title("Lasso")
+            plt.title("class-{} Lasso".format(
+                self.y_encoder.categories_[0][i_th]))
 
             scalar_mappable = ScalarMappable(norm=plt_norm, cmap=plt_cmap)
             fig.colorbar(scalar_mappable,
@@ -273,7 +296,7 @@ class Lasso_bisection_selection(SelectionPipeline):
         y_train = y.copy()
 
         if self.k == -1:
-            self.k = x.shape[0]
+            self.k = min(x.shape[0], x.shape[1]) // 2
 
         lassoes = []
         # Bisection searching
@@ -365,7 +388,7 @@ class multi_Lasso_selection(SelectionPipeline):
         """
         result = []
         if self.k == -1:
-            self.k = x.shape[0]
+            self.k = min(x.shape[0], x.shape[1]) // 2
         batch_size = self.k // n + 1
 
         for i in range(n):
@@ -519,7 +542,7 @@ class RF_selection(SelectionPipeline):
 
     """
 
-    def __init__(self, k, trees=1024, strategy="squared_error"):
+    def __init__(self, k, strategy="squared_error"):
         """
         Args:
             trees (int, optional): Number of trees. Defaults to 1024*16.
@@ -529,12 +552,11 @@ class RF_selection(SelectionPipeline):
         super().__init__(k=k)
         self.strategy = strategy
 
-        self.kernel = RandomForestRegressor(n_estimators=trees,
+        self.kernel = RandomForestRegressor(n_estimators=64,
                                             n_jobs=-1,
                                             max_samples=0.7,
                                             criterion=strategy,
                                             verbose=0,
-                                            ccp_alpha=1e-2,
                                             random_state=142,
                                             min_samples_leaf=3)
         self.name = "RandomForest_" + self.strategy
@@ -571,6 +593,7 @@ class RF_selection(SelectionPipeline):
         Returns:
             pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
         """
+        self.kernel.n_estimators = round(np.sqrt(x.shape[1]) * 5)
         with parallel_config(backend='loky'):
             self.kernel.fit(x, y)
         score = self.kernel.feature_importances_
@@ -592,8 +615,9 @@ class XGboost_selection(SelectionPipeline):
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
         """
         super().__init__(k=k)
+        from xgboost import XGBRegressor
 
-        self.kernel = xgb.XGBRegressor(random_state=142, subsample=0.7)
+        self.kernel = XGBRegressor(random_state=142, subsample=0.7)
         self.name = "XGboost"
 
     def reference(self) -> dict[str, str]:
@@ -643,12 +667,13 @@ class Lightgbm_selection(SelectionPipeline):
         """
         super().__init__(k=k)
         self.unbalanced = unbalanced
+        from lightgbm import LGBMRegressor
 
-        self.kernel = lgbm.LGBMRegressor(learning_rate=0.01,
-                                         random_state=142,
-                                         subsample=0.7,
-                                         subsample_freq=1,
-                                         verbosity=-1)
+        self.kernel = LGBMRegressor(learning_rate=0.01,
+                                    random_state=142,
+                                    subsample=0.7,
+                                    subsample_freq=1,
+                                    verbosity=-1)
         self.name = "Lightgbm"
 
     def reference(self) -> dict[str, str]:
@@ -745,7 +770,7 @@ class ensemble_selector(SelectionPipeline):
     
     """
 
-    def __init__(self, k=-1, RF_trees=1024, z_importance_threshold=None):
+    def __init__(self, k=-1, z_importance_threshold=None):
         """
 
         Args:
@@ -755,7 +780,7 @@ class ensemble_selector(SelectionPipeline):
         self.k = k
 
         self.kernels = {
-            "RF_gini": RF_selection(k=k, trees=RF_trees),
+            "RF_gini": RF_selection(k=k),
             "Lasso_Bisection": Lasso_bisection_selection(k=k),
             "multi_Lasso": multi_Lasso_selection(k=k),
             "SVM": SVM_selection(k=k),
@@ -793,14 +818,14 @@ class ensemble_selector(SelectionPipeline):
         results = []
         for method in self.kernels:
             print("Using ", method, " to select.")
+            start_time = time.time()
             results.append(self.kernels[method].Select(x.copy(), y))
-            print(method, " is done.\n")
+            end_time = time.time()
+            print(method,
+                  " is done. Using {t:.4f}\n".format(t=end_time - start_time))
 
-        name = pd.concat([pd.Series(i.index, name=i.name) for i in results],
-                         axis=1)
-        importance = pd.concat(results, axis=1)
-        self.selected_score = importance
-        return name, importance
+        self.selected_score = pd.concat(results, axis=1)
+        return self.selected_score
 
     def fit(self, x, y):
         """
@@ -810,14 +835,18 @@ class ensemble_selector(SelectionPipeline):
             x (pandas.DataFrame or a 2D array): The data to extract information.
             y (pandas.Series or a 1D array): The target label for methods.
         """
-        name, importance = self.Select(x, y)
+        importance = self.Select(x, y)
 
         return self
 
     def transform(self, x):
         z_scores = (self.selected_score - self.selected_score.mean()) / (
             self.selected_score.std() + 1e-4)
-        z_scores = z_scores.sum(axis=1).sort_values(ascending=False)
+
+        scores = z_scores.sum(axis=1)
+
+        z_scores = (scores - scores.mean()) / (scores.std() + 1e-4)
+        z_scores = z_scores.sort_values(ascending=False)
 
         if self.z_importance_threshold is None:
             return x[z_scores.index[:self.k]]

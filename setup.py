@@ -7,7 +7,7 @@ PACKAGE_NAME = "PineBioML"
 version_meta = runpy.run_path("./PineBioML/__init__.py")
 VERSION = version_meta["__version__"]
 
-with open("README.md", "r") as fh:
+with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 
@@ -32,10 +32,13 @@ if __name__ == "__main__":
               "License :: OSI Approved :: MIT License",
               "Operating System :: OS Independent",
           ])
-    # to publish
-    # requirement: setuptools twine wheel
-    # (remove early version in dist/*)
-    #
-    # python setup.py sdist bdist_wheel
-    # python -m twine check dist/*
-    # python -m twine upload dist/*
+# publish
+# requirement: setuptools twine wheel
+# python -m pip install --upgrade pip
+# pip install --upgrade setuptools twine wheel
+
+# (remove early version in dist/*)
+
+# python setup.py sdist bdist_wheel
+# python -m twine check dist/*
+# python -m twine upload dist/*

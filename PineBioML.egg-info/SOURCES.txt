@@ -17,6 +17,7 @@ PineBioML/model/supervised/__init__.py
 PineBioML/preprocessing/__init__.py
 PineBioML/preprocessing/bagging.py
 PineBioML/preprocessing/impute.py
+PineBioML/preprocessing/outlier.py
 PineBioML/preprocessing/utils.py
 PineBioML/report/__init__.py
 PineBioML/report/utils.py

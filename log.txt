@@ -1,6 +1,20 @@
 v1.2.6:
+    description:
+        1. add data_source, a method to apply different feature sets in an experiment.
+        2. add outlier remover: simple_clip (feature-wise) and isolate forest (sample-wise).
+        3. add RemoveDummy: Remove dummy features. Dummy features are those with a constant value.
+        4. add interactive imputer.
+        5. change IO.read_file's read_csv engine to pyarrow
+
     fixed:
-        Lasso_selection's result didn't reset when it was reused.
+        1. Lasso_selection's result didn't reset when it was reused.
+        2. misusing of stratifiedkfold in basic_tuner for regression.
+        3. add regression checker in Pine while setting evaluate cv.
+        4. ensemble_selector z_score adjustment.
+        5. RandomForest_selector, remove arg n_trees.
+        6. Lasso_selection plotting issue.
+        
+    
 
 2024/3/9 v1.2.5:
     description:
@@ -32,6 +46,11 @@ v1.2.6:
             c. https://www.omicsanalyst.ca/docs/Gallery.xhtml
         3. fairness learning (mljar, fairlearn)
         4. cv std
+        5. revise estimator acording to 
+            https://scikit-learn.org/stable/developers/develop.html#estimator-types
+            https://scikit-learn.org/stable/glossary.html#glossary
+            https://scikit-learn.org/stable/auto_examples/miscellaneous/plot_set_output.html#sphx-glr-auto-examples-miscellaneous-plot-set-output-py
+                => pandas output
         n. add parameter dict(json or yaml-like)
 
 

@@ -787,6 +787,7 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
             &#34;n_jobs&#34;: -1,
             &#34;random_state&#34;: self.kernel_seed,
             &#34;verbose&#34;: 0,
+            &#34;max_features&#34;: &#34;sqrt&#34;,
         }
 
         if not default:
@@ -815,7 +816,9 @@ The only reason to do this is that statsmodel provides R-style summary.</p></div
                 score *= -1
         else:
             with parallel_config(backend=&#39;loky&#39;):
-                score = super().evaluate(trial=trial, default=default)
+                score = super().evaluate(trial=trial,
+                                         default=default,
+                                         training=training)
         return score</code></pre>
 </details>
 <div class="desc"><p>Tuning a random forest model.
@@ -1102,7 +1105,7 @@ def name(self) -&gt; str:
 </dd>
 <dt id="PineBioML.model.supervised.Regression.SVM_tuner"><code class="flex name class">
 <span>class <span class="ident">SVM_tuner</span></span>
-<span>(</span><span>kernel: Literal['linear', 'poly', 'rbf', 'sigmoid'] = 'rbf',<br>n_try=25,<br>n_cv=5,<br>target='mse',<br>kernel_seed=None,<br>valid_seed=None,<br>optuna_seed=None,<br>validate_penalty=True)</span>
+<span>(</span><span>n_try=25,<br>n_cv=5,<br>target='mse',<br>kernel_seed=None,<br>valid_seed=None,<br>optuna_seed=None,<br>validate_penalty=True)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -1116,7 +1119,6 @@ def name(self) -&gt; str:
     &#34;&#34;&#34;
 
     def __init__(self,
-                 kernel: Literal[&#34;linear&#34;, &#34;poly&#34;, &#34;rbf&#34;, &#34;sigmoid&#34;] = &#34;rbf&#34;,
                  n_try=25,
                  n_cv=5,
                  target=&#34;mse&#34;,
@@ -1142,10 +1144,9 @@ def name(self) -&gt; str:
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed,
                          validate_penalty=validate_penalty)
-        self.kernel = kernel
 
     def name(self):
-        return self.kernel + &#34;-SVM&#34;
+        return &#34;SVM&#34;
 
     def reference(self) -&gt; dict[str, str]:
         &#34;&#34;&#34;
@@ -1171,13 +1172,15 @@ def name(self) -&gt; str:
     def parms_range(self) -&gt; dict:
         # scaling penalty: https://scikit-learn.org/stable/auto_examples/svm/plot_svm_scale_c.html#sphx-glr-auto-examples-svm-plot-svm-scale-c-py
         return {
+            &#34;kernel&#34;:
+            (&#39;kernel&#39;, &#34;category&#34;, [&#34;linear&#34;, &#34;poly&#34;, &#34;rbf&#34;, &#34;sigmoid&#34;], None),
             &#39;C&#39;: (&#39;C&#39;, &#34;float&#34;, 1e-3 * np.sqrt(self.n_sample),
                   1e+2 * np.sqrt(self.n_sample))
         }
 
     def create_model(self, trial, default=False, training=False):
         parms = {
-            &#34;kernel&#34;: self.kernel,
+            &#34;kernel&#34;: &#34;rbf&#34;,
         }
         if not default:
             parms_to_tune = self.parms_range()

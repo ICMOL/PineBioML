@@ -48,6 +48,10 @@ el.replaceWith(d);
 <dd>
 <div class="desc"></div>
 </dd>
+<dt><code class="name"><a title="PineBioML.preprocessing.outlier" href="outlier.html">PineBioML.preprocessing.outlier</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt><code class="name"><a title="PineBioML.preprocessing.utils" href="utils.html">PineBioML.preprocessing.utils</a></code></dt>
 <dd>
 <div class="desc"></div>
@@ -579,6 +583,177 @@ PowerTransformer(x) = yeo-johnson transform(x)</p>
 </dd>
 </dl>
 </dd>
+<dt id="PineBioML.preprocessing.RemoveDummy"><code class="flex name class">
+<span>class <span class="ident">RemoveDummy</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RemoveDummy():
+    &#34;&#34;&#34; 
+    Remove dummy features. Dummy features are those with a constant value.
+    &#34;&#34;&#34;
+
+    def __init__(self):
+        self.to_drop = []
+
+    def fit(self, x, y=None):
+        &#34;&#34;&#34;
+        Finding the dummy features.
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to normalize.
+            y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.
+
+        Returns:
+            remove: self after fitting.
+        &#34;&#34;&#34;
+        self.to_drop = x.columns[x.nunique() &lt;= 1]
+        return self
+
+    def transform(self, x):
+        &#34;&#34;&#34;
+        Drop the dummy features. Only activates after &#34;fit&#34; was called.
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to drop dummy features.
+
+        Returns:
+            pandas.DataFrame or a 2D array: Cleared x.
+        &#34;&#34;&#34;
+        x_dropped = x.drop(self.to_drop, axis=1)
+
+        return x_dropped
+
+    def fit_transform(self, x, y=None):
+        &#34;&#34;&#34;
+        A functional stack of &#34;fit&#34; and &#34;transform&#34;.
+
+        Args:
+            x (pandas.DataFrame or a 2D array): The data to normalize.
+            y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.
+
+        Returns:
+            pandas.DataFrame or a 2D array: Cleared x.
+        &#34;&#34;&#34;
+        self.fit(x, y)
+        x_dropped = self.transform(x)
+        return x_dropped</code></pre>
+</details>
+<div class="desc"><p>Remove dummy features. Dummy features are those with a constant value.</p></div>
+<h3>Methods</h3>
+<dl>
+<dt id="PineBioML.preprocessing.RemoveDummy.fit"><code class="name flex">
+<span>def <span class="ident">fit</span></span>(<span>self, x, y=None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit(self, x, y=None):
+    &#34;&#34;&#34;
+    Finding the dummy features.
+
+    Args:
+        x (pandas.DataFrame or a 2D array): The data to normalize.
+        y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.
+
+    Returns:
+        remove: self after fitting.
+    &#34;&#34;&#34;
+    self.to_drop = x.columns[x.nunique() &lt;= 1]
+    return self</code></pre>
+</details>
+<div class="desc"><p>Finding the dummy features.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
+<dd>The data to normalize.</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
+<dd>A placeholder only. Normalizer do nothing to y.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>remove</code></dt>
+<dd>self after fitting.</dd>
+</dl></div>
+</dd>
+<dt id="PineBioML.preprocessing.RemoveDummy.fit_transform"><code class="name flex">
+<span>def <span class="ident">fit_transform</span></span>(<span>self, x, y=None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit_transform(self, x, y=None):
+    &#34;&#34;&#34;
+    A functional stack of &#34;fit&#34; and &#34;transform&#34;.
+
+    Args:
+        x (pandas.DataFrame or a 2D array): The data to normalize.
+        y (pandas.Series or a 1D array): A placeholder only. Normalizer do nothing to y.
+
+    Returns:
+        pandas.DataFrame or a 2D array: Cleared x.
+    &#34;&#34;&#34;
+    self.fit(x, y)
+    x_dropped = self.transform(x)
+    return x_dropped</code></pre>
+</details>
+<div class="desc"><p>A functional stack of "fit" and "transform".</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
+<dd>The data to normalize.</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
+<dd>A placeholder only. Normalizer do nothing to y.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
+<dd>Cleared x.</dd>
+</dl></div>
+</dd>
+<dt id="PineBioML.preprocessing.RemoveDummy.transform"><code class="name flex">
+<span>def <span class="ident">transform</span></span>(<span>self, x)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def transform(self, x):
+    &#34;&#34;&#34;
+    Drop the dummy features. Only activates after &#34;fit&#34; was called.
+
+    Args:
+        x (pandas.DataFrame or a 2D array): The data to drop dummy features.
+
+    Returns:
+        pandas.DataFrame or a 2D array: Cleared x.
+    &#34;&#34;&#34;
+    x_dropped = x.drop(self.to_drop, axis=1)
+
+    return x_dropped</code></pre>
+</details>
+<div class="desc"><p>Drop the dummy features. Only activates after "fit" was called.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
+<dd>The data to drop dummy features.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
+<dd>Cleared x.</dd>
+</dl></div>
+</dd>
+</dl>
+</dd>
 </dl>
 </section>
 </article>
@@ -596,6 +771,7 @@ PowerTransformer(x) = yeo-johnson transform(x)</p>
 <ul>
 <li><code><a title="PineBioML.preprocessing.bagging" href="bagging.html">PineBioML.preprocessing.bagging</a></code></li>
 <li><code><a title="PineBioML.preprocessing.impute" href="impute.html">PineBioML.preprocessing.impute</a></code></li>
+<li><code><a title="PineBioML.preprocessing.outlier" href="outlier.html">PineBioML.preprocessing.outlier</a></code></li>
 <li><code><a title="PineBioML.preprocessing.utils" href="utils.html">PineBioML.preprocessing.utils</a></code></li>
 </ul>
 </li>
@@ -617,6 +793,14 @@ PowerTransformer(x) = yeo-johnson transform(x)</p>
 <li><code><a title="PineBioML.preprocessing.Pass.fit_transform" href="#PineBioML.preprocessing.Pass.fit_transform">fit_transform</a></code></li>
 <li><code><a title="PineBioML.preprocessing.Pass.inverse_transform" href="#PineBioML.preprocessing.Pass.inverse_transform">inverse_transform</a></code></li>
 <li><code><a title="PineBioML.preprocessing.Pass.transform" href="#PineBioML.preprocessing.Pass.transform">transform</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="PineBioML.preprocessing.RemoveDummy" href="#PineBioML.preprocessing.RemoveDummy">RemoveDummy</a></code></h4>
+<ul class="">
+<li><code><a title="PineBioML.preprocessing.RemoveDummy.fit" href="#PineBioML.preprocessing.RemoveDummy.fit">fit</a></code></li>
+<li><code><a title="PineBioML.preprocessing.RemoveDummy.fit_transform" href="#PineBioML.preprocessing.RemoveDummy.fit_transform">fit_transform</a></code></li>
+<li><code><a title="PineBioML.preprocessing.RemoveDummy.transform" href="#PineBioML.preprocessing.RemoveDummy.transform">transform</a></code></li>
 </ul>
 </li>
 </ul>

@@ -168,10 +168,17 @@ el.replaceWith(d);
                     # compute the cross validation score on training set
                     fold_scores = []
                     cv_pred = []
-                    cross_validation = StratifiedKFold(
-                        n_splits=self.evaluate_ncv,
-                        shuffle=True,
-                        random_state=133)
+
+                    if model.is_regression():
+                        cross_validation = KFold(n_splits=self.evaluate_ncv,
+                                                 shuffle=True,
+                                                 random_state=133)
+                    else:
+                        cross_validation = StratifiedKFold(
+                            n_splits=self.evaluate_ncv,
+                            shuffle=True,
+                            random_state=133)
+
                     for (train_idx, valid_idx) in cross_validation.split(
                             train_x, train_y):
 
@@ -266,11 +273,13 @@ el.replaceWith(d);
         &#34;&#34;&#34;
         _, models = self.experiment[-1]
 
-        tmp = []
-        for n in list(models)[1:]:
+        params = []
+        for n in list(models):
             m = models[n]
-            tmp.append(m.detail())
-        return concat(tmp, axis=0)</code></pre>
+            tmp = m.detail()
+            if tmp is not None:
+                params.append(tmp)
+        return concat(params, axis=0)</code></pre>
 </details>
 <div class="desc"><p>Deep first traversal the given experiment setting.
 <br>
@@ -424,10 +433,17 @@ Please refer to example_Pine.ipynb for usage.
                 # compute the cross validation score on training set
                 fold_scores = []
                 cv_pred = []
-                cross_validation = StratifiedKFold(
-                    n_splits=self.evaluate_ncv,
-                    shuffle=True,
-                    random_state=133)
+
+                if model.is_regression():
+                    cross_validation = KFold(n_splits=self.evaluate_ncv,
+                                             shuffle=True,
+                                             random_state=133)
+                else:
+                    cross_validation = StratifiedKFold(
+                        n_splits=self.evaluate_ncv,
+                        shuffle=True,
+                        random_state=133)
+
                 for (train_idx, valid_idx) in cross_validation.split(
                         train_x, train_y):
 
@@ -494,11 +510,13 @@ the socres and path will be stored in self.result amd self.____pred, so there is
     &#34;&#34;&#34;
     _, models = self.experiment[-1]
 
-    tmp = []
-    for n in list(models)[1:]:
+    params = []
+    for n in list(models):
         m = models[n]
-        tmp.append(m.detail())
-    return concat(tmp, axis=0)</code></pre>
+        tmp = m.detail()
+        if tmp is not None:
+            params.append(tmp)
+    return concat(params, axis=0)</code></pre>
 </details>
 <div class="desc"><p>show the experiment settings including:
 <br>
@@ -795,6 +813,89 @@ if multi_class_extra is True, then one vs rest macro_auc, cross_entropy and cohe
 </dd>
 </dl>
 </dd>
+<dt id="PineBioML.model.utils.data_source"><code class="flex name class">
+<span>class <span class="ident">data_source</span></span>
+<span>(</span><span>train_x: pandas.core.frame.DataFrame,<br>test_x: pandas.core.frame.DataFrame = None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class data_source():
+    &#34;&#34;&#34;
+    The data_source is a placeholder for various data source. it will override the data flow of Pine.
+    Notice that the label y and the order should the same for each datasource.
+    &#34;&#34;&#34;
+
+    def __init__(
+        self,
+        train_x: DataFrame,
+        test_x: DataFrame = None,
+    ):
+        self.train_x = train_x
+        self.test_x = test_x
+
+    def fit(self, x: DataFrame, y: Series):
+
+        return self
+
+    def transform(self, x: DataFrame):
+
+        return self.test_x
+
+    def fit_transform(self, x: DataFrame, y: Series):
+
+        return self.train_x</code></pre>
+</details>
+<div class="desc"><p>The data_source is a placeholder for various data source. it will override the data flow of Pine.
+Notice that the label y and the order should the same for each datasource.</p></div>
+<h3>Methods</h3>
+<dl>
+<dt id="PineBioML.model.utils.data_source.fit"><code class="name flex">
+<span>def <span class="ident">fit</span></span>(<span>self, x: pandas.core.frame.DataFrame, y: pandas.core.series.Series)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit(self, x: DataFrame, y: Series):
+
+    return self</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="PineBioML.model.utils.data_source.fit_transform"><code class="name flex">
+<span>def <span class="ident">fit_transform</span></span>(<span>self, x: pandas.core.frame.DataFrame, y: pandas.core.series.Series)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit_transform(self, x: DataFrame, y: Series):
+
+    return self.train_x</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="PineBioML.model.utils.data_source.transform"><code class="name flex">
+<span>def <span class="ident">transform</span></span>(<span>self, x: pandas.core.frame.DataFrame)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def transform(self, x: DataFrame):
+
+    return self.test_x</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
 <dt id="PineBioML.model.utils.regression_scorer"><code class="flex name class">
 <span>class <span class="ident">regression_scorer</span></span>
 <span>(</span><span>prefix: str = '', target_label: str = None)</span>
@@ -994,7 +1095,13 @@ if y_true and y_pred are all positive, then mape(mean absolute percentage error)
         else:
             raise NotImplementedError(
                 &#34;{} do not have attribute &#39;predict_proba&#39;.&#34;.format(
-                    self.kernel.__str__()))</code></pre>
+                    self.kernel.__str__()))
+
+    def is_regression(self) -&gt; bool:
+        return is_regressor(self.kernel)
+
+    def detail(self):
+        return None</code></pre>
 </details>
 <div class="desc"><p>A basic wrapper for sklearn_esitimator. It transfer the data pipeline of sklearn from numpy.array to pandas.DataFrame.
 <br>
@@ -1006,6 +1113,19 @@ If you want to pass any model with api in sklearn style into Pine, you should wr
 </dl></div>
 <h3>Methods</h3>
 <dl>
+<dt id="PineBioML.model.utils.sklearn_esitimator_wrapper.detail"><code class="name flex">
+<span>def <span class="ident">detail</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def detail(self):
+    return None</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
 <dt id="PineBioML.model.utils.sklearn_esitimator_wrapper.fit"><code class="name flex">
 <span>def <span class="ident">fit</span></span>(<span>self, x: pandas.core.frame.DataFrame, y: pandas.core.series.Series, retune=True) ‑> object</span>
 </code></dt>
@@ -1045,6 +1165,19 @@ If you want to pass any model with api in sklearn style into Pine, you should wr
 <dt><code>object</code></dt>
 <dd>A sklearn_esitimator within pandas data flow.</dd>
 </dl></div>
+</dd>
+<dt id="PineBioML.model.utils.sklearn_esitimator_wrapper.is_regression"><code class="name flex">
+<span>def <span class="ident">is_regression</span></span>(<span>self) ‑> bool</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def is_regression(self) -&gt; bool:
+    return is_regressor(self.kernel)</code></pre>
+</details>
+<div class="desc"></div>
 </dd>
 <dt id="PineBioML.model.utils.sklearn_esitimator_wrapper.predict"><code class="name flex">
 <span>def <span class="ident">predict</span></span>(<span>self, x: pandas.core.frame.DataFrame) ‑> pandas.core.series.Series</span>
@@ -1163,6 +1296,14 @@ If you want to pass any model with api in sklearn style into Pine, you should wr
 </ul>
 </li>
 <li>
+<h4><code><a title="PineBioML.model.utils.data_source" href="#PineBioML.model.utils.data_source">data_source</a></code></h4>
+<ul class="">
+<li><code><a title="PineBioML.model.utils.data_source.fit" href="#PineBioML.model.utils.data_source.fit">fit</a></code></li>
+<li><code><a title="PineBioML.model.utils.data_source.fit_transform" href="#PineBioML.model.utils.data_source.fit_transform">fit_transform</a></code></li>
+<li><code><a title="PineBioML.model.utils.data_source.transform" href="#PineBioML.model.utils.data_source.transform">transform</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="PineBioML.model.utils.regression_scorer" href="#PineBioML.model.utils.regression_scorer">regression_scorer</a></code></h4>
 <ul class="">
 <li><code><a title="PineBioML.model.utils.regression_scorer.score" href="#PineBioML.model.utils.regression_scorer.score">score</a></code></li>
@@ -1171,7 +1312,9 @@ If you want to pass any model with api in sklearn style into Pine, you should wr
 <li>
 <h4><code><a title="PineBioML.model.utils.sklearn_esitimator_wrapper" href="#PineBioML.model.utils.sklearn_esitimator_wrapper">sklearn_esitimator_wrapper</a></code></h4>
 <ul class="">
+<li><code><a title="PineBioML.model.utils.sklearn_esitimator_wrapper.detail" href="#PineBioML.model.utils.sklearn_esitimator_wrapper.detail">detail</a></code></li>
 <li><code><a title="PineBioML.model.utils.sklearn_esitimator_wrapper.fit" href="#PineBioML.model.utils.sklearn_esitimator_wrapper.fit">fit</a></code></li>
+<li><code><a title="PineBioML.model.utils.sklearn_esitimator_wrapper.is_regression" href="#PineBioML.model.utils.sklearn_esitimator_wrapper.is_regression">is_regression</a></code></li>
 <li><code><a title="PineBioML.model.utils.sklearn_esitimator_wrapper.predict" href="#PineBioML.model.utils.sklearn_esitimator_wrapper.predict">predict</a></code></li>
 <li><code><a title="PineBioML.model.utils.sklearn_esitimator_wrapper.predict_proba" href="#PineBioML.model.utils.sklearn_esitimator_wrapper.predict_proba">predict_proba</a></code></li>
 </ul>
