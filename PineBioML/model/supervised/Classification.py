@@ -440,7 +440,7 @@ class SVM_tuner(Classification_tuner):
     def create_model(self, trial, default=False, training=False):
         parms = {
             "kernel": "rbf",
-            #"random_state": self.kernel_seed,
+            "random_state": self.kernel_seed,
             "probability": True,
             "gamma": "auto"
         }

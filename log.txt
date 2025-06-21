@@ -1,4 +1,4 @@
-v1.2.6:
+2025/4/16 v1.2.6:
     description:
         1. add data_source, a method to apply different feature sets in an experiment.
         2. add outlier remover: simple_clip (feature-wise) and isolate forest (sample-wise).
@@ -12,16 +12,15 @@ v1.2.6:
         3. add regression checker in Pine while setting evaluate cv.
         4. ensemble_selector z_score adjustment.
         5. RandomForest_selector, remove arg n_trees.
-        6. Lasso_selection plotting issue.
-        
+        6. Lasso_selection plotting issue.        
     
 
-2024/3/9 v1.2.5:
+2025/3/9 v1.2.5:
     description:
         1. rollback: threshold picking for binary classification.
 
 
-2024/3/5 v1.2.4:
+2025/3/5 v1.2.4:
     description:
         1. change the backend of Lasso_selection from LassoRegression to LassoLars. there is still some numerical issue when penalty is low. 
             a. 50x faster than Lasso bisection
