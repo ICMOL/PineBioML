@@ -12,7 +12,7 @@ PineBioML is available on PyPI. You can access it through:
 
 For those who do not know how to use python, you can follow our step by step Installation tutorials.
  - [Windows10/11](./documents/Installization/win11/win11.md)
- - MacOs
+ - [MacOs](./documents/Installization/macos/macos.md)
 
 # Examples
 After installation, you can download examples from release.
