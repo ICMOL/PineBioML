@@ -82,14 +82,14 @@ In addition to the convenient Python package download, we also provide comprehen
 ### 4. Model building
 |        ID         |        Option         |  Definition |
 |---------------------|----------------|------------------------------|
-|  1 | ElasticNet    | Using Optuna to find a not-bad hyper parameters on given dataset.   |  |
-|  2 | SVM       | Using Optuna to find a not-bad hyper parameters on given dataset. |   |
-|  3 | Decision Tree | Using Optuna to find a not-bad hyper parameters on given dataset.  |  |
-|  4 | Random Forest | Using Optuna to find a not-bad hyper parameters on given dataset.  |  |
-|  5 | AdaBoost | Using Optuna to find a not-bad hyper parameters on given dataset.  |  |
-|  6 | XGBoost | Using Optuna to find a not-bad hyper parameters on given dataset.  |  |
-|  7 | LightGBM | Using Optuna to find a not-bad hyper parameters on given dataset.  |  |
-|  8 | CatBoost | Using Optuna to find a not-bad hyper parameters on given dataset.  |  |
+|  1 | ElasticNet    |  -  | It combines L1 and L2 regularization, handling multicollinearity and selecting important features effectively. |
+|  2 | SVM       | - |   |
+|  3 | Decision Tree | -  |  |
+|  4 | Random Forest | - |  |
+|  5 | AdaBoost | -  |  |
+|  6 | XGBoost | -  |  |
+|  7 | LightGBM | -  |  |
+|  8 | CatBoost | -  |  |
 
 ### 5. Report and visualization
 |        ID         |        Option         |  Definition |
@@ -107,6 +107,7 @@ The example data is from [LinkedOmicsKB](https://kb.linkedomics.org/)
 
 # Questions
 If you encounter any issues or have any questions while using this software or website, you are welcome to ask or discuss them in GitHub Issues. We will do our best to provide assistance and answers there.
+
 
 
 
