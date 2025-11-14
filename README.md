@@ -3,8 +3,12 @@ In today’s data-driven world, making informed decisions requires more than jus
 
 ![image](./documents/images/workflow/PineBioML_workflow_v6.png) 
 
+# PineBioML Website
+To make PineBioML effortless to use, we’ve built an intuitive, seamless, and powerful web platform. Whether you’re a new researcher or a professional analyst seeking high efficiency, you can complete even the most complex analyses with just a few simple steps. Clear interface design, intelligent workflow guidance, and interactive visualizations help you uncover answers faster, spot trends sooner, and make decisions with confidence.
+> http://pinebioml.icmol.ncu.edu.tw/
+
 # System requirements
-Python 3.9, 3.10, 3.11
+Compatible with Python 3.9, 3.10, and 3.11.
 
 # Installation
 PineBioML is available on PyPI. You can access it through:
@@ -93,3 +97,4 @@ Click the buttom and the script should start.
 # Cites
 The example data is from [LinkedOmicsKB](https://kb.linkedomics.org/)
 >  **A proteogenomics data-driven knowledge base of human cancer**, Yuxing Liao, Sara R. Savage, Yongchao Dou, Zhiao Shi, Xinpei Yi, Wen Jiang, Jonathan T. Lei, Bing Zhang, Cell Systems, 2023.
+
