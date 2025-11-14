@@ -3,11 +3,15 @@ In today’s data-driven world, making informed decisions requires more than jus
 
 ![image](./documents/images/workflow/PineBioML_workflow_v6.png) 
 
-
+<br>
+<br>
 
 # Website
 To make PineBioML effortless to use, we’ve built an intuitive, seamless, and powerful web platform. Whether you’re a new researcher or a professional analyst seeking high efficiency, you can complete even the most complex analyses with just a few simple steps. Clear interface design, intelligent workflow guidance, and interactive visualizations help you uncover answers faster, spot trends sooner, and make decisions with confidence.
 > http://pinebioml.icmol.ncu.edu.tw/
+
+<br>
+<br>
 
 # Downloadable package
 To give users even more flexibility, PineBioML is also available as a Python package that you can easily download and use within your own working environment. In today’s data-driven era, PineBioML empowers you not only to access data but to uncover deep, meaningful insights with ease. From preprocessing and feature selection to dynamic visualization, you can rely on advanced machine learning algorithms and an intuitive analysis workflow to extract truly valuable information effortlessly.
@@ -40,7 +44,9 @@ Chosse one of the following examples, double click it in jupyter interface:
 ### Execute the scripts
 Click the buttom and the script should start.
 ![image](./documents/images/tutorial/jupyter_runall.png)
-</br>
+
+<br>
+<br>
 
 # Features
 
@@ -95,14 +101,19 @@ Click the buttom and the script should start.
 |  1 | data_overview  | Giving a glance to input data.   |  |
 |  2 | classification_summary | Summarizing a classification task |  |
 
+<br>
+<br>
 
 # Contact us
 > 112826006@cc.ncu.edu.tw
 
+<br>
+<br>
 
 # Data for test
 The example data is from [LinkedOmicsKB](https://kb.linkedomics.org/)
 >  **A proteogenomics data-driven knowledge base of human cancer**, Yuxing Liao, Sara R. Savage, Yongchao Dou, Zhiao Shi, Xinpei Yi, Wen Jiang, Jonathan T. Lei, Bing Zhang, Cell Systems, 2023.
+
 
 
 
