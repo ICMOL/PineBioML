@@ -38,8 +38,9 @@ Chosse one of the following examples, double click it in jupyter interface:
 ### Execute the scripts
 Click the buttom and the script should start.
 ![image](./documents/images/tutorial/jupyter_runall.png)
+</br>
 
-### Features
+# Features
 
 ### 0. Document
 
@@ -100,6 +101,7 @@ Click the buttom and the script should start.
 # Data for test
 The example data is from [LinkedOmicsKB](https://kb.linkedomics.org/)
 >  **A proteogenomics data-driven knowledge base of human cancer**, Yuxing Liao, Sara R. Savage, Yongchao Dou, Zhiao Shi, Xinpei Yi, Wen Jiang, Jonathan T. Lei, Bing Zhang, Cell Systems, 2023.
+
 
 
 
