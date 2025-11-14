@@ -47,9 +47,8 @@ Click the buttom and the script should start.
 
 # Features
 
-### 0. Document
-
-[API](https://htmlpreview.github.io/?https://github.com/ICMOL/PineBioML/blob/main/documents/API/index.html)
+In addition to the convenient Python package download, we also provide comprehensive API documentation to help users quickly get started and fully leverage every feature of PineBioML. Whether you are a data scientist, researcher, or biomedical data analyst, our package and documentation allow you to effortlessly perform the entire workflow—from preprocessing and feature selection to dynamic visualization—and uncover the most valuable insights. 
+> [API](https://htmlpreview.github.io/?https://github.com/ICMOL/PineBioML/blob/main/documents/API/index.html)
 
 ### 1. Missing value preprocess
 |        ID         |        Option         |  Definition |
@@ -108,6 +107,7 @@ Click the buttom and the script should start.
 # Data for test
 The example data is from [LinkedOmicsKB](https://kb.linkedomics.org/)
 >  **A proteogenomics data-driven knowledge base of human cancer**, Yuxing Liao, Sara R. Savage, Yongchao Dou, Zhiao Shi, Xinpei Yi, Wen Jiang, Jonathan T. Lei, Bing Zhang, Cell Systems, 2023.
+
 
 
 
