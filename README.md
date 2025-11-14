@@ -99,14 +99,15 @@ In addition to the convenient Python package download, we also provide comprehen
 
 <br>
 
-# Data for test
-The example data is from [LinkedOmicsKB](https://kb.linkedomics.org/)
+# Data for Test
+The test data is downloaded from [LinkedOmicsKB](https://kb.linkedomics.org/)
 >  **A proteogenomics data-driven knowledge base of human cancer**, Yuxing Liao, Sara R. Savage, Yongchao Dou, Zhiao Shi, Xinpei Yi, Wen Jiang, Jonathan T. Lei, Bing Zhang, Cell Systems, 2023.
 
 <br>
 
 # Questions
 If you encounter any issues or have any questions while using this software or website, you are welcome to ask or discuss them in GitHub Issues. We will do our best to provide assistance and answers there.
+
 
 
 
