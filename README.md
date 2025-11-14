@@ -82,7 +82,7 @@ In addition to the convenient Python package download, we also provide comprehen
 ### 4. Model building
 |        ID         |        Option         |  Definition |
 |---------------------|----------------|------------------------------|
-|  1 | ElasticNet    |  -  | It combines L1 and L2 regularization, handling multicollinearity and selecting important features effectively. |
+|  1 | ElasticNet    |  It combines L1 and L2 regularization, handling multicollinearity and selecting important features effectively.  |  |
 |  2 | SVM       | - |   |
 |  3 | Decision Tree | -  |  |
 |  4 | Random Forest | - |  |
@@ -107,6 +107,7 @@ The example data is from [LinkedOmicsKB](https://kb.linkedomics.org/)
 
 # Questions
 If you encounter any issues or have any questions while using this software or website, you are welcome to ask or discuss them in GitHub Issues. We will do our best to provide assistance and answers there.
+
 
 
 
