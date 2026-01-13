@@ -13,11 +13,13 @@ class Volcano_selection(SelectionPipeline):
 
     def __init__(self,
                  k,
+                 z_importance_threshold=1.,
                  strategy="fold",
                  p_threshold=0.05,
                  fc_threshold=2,
                  log_domain=False,
-                 absolute=True):
+                 absolute=True,
+                 target_label=1):
         """
 
         Args:
@@ -26,8 +28,9 @@ class Volcano_selection(SelectionPipeline):
             fc_threshold (int, optional): fold change threshold. Only feature has fold change higher than threshold will be considered. Defaults to 2.
             log_domain (bool, optional): Whether input data is in log_domain. Defaults to False.
             absolute (bool, optional): If true, then take absolute value on score while strategy == "p". Defaults to True.
+            target_label : the target label.
         """
-        super().__init__(k=k)
+        super().__init__(k=k, z_importance_threshold=z_importance_threshold)
         self.strategy = strategy
         self.fc_threshold = fc_threshold
         self.p_threshold = p_threshold
@@ -35,6 +38,7 @@ class Volcano_selection(SelectionPipeline):
         self.absolute = absolute
         self.name = "Volcano Plot_" + self.strategy
         self.missing_value = 0
+        self.target_label = target_label
 
     def Scoring(self, x, y):
         """
@@ -47,8 +51,8 @@ class Volcano_selection(SelectionPipeline):
         Returns:
            pandas.DataFrame: A dataframe records p-value and fold change.
         """
-        positive = y == 1
-        negative = y == 0
+        positive = y == self.target_label
+        negative = np.logical_not(positive)
 
         x = x.replace(0, np.nan)
 
@@ -86,15 +90,15 @@ class Volcano_selection(SelectionPipeline):
         p_value = t.cdf(x=-t_statistic, df=df) * 2
         log_p = -np.log10(p_value)
 
-        self.scores = pd.DataFrame(
+        scores = pd.DataFrame(
             {
                 "log_p_value": log_p,
                 "log_fold_change": log_fold
             },
             index=log_fold.index)
-        return self.scores.copy()
+        return scores
 
-    def Choose(self, scores):
+    def Select(self, scores):
         """
         Choosing the features which has score higher than threshold in assigned strategy.
 
@@ -139,9 +143,7 @@ class Volcano_selection(SelectionPipeline):
         else:
             raise "select_by must be one of {fold} or {p}"
 
-        # volcano plot importance
-        self.selected_score = selected_score
-        return self.selected_score.copy()
+        return selected_score
 
     def plotting(self,
                  external=False,

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.5">
+<meta name="generator" content="pdoc3 0.11.6">
 <title>PineBioML.model.supervised API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
@@ -57,93 +57,13 @@ el.replaceWith(d);
 <section>
 </section>
 <section>
-<h2 class="section-title" id="header-functions">Functions</h2>
-<dl>
-<dt id="PineBioML.model.supervised.randint"><code class="name flex">
-<span>def <span class="ident">randint</span></span>(<span>low, high=None, size=None, dtype=builtins.int)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Return random integers from <code>low</code> (inclusive) to <code>high</code> (exclusive).</p>
-<p>Return random integers from the "discrete uniform" distribution of
-the specified dtype in the "half-open" interval [<code>low</code>, <code>high</code>). If
-<code>high</code> is None (the default), then results are from [0, <code>low</code>).</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>New code should use the <code>~numpy.random.Generator.integers</code>
-method of a <code>~numpy.random.Generator</code> instance instead;
-please see the :ref:<code>random-quick-start</code>.</p>
-</div>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>low</code></strong> :&ensp;<code>int</code> or <code>array-like</code> of <code>ints</code></dt>
-<dd>Lowest (signed) integers to be drawn from the distribution (unless
-<code>high=None</code>, in which case this parameter is one above the
-<em>highest</em> such integer).</dd>
-<dt><strong><code>high</code></strong> :&ensp;<code>int</code> or <code>array-like</code> of <code>ints</code>, optional</dt>
-<dd>If provided, one above the largest (signed) integer to be drawn
-from the distribution (see above for behavior if <code>high=None</code>).
-If array-like, must contain integer values</dd>
-<dt><strong><code>size</code></strong> :&ensp;<code>int</code> or <code>tuple</code> of <code>ints</code>, optional</dt>
-<dd>Output shape.
-If the given shape is, e.g., <code>(m, n, k)</code>, then
-<code>m * n * k</code> samples are drawn.
-Default is None, in which case a
-single value is returned.</dd>
-<dt><strong><code>dtype</code></strong> :&ensp;<code>dtype</code>, optional</dt>
-<dd>
-<p>Desired dtype of the result. Byteorder must be native.
-The default value is int.</p>
-<div class="admonition versionadded">
-<p class="admonition-title">Added in version:&ensp;1.11.0</p>
-</div>
-</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>out</code></strong> :&ensp;<code>int</code> or <code>ndarray</code> of <code>ints</code></dt>
-<dd><code>size</code>-shaped array of random integers from the appropriate
-distribution, or a single such random int if <code>size</code> not provided.</dd>
-</dl>
-<h2 id="see-also">See Also</h2>
-<dl>
-<dt><code>random_integers</code></dt>
-<dd>similar to <code><a title="PineBioML.model.supervised.randint" href="#PineBioML.model.supervised.randint">RandomState.randint()</a></code>, only for the closed interval [<code>low</code>, <code>high</code>], and 1 is the lowest value if <code>high</code> is omitted.</dd>
-<dt><code>random.Generator.integers</code></dt>
-<dd>which should be used for new code.</dd>
-</dl>
-<h2 id="examples">Examples</h2>
-<pre><code class="language-python-repl">&gt;&gt;&gt; np.random.randint(2, size=10)
-array([1, 0, 0, 0, 1, 1, 0, 0, 1, 0]) # random
-&gt;&gt;&gt; np.random.randint(1, size=10)
-array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-</code></pre>
-<p>Generate a 2 x 4 array of ints between 0 and 4, inclusive:</p>
-<pre><code class="language-python-repl">&gt;&gt;&gt; np.random.randint(5, size=(2, 4))
-array([[4, 0, 2, 1], # random
-       [3, 2, 2, 0]])
-</code></pre>
-<p>Generate a 1 x 3 array with 3 different upper bounds</p>
-<pre><code class="language-python-repl">&gt;&gt;&gt; np.random.randint(1, [3, 5, 10])
-array([2, 2, 9]) # random
-</code></pre>
-<p>Generate a 1 by 3 array with 3 different lower bounds</p>
-<pre><code class="language-python-repl">&gt;&gt;&gt; np.random.randint([1, 5, 7], 10)
-array([9, 8, 7]) # random
-</code></pre>
-<p>Generate a 2 by 4 array using broadcasting with dtype of uint8</p>
-<pre><code class="language-python-repl">&gt;&gt;&gt; np.random.randint([1, 3, 5, 7], [[10], [20]], dtype=np.uint8)
-array([[ 8,  6,  9,  7], # random
-       [ 1, 16,  9, 12]], dtype=uint8)
-</code></pre></div>
-</dd>
-</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
 <dt id="PineBioML.model.supervised.Basic_tuner"><code class="flex name class">
 <span>class <span class="ident">Basic_tuner</span></span>
-<span>(</span><span>n_try: int,<br>n_cv: int,<br>target: str,<br>validate_penalty: bool,<br>kernel_seed: int = None,<br>valid_seed: int = None,<br>optuna_seed: int = None)</span>
+<span>(</span><span>n_try: int,<br>n_cv: int,<br>target: str,<br>validate_penalty: bool,<br>TT_coef: float,<br>kernel_seed: int = None,<br>valid_seed: int = None,<br>optuna_seed: int = None)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -153,15 +73,13 @@ array([[ 8,  6,  9,  7], # random
 <pre><code class="python">class Basic_tuner(ABC):
     &#34;&#34;&#34;
     The base class of tuner. A tuner is a wrapper of optuna + models    
+
     What the tuners do:    
         1. interface of optuna and models with sklearn api style    
         2. randomity management.    
         3. providing a uniform interface to regression and classiciation(binary and multi-class)    
-
     To conserve the reproducibility and to reduce the hyper parameter overfitting along the process of hyper parameter tuning,    
     we first using valid_seed to randomly initialize a tape of integers and it will sequentially be used in optuna trials.    
-
-
     &#34;&#34;&#34;
 
     def __init__(self,
@@ -169,6 +87,7 @@ array([[ 8,  6,  9,  7], # random
                  n_cv: int,
                  target: str,
                  validate_penalty: bool,
+                 TT_coef: float,
                  kernel_seed: int = None,
                  valid_seed: int = None,
                  optuna_seed: int = None):
@@ -178,7 +97,8 @@ array([[ 8,  6,  9,  7], # random
             n_try (int): The number of trials optuna should try.
             n_cv (int): The number of folds to execute cross validation evaluation in iteration of optuna optimization.
             target (str): The target of optuna optimization. Notice that is different from the training loss of model.
-            validate_penalty (bool): True to penalty the overfitting by difference between training score and cv score.
+            validate_penalty (bool): Deprecated.
+            TT_coef (float): The power of penalty to overfitting by Tibshirani &amp; Tibshirani method. Ranges in [0, 1]. Add the difference between training score and cv score to the optimization target.
             kernel_seed (int, optional): Random seed for model. Defaults to None.
             valid_seed (int, optional): Random seed for cross validation. Defaults to None.
             optuna_seed (int, optional): Random seed for optuna&#39;s hyperparameter sampling. Defaults to None.
@@ -191,11 +111,20 @@ array([[ 8,  6,  9,  7], # random
         &#34;&#34;&#34;
         self.y_mapping = LabelEncoder()
 
-        self.validate_penalty = validate_penalty
+        if validate_penalty == True:
+            warnings.warn(
+                &#34;validate_penalty will be remove in future. Use argument TT_coef.&#34;,
+                DeprecationWarning,
+                stacklevel=2)
+            self.TT_coef = TT_coef
+        else:
+            self.TT_coef = 0
 
         self.n_cv = n_cv
+        self.optuna_early_stop_counter = n_cv // 10 + 2
         self.n_try = n_try
         self.n_sample = 1
+        self.n_opt_jobs = 1
         self.default = False
         self.training = True
 
@@ -238,6 +167,8 @@ array([[ 8,  6,  9,  7], # random
         # the stopping point of early stopping for Boosting methods.
         self.stop_points = zeros(self.n_try, dtype=int)
 
+        self.explainer = None
+
     def reference(self) -&gt; dict[str, str]:
         &#34;&#34;&#34;
         This function will return reference of this method in python dict.    
@@ -259,6 +190,8 @@ array([[ 8,  6,  9,  7], # random
     @abstractmethod
     def name(self) -&gt; str:
         &#34;&#34;&#34;
+        To be determined.
+
         Returns:
             str: Name of this tuner.
         &#34;&#34;&#34;
@@ -274,9 +207,15 @@ array([[ 8,  6,  9,  7], # random
 
     def using_earlystopping(self) -&gt; bool:
         &#34;&#34;&#34;
-
         Returns:
             bool: True if applying earlystopping in optimizing training.
+        &#34;&#34;&#34;
+        return False
+
+    def accepting_categorical_features(self) -&gt; bool:
+        &#34;&#34;&#34;
+        Returns:
+            bool: Ture if kernel receives categorical (discreate) features.
         &#34;&#34;&#34;
         return False
 
@@ -346,7 +285,7 @@ array([[ 8,  6,  9,  7], # random
             valid_data (tuple): (valid_x, valid_y) .
 
         Returns:
-            classification object: fitted object.
+            sklearn.base.BaseEstimator: A fitted sklearn style model object.
         &#34;&#34;&#34;
         train_x, train_y = train_data
         valid_x, valid_y = valid_data
@@ -448,10 +387,7 @@ array([[ 8,  6,  9,  7], # random
             test_score = self.metric(fitted_clr, x_test, y_test)
             train_score = self.metric(fitted_clr, x_train, y_train)
 
-            if self.validate_penalty:
-                score[i] = test_score + 0.1 * (test_score - train_score)
-            else:
-                score[i] = test_score
+            score[i] = test_score + self.TT_coef * (test_score - train_score)
 
         # averaging over cv
         if training:
@@ -480,7 +416,9 @@ array([[ 8,  6,  9,  7], # random
         self.check_task()
 
         # Make the sampler behave in a deterministic way.
-        sampler = TPESampler(seed=self.optuna_seed)
+        sampler = TPESampler(seed=self.optuna_seed,
+                             multivariate=True,
+                             n_startup_trials=self.n_try // 3)
         self.study = optuna.create_study(direction=&#34;maximize&#34;, sampler=sampler)
 
         print(
@@ -492,7 +430,9 @@ array([[ 8,  6,  9,  7], # random
         self.default = False
         self.study.optimize(self.evaluate,
                             n_trials=self.n_try,
-                            show_progress_bar=False)
+                            show_progress_bar=False,
+                            callbacks=[self.early_stop_callback],
+                            n_jobs=self.n_opt_jobs)
         self.optuna_model = self.create_model(self.study.best_trial,
                                               default=False,
                                               training=False)
@@ -687,6 +627,7 @@ array([[ 8,  6,  9,  7], # random
             scorer_kargs.pop(&#39;greater_is_better&#39;)
         else:
             self.metric_great_better = True
+        self.metric_limit = 1 if self.metric_great_better else 0
 
         ### pos_label for f1 socres
         if &#34;pos_label&#34; in scorer_kargs:
@@ -708,6 +649,31 @@ array([[ 8,  6,  9,  7], # random
                       annotation_text=&#34;Default setting&#34;,
                       annotation_position=&#34;bottom right&#34;)
         io.show(fig)
+
+    def _explainer(self, x: DataFrame) -&gt; Explainer:
+        print(&#34;Not implement&#34;)
+        return None
+
+    def shap_explain(self, x: DataFrame) -&gt; DataFrame:
+        &#34;&#34;&#34;
+
+        Args:
+            x (DataFrame): the data to be explained which has shape (Samples, Features).
+        
+        Returns:
+            explainer (shap.Explaination): Indexing by (Features, Output, Samples)
+        &#34;&#34;&#34;
+        self.explainer = self._explainer(x)
+        return self.explainer(x)
+
+    def early_stop_callback(self, study, trial):
+        if trial.value &gt;= self.metric_limit:
+            self.optuna_early_stop_counter -= 1
+            if self.optuna_early_stop_counter &lt;= 0:
+                print(&#34;optuna evaluate value {} reachs {}&#39;s maximun value {}&#34;.
+                      format(study.best_value, self.metric_name,
+                             self.metric_limit))
+                study.stop()
 
     def detail(self):
         &#34;&#34;&#34;
@@ -744,16 +710,16 @@ array([[ 8,  6,  9,  7], # random
         return concat([name_holder, parms_range], axis=0)</code></pre>
 </details>
 <div class="desc"><p>The base class of tuner. A tuner is a wrapper of optuna + models
-<br>
-What the tuners do:
+</p>
+<p>What the tuners do:
 <br>
 1. interface of optuna and models with sklearn api style
 <br>
 2. randomity management.
 <br>
 3. providing a uniform interface to regression and classiciation(binary and multi-class)
-</p>
-<p>To conserve the reproducibility and to reduce the hyper parameter overfitting along the process of hyper parameter tuning,
+<br>
+To conserve the reproducibility and to reduce the hyper parameter overfitting along the process of hyper parameter tuning,
 <br>
 we first using valid_seed to randomly initialize a tape of integers and it will sequentially be used in optuna trials.
 </p>
@@ -766,7 +732,9 @@ we first using valid_seed to randomly initialize a tape of integers and it will 
 <dt><strong><code>target</code></strong> :&ensp;<code>str</code></dt>
 <dd>The target of optuna optimization. Notice that is different from the training loss of model.</dd>
 <dt><strong><code>validate_penalty</code></strong> :&ensp;<code>bool</code></dt>
-<dd>True to penalty the overfitting by difference between training score and cv score.</dd>
+<dd>Deprecated.</dd>
+<dt><strong><code>TT_coef</code></strong> :&ensp;<code>float</code></dt>
+<dd>The power of penalty to overfitting by Tibshirani &amp; Tibshirani method. Ranges in [0, 1]. Add the difference between training score and cv score to the optimization target.</dd>
 <dt><strong><code>kernel_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
 <dd>Random seed for model. Defaults to None.</dd>
 <dt><strong><code>valid_seed</code></strong> :&ensp;<code>int</code>, optional</dt>
@@ -792,6 +760,27 @@ we first using valid_seed to randomly initialize a tape of integers and it will 
 </ul>
 <h3>Methods</h3>
 <dl>
+<dt id="PineBioML.model.supervised.Basic_tuner.accepting_categorical_features"><code class="name flex">
+<span>def <span class="ident">accepting_categorical_features</span></span>(<span>self) ‑> bool</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def accepting_categorical_features(self) -&gt; bool:
+    &#34;&#34;&#34;
+    Returns:
+        bool: Ture if kernel receives categorical (discreate) features.
+    &#34;&#34;&#34;
+    return False</code></pre>
+</details>
+<div class="desc"><h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>Ture if kernel receives categorical (discreate) features.</dd>
+</dl></div>
+</dd>
 <dt id="PineBioML.model.supervised.Basic_tuner.check_task"><code class="name flex">
 <span>def <span class="ident">check_task</span></span>(<span>self) ‑> bool</span>
 </code></dt>
@@ -846,6 +835,7 @@ we first using valid_seed to randomly initialize a tape of integers and it will 
         scorer_kargs.pop(&#39;greater_is_better&#39;)
     else:
         self.metric_great_better = True
+    self.metric_limit = 1 if self.metric_great_better else 0
 
     ### pos_label for f1 socres
     if &#34;pos_label&#34; in scorer_kargs:
@@ -995,6 +985,25 @@ sklearn.base.BaseEstimator: A sklearn style model object.</p></div>
 <h2 id="returns">Returns</h2>
 <p>pandas.DataFrame</p></div>
 </dd>
+<dt id="PineBioML.model.supervised.Basic_tuner.early_stop_callback"><code class="name flex">
+<span>def <span class="ident">early_stop_callback</span></span>(<span>self, study, trial)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def early_stop_callback(self, study, trial):
+    if trial.value &gt;= self.metric_limit:
+        self.optuna_early_stop_counter -= 1
+        if self.optuna_early_stop_counter &lt;= 0:
+            print(&#34;optuna evaluate value {} reachs {}&#39;s maximun value {}&#34;.
+                  format(study.best_value, self.metric_name,
+                         self.metric_limit))
+            study.stop()</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
 <dt id="PineBioML.model.supervised.Basic_tuner.evaluate"><code class="name flex">
 <span>def <span class="ident">evaluate</span></span>(<span>self, trial, default=None, training=None) ‑> float</span>
 </code></dt>
@@ -1085,10 +1094,7 @@ sklearn.base.BaseEstimator: A sklearn style model object.</p></div>
         test_score = self.metric(fitted_clr, x_test, y_test)
         train_score = self.metric(fitted_clr, x_train, y_train)
 
-        if self.validate_penalty:
-            score[i] = test_score + 0.1 * (test_score - train_score)
-        else:
-            score[i] = test_score
+        score[i] = test_score + self.TT_coef * (test_score - train_score)
 
     # averaging over cv
     if training:
@@ -1274,12 +1280,15 @@ def is_regression(self) -&gt; bool:
 <pre><code class="python">@abstractmethod
 def name(self) -&gt; str:
     &#34;&#34;&#34;
+    To be determined.
+
     Returns:
         str: Name of this tuner.
     &#34;&#34;&#34;
     pass</code></pre>
 </details>
-<div class="desc"><h2 id="returns">Returns</h2>
+<div class="desc"><p>To be determined.</p>
+<h2 id="returns">Returns</h2>
 <dl>
 <dt><code>str</code></dt>
 <dd>Name of this tuner.</dd>
@@ -1306,7 +1315,7 @@ def name(self) -&gt; str:
         valid_data (tuple): (valid_x, valid_y) .
 
     Returns:
-        classification object: fitted object.
+        sklearn.base.BaseEstimator: A fitted sklearn style model object.
     &#34;&#34;&#34;
     train_x, train_y = train_data
     valid_x, valid_y = valid_data
@@ -1331,8 +1340,8 @@ However sklearn estimators such as randomforest does not provide such api.
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><code>classification object</code></dt>
-<dd>fitted object.</dd>
+<dt><code>sklearn.base.BaseEstimator</code></dt>
+<dd>A fitted sklearn style model object.</dd>
 </dl></div>
 </dd>
 <dt id="PineBioML.model.supervised.Basic_tuner.parms_range"><code class="name flex">
@@ -1501,6 +1510,34 @@ If you want to access it in PineBioML api document, then click on the
 <dd>a dict of reference.</dd>
 </dl></div>
 </dd>
+<dt id="PineBioML.model.supervised.Basic_tuner.shap_explain"><code class="name flex">
+<span>def <span class="ident">shap_explain</span></span>(<span>self, x: pandas.core.frame.DataFrame) ‑> pandas.core.frame.DataFrame</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def shap_explain(self, x: DataFrame) -&gt; DataFrame:
+    &#34;&#34;&#34;
+
+    Args:
+        x (DataFrame): the data to be explained which has shape (Samples, Features).
+    
+    Returns:
+        explainer (shap.Explaination): Indexing by (Features, Output, Samples)
+    &#34;&#34;&#34;
+    self.explainer = self._explainer(x)
+    return self.explainer(x)</code></pre>
+</details>
+<div class="desc"><h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>DataFrame</code></dt>
+<dd>the data to be explained which has shape (Samples, Features).</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>explainer (shap.Explaination): Indexing by (Features, Output, Samples)</p></div>
+</dd>
 <dt id="PineBioML.model.supervised.Basic_tuner.tune"><code class="name flex">
 <span>def <span class="ident">tune</span></span>(<span>self, x, y) ‑> None</span>
 </code></dt>
@@ -1529,7 +1566,9 @@ If you want to access it in PineBioML api document, then click on the
     self.check_task()
 
     # Make the sampler behave in a deterministic way.
-    sampler = TPESampler(seed=self.optuna_seed)
+    sampler = TPESampler(seed=self.optuna_seed,
+                         multivariate=True,
+                         n_startup_trials=self.n_try // 3)
     self.study = optuna.create_study(direction=&#34;maximize&#34;, sampler=sampler)
 
     print(
@@ -1541,7 +1580,9 @@ If you want to access it in PineBioML api document, then click on the
     self.default = False
     self.study.optimize(self.evaluate,
                         n_trials=self.n_try,
-                        show_progress_bar=False)
+                        show_progress_bar=False,
+                        callbacks=[self.early_stop_callback],
+                        n_jobs=self.n_opt_jobs)
     self.optuna_model = self.create_model(self.study.best_trial,
                                           default=False,
                                           training=False)
@@ -1595,7 +1636,6 @@ If you want to access it in PineBioML api document, then click on the
 </summary>
 <pre><code class="python">def using_earlystopping(self) -&gt; bool:
     &#34;&#34;&#34;
-
     Returns:
         bool: True if applying earlystopping in optimizing training.
     &#34;&#34;&#34;
@@ -1629,20 +1669,17 @@ If you want to access it in PineBioML api document, then click on the
 <li><code><a title="PineBioML.model.supervised.Survival" href="Survival.html">PineBioML.model.supervised.Survival</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
-<li><code><a title="PineBioML.model.supervised.randint" href="#PineBioML.model.supervised.randint">randint</a></code></li>
-</ul>
-</li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
 <h4><code><a title="PineBioML.model.supervised.Basic_tuner" href="#PineBioML.model.supervised.Basic_tuner">Basic_tuner</a></code></h4>
-<ul class="two-column">
+<ul class="">
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.accepting_categorical_features" href="#PineBioML.model.supervised.Basic_tuner.accepting_categorical_features">accepting_categorical_features</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.check_task" href="#PineBioML.model.supervised.Basic_tuner.check_task">check_task</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.clr_best_iteration" href="#PineBioML.model.supervised.Basic_tuner.clr_best_iteration">clr_best_iteration</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.create_model" href="#PineBioML.model.supervised.Basic_tuner.create_model">create_model</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.detail" href="#PineBioML.model.supervised.Basic_tuner.detail">detail</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.early_stop_callback" href="#PineBioML.model.supervised.Basic_tuner.early_stop_callback">early_stop_callback</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.evaluate" href="#PineBioML.model.supervised.Basic_tuner.evaluate">evaluate</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.fit" href="#PineBioML.model.supervised.Basic_tuner.fit">fit</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.get_scorer" href="#PineBioML.model.supervised.Basic_tuner.get_scorer">get_scorer</a></code></li>
@@ -1654,6 +1691,7 @@ If you want to access it in PineBioML api document, then click on the
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.plot" href="#PineBioML.model.supervised.Basic_tuner.plot">plot</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.predict" href="#PineBioML.model.supervised.Basic_tuner.predict">predict</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.reference" href="#PineBioML.model.supervised.Basic_tuner.reference">reference</a></code></li>
+<li><code><a title="PineBioML.model.supervised.Basic_tuner.shap_explain" href="#PineBioML.model.supervised.Basic_tuner.shap_explain">shap_explain</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.tune" href="#PineBioML.model.supervised.Basic_tuner.tune">tune</a></code></li>
 <li><code><a title="PineBioML.model.supervised.Basic_tuner.using_earlystopping" href="#PineBioML.model.supervised.Basic_tuner.using_earlystopping">using_earlystopping</a></code></li>
 </ul>
@@ -1664,7 +1702,7 @@ If you want to access it in PineBioML api document, then click on the
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
 </footer>
 </body>
 </html>

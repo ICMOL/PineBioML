@@ -40,9 +40,14 @@ class basic_plot(ABC):
         self.save_fig = save_fig
         self.show_fig = show_fig
 
-    @abstractmethod
     def save_name(self):
-        pass
+        """
+        the file name to the saving figure.    
+
+        will be "{prefix} {name}.png"
+        """
+
+        return "{} {}".format(self.prefix, self.name)
 
     def reference(self) -> dict[str, str]:
         """
@@ -108,10 +113,6 @@ class pca_plot(basic_plot):
         Args:
             n_pc (int, optional): number of precipal compoment to plot. Defaults to 4.
             discrete_legend (bool, optional): To color the plot based on y in discrete hue or continuous color bar. If y is continuous, then you should set it to False. Defaults to True.
-            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to "".
-            save_path (str, optional): the path to export the figure. Defaults to "./output/images/".
-            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
-            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
         """
         super().__init__(prefix=prefix,
                          save_path=save_path,
@@ -119,23 +120,10 @@ class pca_plot(basic_plot):
                          show_fig=show_fig)
         self.n_pc = n_pc
         self.discrete_legend = discrete_legend
-        self.name = "PCA"
-
-    def save_name(self) -> str:
-        """
-        Returns:
-            str: {prefix} PCA plot
-        """
-        return "{} {} plot".format(self.prefix, self.name)
+        self.name = "PCA plot"
 
     def reference(self) -> dict[str, str]:
-        """
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    >Expand source code     
 
-        Returns:
-            dict[str, str]: a dict of reference.
-        """
         refer = super().reference()
         refer[
             self.name +
@@ -218,10 +206,6 @@ class pls_plot(basic_plot):
         Args:
             is_classification (bool): If (x, y) is a classification task, then set is_classification to True.
             discrete_legend (bool, optional): To color the plot based on y in discrete hue or continuous color bar. If y is continuous, then you should set it to False. Defaults to True.
-            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to "".
-            save_path (str, optional): the path to export the figure. Defaults to "./output/images/".
-            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
-            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
         """
         super().__init__(prefix=prefix,
                          save_path=save_path,
@@ -229,19 +213,10 @@ class pls_plot(basic_plot):
                          show_fig=show_fig)
         self.discrete_legend = discrete_legend
         self.is_classification = is_classification
-        self.name = "PLS"
-
-    def save_name(self):
-        return "{} {} plot".format(self.prefix, self.name)
+        self.name = "PLS plot"
 
     def reference(self) -> dict[str, str]:
-        """
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    >Expand source code     
 
-        Returns:
-            dict[str, str]: a dict of reference.
-        """
         refer = super().reference()
         refer[
             self.name +
@@ -342,29 +317,16 @@ class umap_plot(basic_plot):
 
         Args:
             discrete_legend (bool, optional): To color the plot based on y in discrete hue or continuous color bar. If y is continuous, then you should set it to False. Defaults to True.
-            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to "".
-            save_path (str, optional): the path to export the figure. Defaults to "./output/images/".
-            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
-            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
         """
         super().__init__(prefix=prefix,
                          save_path=save_path,
                          save_fig=save_fig,
                          show_fig=show_fig)
         self.discrete_legend = discrete_legend
-        self.name = "UMAP"
-
-    def save_name(self):
-        return "{} {} plot".format(self.prefix, self.name)
+        self.name = "UMAP plot"
 
     def reference(self) -> dict[str, str]:
-        """
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    >Expand source code     
 
-        Returns:
-            dict[str, str]: a dict of reference.
-        """
         refer = super().reference()
         refer[self.name +
               " document"] = "https://umap-learn.readthedocs.io/en/latest/"
@@ -448,22 +410,11 @@ class corr_heatmap_plot(basic_plot):
                  save_path="./output/images/",
                  save_fig=True,
                  show_fig=True):
-        """
-
-        Args:
-            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to "".
-            save_path (str, optional): the path to export the figure. Defaults to "./output/images/".
-            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
-            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
-        """
         super().__init__(prefix=prefix,
                          save_path=save_path,
                          save_fig=save_fig,
                          show_fig=show_fig)
-        self.name = "Correlation Heatmap"
-
-    def save_name(self):
-        return "{} {} plot".format(self.prefix, self.name)
+        self.name = "Correlation Heatmap plot"
 
     def draw(self, x: pd.DataFrame, y: pd.Series = None):
         """
@@ -502,12 +453,6 @@ class confusion_matrix_plot(basic_plot):
                  show_fig=True):
         """
 
-        Args:
-            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to "".
-            save_path (str, optional): the path to export the figure. Defaults to "./output/images/".
-            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
-            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
-
         Todo:
             value normalize by y_true and crowding problem in multi-class classification.
         """
@@ -517,9 +462,6 @@ class confusion_matrix_plot(basic_plot):
                          show_fig=show_fig)
         self.name = "Confusion Matrix"
         self.normalize = None
-
-    def save_name(self):
-        return "{} {}".format(self.prefix, self.name)
 
     def draw(self, y_true: pd.Series, y_pred: pd.Series):
         """
@@ -553,10 +495,6 @@ class roc_plot(basic_plot):
 
         Args:
             pos_label (Union[str, int, float], optional): If not None, the result will be pos_label vs rest (ovr) roc curve. Defaults to None.
-            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to "".
-            save_path (str, optional): the path to export the figure. Defaults to "./output/images/".
-            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
-            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
         """
         super().__init__(prefix=prefix,
                          save_path=save_path,
@@ -564,9 +502,6 @@ class roc_plot(basic_plot):
                          show_fig=show_fig)
         self.name = "ROC Curve"
         self.pos_label = pos_label
-
-    def save_name(self):
-        return "{} {}".format(self.prefix, self.name)
 
     def draw(self, y_true: pd.Series, y_pred_prob: pd.DataFrame):
         """
@@ -629,10 +564,6 @@ def data_overview(input_x: pd.DataFrame,
         y (pd.Series): the target variable (or the response variable).
         is_classification (bool, optional): whether the task to fit y is a classification task or a regression task. Defaults to True.
         discrete_legend (bool, optional): whether to use a discrete legend, otherwise a color bar will be used. If is_classification is True, then discrete_legend will forced to be Ture. Defaults to True.
-        prefix (str, optional): the name or the description to the task. It will be add into the title and the export figure name. Defaults to "".
-        save_fig (bool, optional): To export the figure or not. Defaults to True.
-        save_path (str, optional): The export path of the figure. Defaults to "./output/images/".
-        show_fig (bool, optional): To show the figure before export or not. Defaults to True.
     """
 
     x = input_x.copy()
@@ -692,10 +623,6 @@ def classification_summary(y_true,
         y_true (pandas.Series or a 1D array): The label.
         y_pred_prob (pandas.Series or a 1D array): float in [0, 1]. prediction from model.
         target_label ( member of label, optional): The target class from y_true to compute sensitivity and specificity. Defaults to None.
-        prefix (str, optional): Prefix of label title. Defaults to "".
-        save_path (str, optional): export path. Defaults to "./output/images/".
-        save_fig (bool, optional): saving the figure or not. Defaults to True.
-        show_fig (bool, optional): showing the figure or not. Defaults to True.
     Todo:
         1. support to multi-class classification(on going)
         2. the label matching between y_true and y_pred
@@ -765,10 +692,6 @@ def regression_summary(y_true: pd.Series,
         y_true (pd.Series): Ground true
         y_pred (pd.Series): The estimates from model.
         x (pd.DataFrame, optional): features. If not None, it will be used to plot a feature pca residual plot. Defaults to None.
-        prefix (str, optional): prefix of figure title. Defaults to "".
-        save_path (str, optional): The export path of the figure. Defaults to "./output/images/".
-        save_fig (bool, optional): To export the figure or not. Defaults to True.
-        show_fig (bool, optional): To show the figure before export or not. Defaults to True.
     """
 
     scores = pd.Series(

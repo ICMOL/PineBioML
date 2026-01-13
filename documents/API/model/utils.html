@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.5">
+<meta name="generator" content="pdoc3 0.11.6">
 <title>PineBioML.model.utils API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
@@ -91,7 +91,8 @@ el.replaceWith(d);
         self.test_pred = []
 
     def do_stage(self, train_x: DataFrame, train_y: Series, test_x: DataFrame,
-                 test_y: Series, stage: int, record: dict) -&gt; None:
+                 test_y: Series, stage: int, record_path: dict,
+                 record_time: dict) -&gt; None:
         &#34;&#34;&#34;
         the recursive function to traversal the experiment.    
         the socres and path will be stored in self.result amd self.____pred, so there is no return in recursive function.     
@@ -102,7 +103,8 @@ el.replaceWith(d);
             test_x (pd.DataFrame): training x
             test_y (pd.Series): training y
             stage (int): the order of current stage in the experiment setting
-            record (dict): record the traversal path in a dict of str
+            record_path (dict): record_path the traversal path in a dict of str
+            record_time (dict): record_time the traversal time in a dict of str
         &#34;&#34;&#34;
 
         # unzip the stage, stage = (stage_name, {operator_name: operator})
@@ -110,11 +112,14 @@ el.replaceWith(d);
 
         # fork to next stage according to the diffirent operator (opt)
         for opt_name in operators:
-            record[stage_name] = opt_name
+            record_path[stage_name] = opt_name
+
             opt = operators[opt_name]
 
             # if not the last stage
             if stage &lt; self.total_stage - 1:
+                time_start = time.time()
+
                 # transform by operators
                 processed_train_x = opt.fit_transform(train_x, train_y)
                 if test_x is not None:
@@ -122,12 +127,15 @@ el.replaceWith(d);
                 else:
                     processed_test_x = test_x
 
+                time_end = time.time()
+                record_time[stage_name + &#34;_time&#34;] = time_end - time_start
                 # reccursivly call
                 self.do_stage(processed_train_x, train_y, processed_test_x,
-                              test_y, stage + 1, record)
+                              test_y, stage + 1, record_path, record_time)
 
             # the last layer, it should be models
             else:
+
                 model = opt
                 if &#34;predict_proba&#34; in dir(model):
                     # is not regression
@@ -137,12 +145,19 @@ el.replaceWith(d);
                     # is regression
                     f = model.predict
                     scorer = regression_scorer
-
+                time_start = time.time()
                 # tune/fit the model on training data
                 model.fit(train_x, train_y)
+                time_end = time.time()
+                record_time[stage_name + &#34;_fit_time&#34;] = time_end - time_start
 
                 # compute the training score
+                time_start = time.time()
                 train_pred = f(train_x)
+                time_end = time.time()
+                record_time[stage_name +
+                            &#34;_predict_time&#34;] = time_end - time_start
+
                 # compute the prediction for those who has a tuned threshold in binary classification task.
                 train_prediction = model.predict(train_x)
 
@@ -199,12 +214,16 @@ el.replaceWith(d);
                     # average the fold scores
                     self.cv_pred.append(concat(cv_pred, axis=0))
                     valid_scores = DataFrame(fold_scores).mean().to_dict()
+                    # TODO accurate statistic estimate of std.
+                    valid_std = DataFrame(fold_scores).std().to_dict()
+                    valid_std = {f&#34;{k}_std&#34;: v for k, v in valid_std.items()}
                 else:
                     valid_scores = {}
+                    valid_std = {}
 
                 # concatenate the score dicts
-                all_scores = dict(**record, **train_scores, **valid_scores,
-                                  **test_scores)
+                all_scores = dict(**record_path, **record_time, **train_scores,
+                                  **valid_scores, **test_scores, **valid_std)
                 self.result.append(all_scores)
 
     def do_experiment(self, train_x, train_y, test_x=None, test_y=None):
@@ -223,16 +242,29 @@ el.replaceWith(d);
         # clear the results.
         self.result = []
 
-        self.do_stage(train_x, train_y, test_x, test_y, 0, {})
+        self.do_stage(train_x, train_y, test_x, test_y, 0, {}, {})
         return self.experiment_results()
 
-    def experiment_results(self) -&gt; DataFrame:
+    def experiment_results(self, timer=False, std = False) -&gt; DataFrame:
         &#34;&#34;&#34;
+        Args:
+            timer (bool): To return the time records.
+            std (bool): To return the cv std.
 
         Returns:
             DataFrame: The experiment results.
         &#34;&#34;&#34;
-        return DataFrame(self.result)
+        result = DataFrame(self.result)
+        to_drop = []
+        if not timer:
+            to_drop += [i for i in result.columns if i[-5:] == &#34;_time&#34;]
+        if not std:
+            to_drop += [i for i in result.columns if i[-4:] == &#34;_std&#34;]
+
+        if len(to_drop)==0:
+            return result
+        else:
+            return result.drop(to_drop, axis=1)
 
     def experiment_predictions(self):
         &#34;&#34;&#34;
@@ -326,7 +358,7 @@ Please refer to example_Pine.ipynb for usage.
     # clear the results.
     self.result = []
 
-    self.do_stage(train_x, train_y, test_x, test_y, 0, {})
+    self.do_stage(train_x, train_y, test_x, test_y, 0, {}, {})
     return self.experiment_results()</code></pre>
 </details>
 <div class="desc"><p>the first call of recurssive fuction.</p>
@@ -348,7 +380,7 @@ Please refer to example_Pine.ipynb for usage.
 </dl></div>
 </dd>
 <dt id="PineBioML.model.utils.Pine.do_stage"><code class="name flex">
-<span>def <span class="ident">do_stage</span></span>(<span>self,<br>train_x: pandas.core.frame.DataFrame,<br>train_y: pandas.core.series.Series,<br>test_x: pandas.core.frame.DataFrame,<br>test_y: pandas.core.series.Series,<br>stage: int,<br>record: dict) ‑> None</span>
+<span>def <span class="ident">do_stage</span></span>(<span>self,<br>train_x: pandas.core.frame.DataFrame,<br>train_y: pandas.core.series.Series,<br>test_x: pandas.core.frame.DataFrame,<br>test_y: pandas.core.series.Series,<br>stage: int,<br>record_path: dict,<br>record_time: dict) ‑> None</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -356,7 +388,8 @@ Please refer to example_Pine.ipynb for usage.
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def do_stage(self, train_x: DataFrame, train_y: Series, test_x: DataFrame,
-             test_y: Series, stage: int, record: dict) -&gt; None:
+             test_y: Series, stage: int, record_path: dict,
+             record_time: dict) -&gt; None:
     &#34;&#34;&#34;
     the recursive function to traversal the experiment.    
     the socres and path will be stored in self.result amd self.____pred, so there is no return in recursive function.     
@@ -367,7 +400,8 @@ Please refer to example_Pine.ipynb for usage.
         test_x (pd.DataFrame): training x
         test_y (pd.Series): training y
         stage (int): the order of current stage in the experiment setting
-        record (dict): record the traversal path in a dict of str
+        record_path (dict): record_path the traversal path in a dict of str
+        record_time (dict): record_time the traversal time in a dict of str
     &#34;&#34;&#34;
 
     # unzip the stage, stage = (stage_name, {operator_name: operator})
@@ -375,11 +409,14 @@ Please refer to example_Pine.ipynb for usage.
 
     # fork to next stage according to the diffirent operator (opt)
     for opt_name in operators:
-        record[stage_name] = opt_name
+        record_path[stage_name] = opt_name
+
         opt = operators[opt_name]
 
         # if not the last stage
         if stage &lt; self.total_stage - 1:
+            time_start = time.time()
+
             # transform by operators
             processed_train_x = opt.fit_transform(train_x, train_y)
             if test_x is not None:
@@ -387,12 +424,15 @@ Please refer to example_Pine.ipynb for usage.
             else:
                 processed_test_x = test_x
 
+            time_end = time.time()
+            record_time[stage_name + &#34;_time&#34;] = time_end - time_start
             # reccursivly call
             self.do_stage(processed_train_x, train_y, processed_test_x,
-                          test_y, stage + 1, record)
+                          test_y, stage + 1, record_path, record_time)
 
         # the last layer, it should be models
         else:
+
             model = opt
             if &#34;predict_proba&#34; in dir(model):
                 # is not regression
@@ -402,12 +442,19 @@ Please refer to example_Pine.ipynb for usage.
                 # is regression
                 f = model.predict
                 scorer = regression_scorer
-
+            time_start = time.time()
             # tune/fit the model on training data
             model.fit(train_x, train_y)
+            time_end = time.time()
+            record_time[stage_name + &#34;_fit_time&#34;] = time_end - time_start
 
             # compute the training score
+            time_start = time.time()
             train_pred = f(train_x)
+            time_end = time.time()
+            record_time[stage_name +
+                        &#34;_predict_time&#34;] = time_end - time_start
+
             # compute the prediction for those who has a tuned threshold in binary classification task.
             train_prediction = model.predict(train_x)
 
@@ -464,12 +511,16 @@ Please refer to example_Pine.ipynb for usage.
                 # average the fold scores
                 self.cv_pred.append(concat(cv_pred, axis=0))
                 valid_scores = DataFrame(fold_scores).mean().to_dict()
+                # TODO accurate statistic estimate of std.
+                valid_std = DataFrame(fold_scores).std().to_dict()
+                valid_std = {f&#34;{k}_std&#34;: v for k, v in valid_std.items()}
             else:
                 valid_scores = {}
+                valid_std = {}
 
             # concatenate the score dicts
-            all_scores = dict(**record, **train_scores, **valid_scores,
-                              **test_scores)
+            all_scores = dict(**record_path, **record_time, **train_scores,
+                              **valid_scores, **test_scores, **valid_std)
             self.result.append(all_scores)</code></pre>
 </details>
 <div class="desc"><p>the recursive function to traversal the experiment.
@@ -488,8 +539,10 @@ the socres and path will be stored in self.result amd self.____pred, so there is
 <dd>training y</dd>
 <dt><strong><code>stage</code></strong> :&ensp;<code>int</code></dt>
 <dd>the order of current stage in the experiment setting</dd>
-<dt><strong><code>record</code></strong> :&ensp;<code>dict</code></dt>
-<dd>record the traversal path in a dict of str</dd>
+<dt><strong><code>record_path</code></strong> :&ensp;<code>dict</code></dt>
+<dd>record_path the traversal path in a dict of str</dd>
+<dt><strong><code>record_time</code></strong> :&ensp;<code>dict</code></dt>
+<dd>record_time the traversal time in a dict of str</dd>
 </dl></div>
 </dd>
 <dt id="PineBioML.model.utils.Pine.experiment_detail"><code class="name flex">
@@ -551,22 +604,42 @@ testing set</dd>
 </dl></div>
 </dd>
 <dt id="PineBioML.model.utils.Pine.experiment_results"><code class="name flex">
-<span>def <span class="ident">experiment_results</span></span>(<span>self) ‑> pandas.core.frame.DataFrame</span>
+<span>def <span class="ident">experiment_results</span></span>(<span>self, timer=False, std=False) ‑> pandas.core.frame.DataFrame</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def experiment_results(self) -&gt; DataFrame:
+<pre><code class="python">def experiment_results(self, timer=False, std = False) -&gt; DataFrame:
     &#34;&#34;&#34;
+    Args:
+        timer (bool): To return the time records.
+        std (bool): To return the cv std.
 
     Returns:
         DataFrame: The experiment results.
     &#34;&#34;&#34;
-    return DataFrame(self.result)</code></pre>
+    result = DataFrame(self.result)
+    to_drop = []
+    if not timer:
+        to_drop += [i for i in result.columns if i[-5:] == &#34;_time&#34;]
+    if not std:
+        to_drop += [i for i in result.columns if i[-4:] == &#34;_std&#34;]
+
+    if len(to_drop)==0:
+        return result
+    else:
+        return result.drop(to_drop, axis=1)</code></pre>
 </details>
-<div class="desc"><h2 id="returns">Returns</h2>
+<div class="desc"><h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>timer</code></strong> :&ensp;<code>bool</code></dt>
+<dd>To return the time records.</dd>
+<dt><strong><code>std</code></strong> :&ensp;<code>bool</code></dt>
+<dd>To return the cv std.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
 <dl>
 <dt><code>DataFrame</code></dt>
 <dd>The experiment results.</dd>
@@ -1325,7 +1398,7 @@ If you want to pass any model with api in sklearn style into Pine, you should wr
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
 </footer>
 </body>
 </html>

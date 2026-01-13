@@ -1,6 +1,6 @@
 LICENSE
 README.md
-setup.py
+pyproject.toml
 PineBioML/__init__.py
 PineBioML.egg-info/PKG-INFO
 PineBioML.egg-info/SOURCES.txt

@@ -97,6 +97,8 @@ def read_multiple_groups(
         # if index repeats, drop them all.
         x = x.reset_index(drop=True)
         y = y.reset_index(drop=True)
+    
+    y.name = 'label'
 
     return x, y
 

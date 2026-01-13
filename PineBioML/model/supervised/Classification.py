@@ -1,11 +1,9 @@
 from . import Basic_tuner
-from abc import abstractmethod
-from typing import Literal
-
 from joblib import parallel_config
 
 from sklearn.model_selection import StratifiedKFold
 from sklearn.utils.class_weight import compute_sample_weight
+from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -14,6 +12,8 @@ from sklearn.linear_model import LogisticRegression
 from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier, early_stopping
 from catboost import CatBoostClassifier, Pool
+
+import shap
 
 import numpy as np
 from pandas import DataFrame
@@ -30,6 +30,7 @@ class Classification_tuner(Basic_tuner):
                  n_cv,
                  target,
                  validate_penalty,
+                 TT_coef,
                  kernel_seed=None,
                  valid_seed=None,
                  optuna_seed=None):
@@ -37,20 +38,10 @@ class Classification_tuner(Basic_tuner):
                          n_cv=n_cv,
                          target=target,
                          validate_penalty=validate_penalty,
+                         TT_coef=TT_coef,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
                          optuna_seed=optuna_seed)
-        """
-
-        Args:
-            n_try (int): The number of trials optuna should try.
-            n_cv (int): The number of folds to execute cross validation evaluation in iteration of optuna optimization.
-            target (str): The target of optuna optimization. Notice that is different from the training loss of model.
-            validate_penalty (bool): True to penalty the overfitting by difference between training score and cv score.
-            kernel_seed (int, optional): Random seed for model. Defaults to None.
-            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
-            optuna_seed (int, optional): Random seed for optuna's hyperparameter sampling. Defaults to None.
-        """
 
     def is_regression(self) -> bool:
         """
@@ -60,40 +51,6 @@ class Classification_tuner(Basic_tuner):
         """
 
         return False
-
-    def reference(self) -> dict[str, str]:
-        """
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    >Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        """
-        return super().reference()
-
-    @abstractmethod
-    def name(self) -> str:
-        """
-        To be determined.
-
-        Returns:
-            str: Name of this tuner.
-        """
-        pass
-
-    @abstractmethod
-    def create_model(self, trial, default, training):
-        """
-        Create model based on default setting or optuna trial
-
-        Args:
-            trial (optuna.trial.Trial): optuna trial in this call.
-            default (bool): To use default hyper parameter
-            
-        Returns :
-            sklearn.base.BaseEstimator: A sklearn style model object.
-        """
-        pass
 
     def predict_proba(self, x):
         """
@@ -121,44 +78,29 @@ class ElasticLogit_tuner(Classification_tuner):
                  n_try=25,
                  n_cv=5,
                  target="mcc",
+                 validate_penalty=True,
+                 TT_coef=0.1,
                  kernel_seed: int = None,
                  valid_seed: int = None,
-                 optuna_seed: int = None,
-                 validate_penalty=True):
-        """
+                 optuna_seed: int = None):
 
-        Args:
-            n_try (int, optional): The number of trials optuna should try. Defaults to 25.
-            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
-            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mcc".
-            kernel_seed (int, optional): Random seed for model. Defaults to None.
-            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
-            optuna_seed (int, optional): Random seed for optuna's hyperparameter sampling. Defaults to None.
-            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
-        """
         super().__init__(n_try=n_try,
                          n_cv=n_cv,
                          target=target,
+                         validate_penalty=validate_penalty,
+                         TT_coef=TT_coef,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
-                         optuna_seed=optuna_seed,
-                         validate_penalty=validate_penalty)
+                         optuna_seed=optuna_seed)
 
         # "saga" fast convergence is only guaranteed on features with approximately the same scale. You should do a feature-wise (between sample) normalization before fitting.
-        self.kernel = "saga"
-        self.penalty = "elasticnet"
+        self.solver = "saga"
+        self.n_opt_jobs = 4
 
     def name(self):
         return "ElasticNetLogisticRegression"
 
     def reference(self) -> dict[str, str]:
-        """
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    >Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        """
         refer = super().reference()
         refer[
             self.name() +
@@ -168,23 +110,28 @@ class ElasticLogit_tuner(Classification_tuner):
     def parms_range(self) -> dict:
         return {
             "C": ('C', "float", 1e-6, 1e+2),
-            "l1_ratio": ('l1_ratio', "float", 0, 1)
+            "l1_ratio": ('l1_ratio', "float", -0.5, 1.5),
         }
 
     def create_model(self, trial, default=False, training=False):
         parms = {
             "C": 1.0,
-            "l1_ratio": 0.5,
-            "penalty": self.penalty,
-            "solver": self.kernel,
+            "l1_ratio": 0.,
+            "penalty": "elasticnet",
+            "solver": "saga",
             "random_state": self.kernel_seed,
             "verbose": 0
         }
         if not default:
             parms_to_tune = self.parms_range()
             for par in parms_to_tune:
-                parms[par] = self.parms_range_sparser(trial,
-                                                      parms_to_tune[par])
+                if par == "l1_ratio":
+                    parms[par] = np.clip(
+                        self.parms_range_sparser(trial, parms_to_tune[par]), 0,
+                        1)
+                else:
+                    parms[par] = self.parms_range_sparser(
+                        trial, parms_to_tune[par])
             parms["random_state"] = self.kernel_seed_tape[trial.number]
         lg = LogisticRegression(**parms)
         return lg
@@ -195,8 +142,7 @@ class ElasticLogit_tuner(Classification_tuner):
         The only reason to do this is that statsmodel provides R-style summary.    
         """
         if len(self.best_model.classes_) > 2:
-            # multi-class classification
-            # Todo
+            # Todo: multi-class classification
             raise TypeError(
                 "multi-class classification summary not support yet. Please tell me why do you need that in a multi-class classification task"
             )
@@ -208,6 +154,9 @@ class ElasticLogit_tuner(Classification_tuner):
                 maxiter=0,
                 warn_convergence=False)
         print(sm_logit.summary())
+
+    def _explainer(self, x):
+        return shap.LinearExplainer(self.best_model, x)
 
 
 # RF
@@ -222,29 +171,24 @@ class RandomForest_tuner(Classification_tuner):
                  n_try=50,
                  n_cv=5,
                  target="mcc",
+                 validate_penalty=True,
+                 TT_coef=0.1,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=None,
-                 validate_penalty=True):
+                 optuna_seed=None):
         """
 
         Args:
             using_oob (bool, optional): Using out of bag score as validation. Defaults to True.
-            n_try (int, optional): The number of trials optuna should try. Defaults to 50.
-            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
-            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mcc".
-            kernel_seed (int, optional): Random seed for model. Defaults to None.
-            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
-            optuna_seed (int, optional): Random seed for optuna's hyperparameter sampling. Defaults to None.
-            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
         """
         super().__init__(n_try=n_try,
                          n_cv=n_cv,
                          target=target,
+                         validate_penalty=validate_penalty,
+                         TT_coef=TT_coef,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
-                         optuna_seed=optuna_seed,
-                         validate_penalty=validate_penalty)
+                         optuna_seed=optuna_seed)
 
         self.using_oob = using_oob
 
@@ -252,13 +196,6 @@ class RandomForest_tuner(Classification_tuner):
         return "RandomForest"
 
     def reference(self) -> dict[str, str]:
-        """
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    >Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        """
         refer = super().reference()
         refer[
             self.name() +
@@ -275,7 +212,7 @@ class RandomForest_tuner(Classification_tuner):
             'min_samples_leaf':
             ('min_samples_leaf', "int", 1, round(np.sqrt(self.n_sample) / 2)),
             'ccp_alpha':
-            ('ccp_alpha', "float", 1e-1 / self.n_sample, 1e+2 / self.n_sample),
+            ('ccp_alpha', "float", 1e-2 / self.n_sample, 1e+2 / self.n_sample),
             'max_samples': ('max_samples', "float", 0.4, 0.8),
             "max_depth":
             ("max_depth", "int", round(np.log2(self.n_sample) / 2),
@@ -303,13 +240,8 @@ class RandomForest_tuner(Classification_tuner):
 
     def evaluate(self, trial, default=None, training=None):
         """
-        RF needs oob and we have it.
+        RF has oob validation and we have it.
         
-        Args:
-            trial (optuna.trial.Trial): optuna trial in this call.
-            default (bool): To use default hyper parameter. This argument will be passed to creat_model
-        Returns :
-            float: The score.
         """
         if default is None:
             default = self.default
@@ -371,6 +303,9 @@ class RandomForest_tuner(Classification_tuner):
                                          training=training)
         return score
 
+    def _explainer(self, x):
+        return shap.TreeExplainer(self.best_model)
+
 
 # SVM
 class SVM_tuner(Classification_tuner):
@@ -383,29 +318,20 @@ class SVM_tuner(Classification_tuner):
                  n_try=25,
                  n_cv=5,
                  target="mcc",
+                 validate_penalty=True,
+                 TT_coef=0.1,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=None,
-                 validate_penalty=True):
-        """
+                 optuna_seed=None):
 
-        Args:
-            kernel (Literal[&quot;linear&quot;, &quot;poly&quot;, &quot;rbf&quot;, &quot;sigmoid&quot;], optional): This will be passed to the attribute of SVC: "kernel". Defaults to "rbf".
-            n_try (int, optional): The number of trials optuna should try. Defaults to 25.
-            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
-            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mcc".
-            kernel_seed (int, optional): Random seed for model. Defaults to None.
-            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
-            optuna_seed (int, optional): Random seed for optuna's hyperparameter sampling. Defaults to None.
-            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
-        """
         super().__init__(n_try=n_try,
                          n_cv=n_cv,
                          target=target,
+                         validate_penalty=validate_penalty,
+                         TT_coef=TT_coef,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
-                         optuna_seed=optuna_seed,
-                         validate_penalty=validate_penalty)
+                         optuna_seed=optuna_seed)
 
     def name(self):
         return "SVM"
@@ -453,6 +379,9 @@ class SVM_tuner(Classification_tuner):
         svm = SVC(**parms)
         return svm
 
+    def _explainer(self, x):
+        return shap.KernelExplainer(self.best_model.predict_proba, x)
+
 
 # Todo: learning rate and number of iteration adjustment
 # XGboost
@@ -470,10 +399,11 @@ class XGBoost_tuner(Classification_tuner):
                  n_try=75,
                  n_cv=5,
                  target="mcc",
+                 validate_penalty=True,
+                 TT_coef=0.1,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=None,
-                 validate_penalty=True):
+                 optuna_seed=None):
         """
 
         Args:
@@ -489,22 +419,17 @@ class XGBoost_tuner(Classification_tuner):
         super().__init__(n_try=n_try,
                          n_cv=n_cv,
                          target=target,
+                         validate_penalty=validate_penalty,
+                         TT_coef=TT_coef,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
-                         optuna_seed=optuna_seed,
-                         validate_penalty=validate_penalty)
+                         optuna_seed=optuna_seed)
 
     def name(self):
         return "XGBoost"
 
     def reference(self) -> dict[str, str]:
-        """
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    >Expand source code     
 
-        Returns:
-            dict[str, str]: a dict of reference.
-        """
         refer = super().reference()
         refer[self.name() +
               " document"] = "https://xgboost.readthedocs.io/en/stable/"
@@ -521,8 +446,8 @@ class XGBoost_tuner(Classification_tuner):
             ("max_depth", "int", round(np.log2(self.n_sample) / 2),
              int(np.log2(self.n_sample)) + 2),
             "gamma": ('gamma', "float", 1e-4, 1e-2),
-            "min_child_weight": ("min_child_weight", "float", 0.5,
-                                 int(np.sqrt(self.n_sample) / 2)),
+            "min_child_weight": ("min_child_weight", "float", 1,
+                                 round(np.sqrt(self.n_sample) / 2)),
             "learning_rate": ('learning_rate', "float", 1e-1, 1.),
             "subsample": ('subsample', "float", 0.5, 1),
             "colsample_bytree": ('colsample_bytree', "float", 0.5, 1),
@@ -534,7 +459,8 @@ class XGBoost_tuner(Classification_tuner):
         parms = {
             "n_jobs": None,
             "random_state": self.kernel_seed,
-            "verbosity": 0
+            "verbosity": 0,
+            "enable_categorical": True
         }
         if not default:
             parms_to_tune = self.parms_range()
@@ -555,30 +481,13 @@ class XGBoost_tuner(Classification_tuner):
         return xgb
 
     def using_earlystopping(self):
-        """
-        Returns:
-            bool: To activate earlystopping recorder in base class.
-        """
         return True
 
     def clr_best_iteration(self, classifier):
         return classifier.best_iteration
 
     def optimize_fit(self, clr, train_data, sample_weight, valid_data):
-        """
-        optimize_fit the polymorphism middle layer between model fitting and optuna optimize evaluate.    
-        Specifically, optimize_fit is used for XGBoost/lightGBM/Catboost early stopping which requires validation data in .fit .
-        However sklearn estimators such as randomforest does not provide such api.    
 
-        Args:
-            clr (classifier): classifier to fit.
-            train_data (tuple): (train_x, train_y) .
-            sample_weight (list-like): training sample weight.
-            valid_data (tuple): (valid_x, valid_y) .
-
-        Returns:
-            classification object: fitted object.
-        """
         train_x, train_y = train_data
 
         return clr.fit(train_x,
@@ -586,6 +495,9 @@ class XGBoost_tuner(Classification_tuner):
                        sample_weight=sample_weight,
                        eval_set=[valid_data],
                        verbose=False)
+
+    def _explainer(self, x):
+        return shap.TreeExplainer(self.best_model)
 
 
 # lightGBM
@@ -602,40 +514,24 @@ class LightGBM_tuner(Classification_tuner):
                  n_try=50,
                  n_cv=5,
                  target="mcc",
+                 validate_penalty=True,
+                 TT_coef=0.1,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=None,
-                 validate_penalty=True):
-        """
-
-        Args:
-            n_try (int, optional): The number of trials optuna should try. Defaults to 75.
-            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
-            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mcc".
-            kernel_seed (int, optional): Random seed for model. Defaults to None.
-            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
-            optuna_seed (int, optional): Random seed for optuna's hyperparameter sampling. Defaults to None.
-            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.        
-        """
+                 optuna_seed=None):
         super().__init__(n_try=n_try,
                          n_cv=n_cv,
                          target=target,
+                         validate_penalty=validate_penalty,
+                         TT_coef=TT_coef,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
-                         optuna_seed=optuna_seed,
-                         validate_penalty=validate_penalty)
+                         optuna_seed=optuna_seed)
 
     def name(self):
         return "LightGBM"
 
     def reference(self) -> dict[str, str]:
-        """
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    >Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        """
         refer = super().reference()
         refer[
             self.name() +
@@ -653,8 +549,7 @@ class LightGBM_tuner(Classification_tuner):
             ("max_depth", "int", round(np.log2(self.n_sample) / 2),
              int(np.log2(self.n_sample)) + 2),
             "min_child_samples":
-            ("min_child_samples", "int", 2, int(np.sqrt(self.n_sample) / 2)),
-            "min_split_gain": ("min_split_gain", "float", 1e-4, 1e-2),
+            ("min_child_samples", "int", 1, round(np.sqrt(self.n_sample) / 2)),
             "learning_rate": ('learning_rate', "float", 1e-2, 1.),
             "subsample": ('subsample', "float", 0.5, 1.),
             "colsample_bytree": ('colsample_bytree', "float", 0.5, 1.),
@@ -683,30 +578,12 @@ class LightGBM_tuner(Classification_tuner):
         return lgbm
 
     def using_earlystopping(self):
-        """
-        Returns:
-            bool: To activate earlystopping recorder in base class.
-        """
         return True
 
     def clr_best_iteration(self, classifier):
         return classifier.best_iteration_
 
     def optimize_fit(self, clr, train_data, sample_weight, valid_data):
-        """
-        optimize_fit the polymorphism middle layer between model fitting and optuna optimize evaluate.    
-        Specifically, optimize_fit is used for XGBoost/lightGBM/Catboost early stopping which requires validation data in .fit .
-        However sklearn estimators such as randomforest does not provide such api.    
-
-        Args:
-            clr (classifier): classifier to fit.
-            train_data (tuple): (train_x, train_y) .
-            sample_weight (list-like): training sample weight.
-            valid_data (tuple): (valid_x, valid_y) .
-
-        Returns:
-            classification object: fitted object.
-        """
         train_x, train_y = train_data
 
         return clr.fit(train_x,
@@ -717,6 +594,9 @@ class LightGBM_tuner(Classification_tuner):
                            early_stopping(round(clr.n_estimators * 0.1) + 2,
                                           verbose=False)
                        ])
+
+    def _explainer(self, x):
+        return shap.TreeExplainer(self.best_model)
 
 
 # Adaboost
@@ -730,39 +610,25 @@ class AdaBoost_tuner(Classification_tuner):
                  n_try=25,
                  n_cv=5,
                  target="mcc",
+                 validate_penalty=True,
+                 TT_coef=0.1,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=None,
-                 validate_penalty=True):
-        """
-        Args:
-            n_try (int, optional): The number of trials optuna should try. Defaults to 25.
-            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
-            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mcc".
-            kernel_seed (int, optional): Random seed for model. Defaults to None.
-            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
-            optuna_seed (int, optional): Random seed for optuna's hyperparameter sampling. Defaults to None.
-            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
-        """
+                 optuna_seed=None):
         super().__init__(n_try=n_try,
                          n_cv=n_cv,
                          target=target,
+                         validate_penalty=validate_penalty,
+                         TT_coef=TT_coef,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
-                         optuna_seed=optuna_seed,
-                         validate_penalty=validate_penalty)
+                         optuna_seed=optuna_seed)
+        self.n_opt_jobs = 4
 
     def name(self):
         return "AdaBoost"
 
     def reference(self) -> dict[str, str]:
-        """
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    >Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        """
         refer = super().reference()
         refer[
             self.name() +
@@ -778,7 +644,7 @@ class AdaBoost_tuner(Classification_tuner):
 
     def parms_range(self) -> dict:
         return {
-            "n_estimators": ('n_estimators', "int", 4, 256),
+            "n_estimators": ('n_estimators', "int", 4, 64),
             "learning_rate": ('learning_rate', "float", 1e-2, 1.)
         }
 
@@ -795,6 +661,9 @@ class AdaBoost_tuner(Classification_tuner):
         ada = AdaBoostClassifier(**parms)
         return ada
 
+    def _explainer(self, x):
+        return shap.KernelExplainer(self.best_model.predict_proba, x)
+
 
 # DT
 class DecisionTree_tuner(Classification_tuner):
@@ -807,39 +676,25 @@ class DecisionTree_tuner(Classification_tuner):
                  n_try=25,
                  n_cv=5,
                  target="mcc",
+                 validate_penalty=True,
+                 TT_coef=0.1,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=None,
-                 validate_penalty=True):
-        """
-        Args:
-            n_try (int, optional): The number of trials optuna should try. Defaults to 25.
-            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
-            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mcc".
-            kernel_seed (int, optional): Random seed for model. Defaults to None.
-            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
-            optuna_seed (int, optional): Random seed for optuna's hyperparameter sampling. Defaults to None.
-            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
-        """
+                 optuna_seed=None):
         super().__init__(n_try=n_try,
                          n_cv=n_cv,
                          target=target,
+                         validate_penalty=validate_penalty,
+                         TT_coef=TT_coef,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
-                         optuna_seed=optuna_seed,
-                         validate_penalty=validate_penalty)
+                         optuna_seed=optuna_seed)
+        self.n_opt_jobs = 4
 
     def name(self):
         return "DecisionTree"
 
     def reference(self) -> dict[str, str]:
-        """
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    >Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        """
         refer = super().reference()
         refer[
             self.name() +
@@ -855,10 +710,10 @@ class DecisionTree_tuner(Classification_tuner):
             "max_depth":
             ("max_depth", "int", round(np.log2(self.n_sample) / 2),
              int(np.log2(self.n_sample)) + 2),
-            "min_samples_split": ('min_samples_split', "int", 2, 32),
-            "min_samples_leaf": ('min_samples_leaf', "int", 1, 16),
+            "min_samples_leaf":
+            ('min_samples_leaf', "int", 1, round(np.sqrt(self.n_sample) / 2)),
             'ccp_alpha':
-            ('ccp_alpha', "float", 1e-1 / self.n_sample, 1e+2 / self.n_sample),
+            ('ccp_alpha', "float", 1e-2 / self.n_sample, 1e+2 / self.n_sample),
         }
 
     def create_model(self, trial, default=False, training=False):
@@ -871,6 +726,9 @@ class DecisionTree_tuner(Classification_tuner):
             parms["random_state"] = self.kernel_seed_tape[trial.number]
         DT = DecisionTreeClassifier(**parms)
         return DT
+
+    def _explainer(self, x):
+        return shap.TreeExplainer(self.best_model)
 
 
 # catboost
@@ -887,41 +745,26 @@ class CatBoost_tuner(Classification_tuner):
                  n_try=50,
                  n_cv=5,
                  target="mcc",
+                 validate_penalty=True,
+                 TT_coef=0.1,
                  kernel_seed=None,
                  valid_seed=None,
-                 optuna_seed=None,
-                 validate_penalty=True):
-        """
+                 optuna_seed=None):
 
-        Args:
-            n_try (int, optional): The number of trials optuna should try. Defaults to 75.
-            n_cv (int, optional): The number of folds to execute cross validation evaluation in iteration of optuna optimization. Defaults to 5.
-            target (str, optional): The target of optuna optimization. Notice that is different from the training loss of model. Defaults to "mcc".
-            kernel_seed (int, optional): Random seed for model. Defaults to None.
-            valid_seed (int, optional): Random seed for cross validation. Defaults to None.
-            optuna_seed (int, optional): Random seed for optuna's hyperparameter sampling. Defaults to None.
-            validate_penalty (bool, optional): True to penalty the overfitting by difference between training score and cv score. Defaults to True.
-        
-        """
         super().__init__(n_try=n_try,
                          n_cv=n_cv,
                          target=target,
+                         validate_penalty=validate_penalty,
+                         TT_coef=TT_coef,
                          kernel_seed=kernel_seed,
                          valid_seed=valid_seed,
-                         optuna_seed=optuna_seed,
-                         validate_penalty=validate_penalty)
+                         optuna_seed=optuna_seed)
 
     def name(self):
         return "CatBoost"
 
     def reference(self) -> dict[str, str]:
-        """
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    >Expand source code     
 
-        Returns:
-            dict[str, str]: a dict of reference.
-        """
         refer = super().reference()
         refer[self.name() + " document"] = "https://catboost.ai/en/docs/"
         refer[
@@ -956,7 +799,23 @@ class CatBoost_tuner(Classification_tuner):
         cat = CatBoostClassifier(**parms)
         return cat
 
-    def evaluate(self, trial, default=None, training=None):
+    def optimize_fit(self, clr, train_data, sample_weight, valid_data):
+        train_x, train_y = train_data
+        valid_x, valid_y = valid_data
+
+        pool_train = Pool(train_x, train_y)
+        pool_valid = Pool(valid_x, valid_y)
+        cat_features = list(train_x.columns[train_x.dtypes == "category"])
+
+        return clr.fit(pool_train,
+                       cat_features=cat_features,
+                       sample_weight=sample_weight,
+                       eval_set=pool_valid,
+                       verbose=False,
+                       early_stopping_rounds=round(clr.n_estimators * 0.1) + 2)
+
+    # TODO: integrate to optimize_fit
+    def _evaluate(self, trial, default=None, training=None):
         """
         To evaluate the score of this trial. you should call create_model instead of creating model manually in this function.    
         catboost need to be used with pool.
@@ -1023,8 +882,7 @@ class CatBoost_tuner(Classification_tuner):
         return score.mean()
 
     def using_earlystopping(self):
-        """
-        Returns:
-            bool: To activate earlystopping recorder in base class.
-        """
         return True
+
+    def _explainer(self, x):
+        return shap.TreeExplainer(self.best_model)

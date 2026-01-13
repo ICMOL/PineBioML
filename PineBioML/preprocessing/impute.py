@@ -125,7 +125,6 @@ class knn_imputer(imputer):
         """
 
         Args:
-            threshold (float): float from (0, 1]. If missing value rate of a feature is higher than threshold, it will be deleted. Defaults to 0.333
             n_neighbor (int, optional): Number of nearest neighbor to use. Defaults to 5.
         """
         super().__init__(threshold)
@@ -142,7 +141,6 @@ class simple_imputer(imputer):
         """
 
         Args:
-            threshold (float): float from (0, 1]. If missing value rate of a feature is higher than threshold, it will be deleted. Defaults to 0.333
             strategy (str, optional): The strategy to impute. One of {"mean", "median", "constant"}. Defaults to "median".
         Todo: 
             1. filling value for constant mode.
@@ -152,7 +150,7 @@ class simple_imputer(imputer):
         self.kernel = SimpleImputer(strategy=strategy)
 
 
-class interative_imputer(imputer):
+class iterative_imputer(imputer):
     """
     Using iterative imputer to impute missing value.
     """
@@ -165,7 +163,6 @@ class interative_imputer(imputer):
         """
 
         Args:
-            threshold (float): float from (0, 1]. If missing value rate of a feature is higher than threshold, it will be deleted. Defaults to 0.333
             max_iter (int, optional): The maximum number of imputation iteration. Defaults to 10.
         """
         super().__init__(threshold)

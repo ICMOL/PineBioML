@@ -20,7 +20,7 @@ Enter this command to prepare to install PineBioML:
 > pip3 install --upgrade pip 
 
 Enter this command to install PineBioML, it will take about 10 minutes. You can jump to Step 3 while the installation is in progress: 
-> pip3 install PineBioML
+> pip3 install PineBioML jupyterlab
 
 ### Step 3. Download PineBioML examples
 Download the examples.zip from [here](https://github.com/ICMOL/PineBioML/releases/download/example/examples126.zip) and unzip.

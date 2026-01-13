@@ -3,6 +3,7 @@ from sklearn.model_selection import StratifiedKFold, KFold
 from sklearn.pipeline import Pipeline
 from pandas import DataFrame, Series, concat
 from sklearn.base import is_classifier, is_regressor
+import time
 
 #TODO: grouped cv
 
@@ -278,7 +279,8 @@ class Pine():
         self.test_pred = []
 
     def do_stage(self, train_x: DataFrame, train_y: Series, test_x: DataFrame,
-                 test_y: Series, stage: int, record: dict) -> None:
+                 test_y: Series, stage: int, record_path: dict,
+                 record_time: dict) -> None:
         """
         the recursive function to traversal the experiment.    
         the socres and path will be stored in self.result amd self.____pred, so there is no return in recursive function.     
@@ -289,7 +291,8 @@ class Pine():
             test_x (pd.DataFrame): training x
             test_y (pd.Series): training y
             stage (int): the order of current stage in the experiment setting
-            record (dict): record the traversal path in a dict of str
+            record_path (dict): record_path the traversal path in a dict of str
+            record_time (dict): record_time the traversal time in a dict of str
         """
 
         # unzip the stage, stage = (stage_name, {operator_name: operator})
@@ -297,11 +300,14 @@ class Pine():
 
         # fork to next stage according to the diffirent operator (opt)
         for opt_name in operators:
-            record[stage_name] = opt_name
+            record_path[stage_name] = opt_name
+
             opt = operators[opt_name]
 
             # if not the last stage
             if stage < self.total_stage - 1:
+                time_start = time.time()
+
                 # transform by operators
                 processed_train_x = opt.fit_transform(train_x, train_y)
                 if test_x is not None:
@@ -309,12 +315,15 @@ class Pine():
                 else:
                     processed_test_x = test_x
 
+                time_end = time.time()
+                record_time[stage_name + "_time"] = time_end - time_start
                 # reccursivly call
                 self.do_stage(processed_train_x, train_y, processed_test_x,
-                              test_y, stage + 1, record)
+                              test_y, stage + 1, record_path, record_time)
 
             # the last layer, it should be models
             else:
+
                 model = opt
                 if "predict_proba" in dir(model):
                     # is not regression
@@ -324,12 +333,19 @@ class Pine():
                     # is regression
                     f = model.predict
                     scorer = regression_scorer
-
+                time_start = time.time()
                 # tune/fit the model on training data
                 model.fit(train_x, train_y)
+                time_end = time.time()
+                record_time[stage_name + "_fit_time"] = time_end - time_start
 
                 # compute the training score
+                time_start = time.time()
                 train_pred = f(train_x)
+                time_end = time.time()
+                record_time[stage_name +
+                            "_predict_time"] = time_end - time_start
+
                 # compute the prediction for those who has a tuned threshold in binary classification task.
                 train_prediction = model.predict(train_x)
 
@@ -386,12 +402,16 @@ class Pine():
                     # average the fold scores
                     self.cv_pred.append(concat(cv_pred, axis=0))
                     valid_scores = DataFrame(fold_scores).mean().to_dict()
+                    # TODO accurate statistic estimate of std.
+                    valid_std = DataFrame(fold_scores).std().to_dict()
+                    valid_std = {f"{k}_std": v for k, v in valid_std.items()}
                 else:
                     valid_scores = {}
+                    valid_std = {}
 
                 # concatenate the score dicts
-                all_scores = dict(**record, **train_scores, **valid_scores,
-                                  **test_scores)
+                all_scores = dict(**record_path, **record_time, **train_scores,
+                                  **valid_scores, **test_scores, **valid_std)
                 self.result.append(all_scores)
 
     def do_experiment(self, train_x, train_y, test_x=None, test_y=None):
@@ -410,16 +430,29 @@ class Pine():
         # clear the results.
         self.result = []
 
-        self.do_stage(train_x, train_y, test_x, test_y, 0, {})
+        self.do_stage(train_x, train_y, test_x, test_y, 0, {}, {})
         return self.experiment_results()
 
-    def experiment_results(self) -> DataFrame:
+    def experiment_results(self, timer=False, std = False) -> DataFrame:
         """
+        Args:
+            timer (bool): To return the time records.
+            std (bool): To return the cv std.
 
         Returns:
             DataFrame: The experiment results.
         """
-        return DataFrame(self.result)
+        result = DataFrame(self.result)
+        to_drop = []
+        if not timer:
+            to_drop += [i for i in result.columns if i[-5:] == "_time"]
+        if not std:
+            to_drop += [i for i in result.columns if i[-4:] == "_std"]
+
+        if len(to_drop)==0:
+            return result
+        else:
+            return result.drop(to_drop, axis=1)
 
     def experiment_predictions(self):
         """

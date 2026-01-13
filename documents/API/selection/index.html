@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.5">
+<meta name="generator" content="pdoc3 0.11.6">
 <title>PineBioML.selection API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
@@ -63,7 +63,7 @@ el.replaceWith(d);
 <dl>
 <dt id="PineBioML.selection.SelectionPipeline"><code class="flex name class">
 <span>class <span class="ident">SelectionPipeline</span></span>
-<span>(</span><span>k=None)</span>
+<span>(</span><span>k: int = None, z_importance_threshold: float = 1.0, n_cv: int = 1)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -77,14 +77,20 @@ el.replaceWith(d);
 
     &#34;&#34;&#34;
 
-    def __init__(self, k=None):
+    def __init__(self,
+                 k: int = None,
+                 z_importance_threshold: float = 1.,
+                 n_cv: int = 1):
         &#34;&#34;&#34;
         Initialize the selection pipeline.
 
         Args:
             k (int or None): select top k important feature. k = -1 means selecting all, k = None means selecting the feature that have standarized score &gt; 1. Default = None
+            z_importance_threshold (int, optional): The threshold to picking features. Defaults to 1.
         &#34;&#34;&#34;
+        self.n_cv = n_cv
         self.k = k
+        self.z_importance_threshold = z_importance_threshold
         self.name = &#34;base&#34;
         self.scores = None
         self.selected_score = None
@@ -100,51 +106,31 @@ el.replaceWith(d);
         Returns:
             pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
         &#34;&#34;&#34;
-        self.scores = x.max().sort_values(ascending=False)  # top is better
-        return self.scores.copy()
+        scores = x.max().sort_values(ascending=False)  # top is better
+        return scores
 
-    def Choose(self, scores):
+    def Select(self, scores):
         &#34;&#34;&#34;
-        Choosing features according to scores.
-
-        Args:
-            scores (pandas.Series or pandas.DataFrame): The score for each feature. Some elements may be empty.
-            k (int): Number of feature to select. The result may less than k
-
-        Returns:
-            pandas.Series or pandas.DataFrame: The score for k selected features. May less than k.
-        &#34;&#34;&#34;
-        self.selected_score = scores.head(self.k)
-        self.selected_score = self.selected_score[self.selected_score != 0]
-
-        return self.selected_score.copy()
-
-    def Select(self, x, y):
-        &#34;&#34;&#34;
-        A functional stack of: Scoring and Choosing    
+        pick features according to scores.
         if k == None, choose k such that:    
             z-scores = (scores - scores.mean())/scores.std()    
             k = # (z-scores &gt; 1)
             
-
         Args:
-            x (pandas.DataFrame or a 2D array): The data to extract information.
-            y (pandas.Series or a 1D array): The target label for methods.
-            k (int): Number of feature to select. The result may less than k.
-
+            scores (pandas.Series): The score for each feature. Some elements may be empty.
         Returns:
             pandas.Series: The score for k selected features. May less than k.
         &#34;&#34;&#34;
         # x should be a pd dataframe or a numpy array without missing value
-        scores = self.Scoring(x, y)
         if self.k:
             # k not None
-            selected_score = self.Choose(scores)
+            selected_score = scores.head(self.k)
+            selected_score = selected_score[selected_score != 0]
         else:
             # k is None
             z_scores = (scores - scores.mean()) / (scores.std() + 1e-4)
-            selected_score = scores[z_scores &gt; 1.]
-
+            selected_score = scores[z_scores &gt; self.z_importance_threshold]
+        selected_score.name = self.name
         return selected_score
 
     def fit(self, x, y):
@@ -155,7 +141,20 @@ el.replaceWith(d);
             x (pandas.DataFrame or a 2D array): The data to extract information.
             y (pandas.Series or a 1D array): The target label for methods.
         &#34;&#34;&#34;
-        self.Select(x, y)
+        if self.n_cv &gt; 1:
+            scores = []
+            for train_idx, valid_idx in KFold(n_splits=self.n_cv,
+                                              shuffle=True,
+                                              random_state=20250915).split([
+                                                  i for i in range(x.shape[0])
+                                              ]):
+                scores.append(
+                    self.Scoring(x.iloc[train_idx], y.iloc[train_idx]))
+            self.scores = (concat(scores, axis=1).sum(axis=1) /
+                           self.n_cv).sort_values(ascending=False)
+        else:
+            self.scores = self.Scoring(x.copy(), y.copy())
+        self.selected_score = self.Select(self.scores.copy())
         return self
 
     def transform(self, x):
@@ -172,11 +171,14 @@ el.replaceWith(d);
         &#34;&#34;&#34;
         plot hist graph of selectied feature importance
         &#34;&#34;&#34;
+        plt.rcParams[&#39;font.family&#39;] = &#39;Arial&#39;
+        plt.rcParams[&#39;font.size&#39;] = 14
         fig, ax = plt.subplots(1, 1)
         ax.bar(self.selected_score.index, self.selected_score)
         for label in ax.get_xticklabels(which=&#39;major&#39;):
             label.set(rotation=45, horizontalalignment=&#39;right&#39;)
         ax.set_title(self.name + &#34; score&#34;)
+        ax.set_ylabel(&#34;Importance&#34;)
 
         plt.show()
 
@@ -208,13 +210,14 @@ The detail methods is to be determinded.</p>
 <dl>
 <dt><strong><code>k</code></strong> :&ensp;<code>int</code> or <code>None</code></dt>
 <dd>select top k important feature. k = -1 means selecting all, k = None means selecting the feature that have standarized score &gt; 1. Default = None</dd>
+<dt><strong><code>z_importance_threshold</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The threshold to picking features. Defaults to 1.</dd>
 </dl></div>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="PineBioML.selection.Volcano.Volcano_selection" href="Volcano.html#PineBioML.selection.Volcano.Volcano_selection">Volcano_selection</a></li>
 <li><a title="PineBioML.selection.classification.AdaBoost_selection" href="classification.html#PineBioML.selection.classification.AdaBoost_selection">AdaBoost_selection</a></li>
 <li><a title="PineBioML.selection.classification.DT_selection" href="classification.html#PineBioML.selection.classification.DT_selection">DT_selection</a></li>
-<li><a title="PineBioML.selection.classification.Lasso_bisection_selection" href="classification.html#PineBioML.selection.classification.Lasso_bisection_selection">Lasso_bisection_selection</a></li>
 <li><a title="PineBioML.selection.classification.Lasso_selection" href="classification.html#PineBioML.selection.classification.Lasso_selection">Lasso_selection</a></li>
 <li><a title="PineBioML.selection.classification.Lightgbm_selection" href="classification.html#PineBioML.selection.classification.Lightgbm_selection">Lightgbm_selection</a></li>
 <li><a title="PineBioML.selection.classification.RF_selection" href="classification.html#PineBioML.selection.classification.RF_selection">RF_selection</a></li>
@@ -223,7 +226,6 @@ The detail methods is to be determinded.</p>
 <li><a title="PineBioML.selection.classification.ensemble_selector" href="classification.html#PineBioML.selection.classification.ensemble_selector">ensemble_selector</a></li>
 <li><a title="PineBioML.selection.classification.multi_Lasso_selection" href="classification.html#PineBioML.selection.classification.multi_Lasso_selection">multi_Lasso_selection</a></li>
 <li><a title="PineBioML.selection.regression.AdaBoost_selection" href="regression.html#PineBioML.selection.regression.AdaBoost_selection">AdaBoost_selection</a></li>
-<li><a title="PineBioML.selection.regression.Lasso_bisection_selection" href="regression.html#PineBioML.selection.regression.Lasso_bisection_selection">Lasso_bisection_selection</a></li>
 <li><a title="PineBioML.selection.regression.Lasso_selection" href="regression.html#PineBioML.selection.regression.Lasso_selection">Lasso_selection</a></li>
 <li><a title="PineBioML.selection.regression.Lightgbm_selection" href="regression.html#PineBioML.selection.regression.Lightgbm_selection">Lightgbm_selection</a></li>
 <li><a title="PineBioML.selection.regression.RF_selection" href="regression.html#PineBioML.selection.regression.RF_selection">RF_selection</a></li>
@@ -234,44 +236,6 @@ The detail methods is to be determinded.</p>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="PineBioML.selection.SelectionPipeline.Choose"><code class="name flex">
-<span>def <span class="ident">Choose</span></span>(<span>self, scores)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def Choose(self, scores):
-    &#34;&#34;&#34;
-    Choosing features according to scores.
-
-    Args:
-        scores (pandas.Series or pandas.DataFrame): The score for each feature. Some elements may be empty.
-        k (int): Number of feature to select. The result may less than k
-
-    Returns:
-        pandas.Series or pandas.DataFrame: The score for k selected features. May less than k.
-    &#34;&#34;&#34;
-    self.selected_score = scores.head(self.k)
-    self.selected_score = self.selected_score[self.selected_score != 0]
-
-    return self.selected_score.copy()</code></pre>
-</details>
-<div class="desc"><p>Choosing features according to scores.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>scores</code></strong> :&ensp;<code>pandas.Series</code> or <code>pandas.DataFrame</code></dt>
-<dd>The score for each feature. Some elements may be empty.</dd>
-<dt><strong><code>k</code></strong> :&ensp;<code>int</code></dt>
-<dd>Number of feature to select. The result may less than k</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>pandas.Series</code> or <code>pandas.DataFrame</code></dt>
-<dd>The score for k selected features. May less than k.</dd>
-</dl></div>
-</dd>
 <dt id="PineBioML.selection.SelectionPipeline.Plotting"><code class="name flex">
 <span>def <span class="ident">Plotting</span></span>(<span>self)</span>
 </code></dt>
@@ -284,11 +248,14 @@ The detail methods is to be determinded.</p>
     &#34;&#34;&#34;
     plot hist graph of selectied feature importance
     &#34;&#34;&#34;
+    plt.rcParams[&#39;font.family&#39;] = &#39;Arial&#39;
+    plt.rcParams[&#39;font.size&#39;] = 14
     fig, ax = plt.subplots(1, 1)
     ax.bar(self.selected_score.index, self.selected_score)
     for label in ax.get_xticklabels(which=&#39;major&#39;):
         label.set(rotation=45, horizontalalignment=&#39;right&#39;)
     ax.set_title(self.name + &#34; score&#34;)
+    ax.set_ylabel(&#34;Importance&#34;)
 
     plt.show()</code></pre>
 </details>
@@ -329,8 +296,8 @@ The detail methods is to be determinded.</p>
     Returns:
         pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
     &#34;&#34;&#34;
-    self.scores = x.max().sort_values(ascending=False)  # top is better
-    return self.scores.copy()</code></pre>
+    scores = x.max().sort_values(ascending=False)  # top is better
+    return scores</code></pre>
 </details>
 <div class="desc"><p>The method to scores features is to be implemented.</p>
 <h2 id="args">Args</h2>
@@ -347,43 +314,38 @@ The detail methods is to be determinded.</p>
 </dl></div>
 </dd>
 <dt id="PineBioML.selection.SelectionPipeline.Select"><code class="name flex">
-<span>def <span class="ident">Select</span></span>(<span>self, x, y)</span>
+<span>def <span class="ident">Select</span></span>(<span>self, scores)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def Select(self, x, y):
+<pre><code class="python">def Select(self, scores):
     &#34;&#34;&#34;
-    A functional stack of: Scoring and Choosing    
+    pick features according to scores.
     if k == None, choose k such that:    
         z-scores = (scores - scores.mean())/scores.std()    
         k = # (z-scores &gt; 1)
         
-
     Args:
-        x (pandas.DataFrame or a 2D array): The data to extract information.
-        y (pandas.Series or a 1D array): The target label for methods.
-        k (int): Number of feature to select. The result may less than k.
-
+        scores (pandas.Series): The score for each feature. Some elements may be empty.
     Returns:
         pandas.Series: The score for k selected features. May less than k.
     &#34;&#34;&#34;
     # x should be a pd dataframe or a numpy array without missing value
-    scores = self.Scoring(x, y)
     if self.k:
         # k not None
-        selected_score = self.Choose(scores)
+        selected_score = scores.head(self.k)
+        selected_score = selected_score[selected_score != 0]
     else:
         # k is None
         z_scores = (scores - scores.mean()) / (scores.std() + 1e-4)
-        selected_score = scores[z_scores &gt; 1.]
-
+        selected_score = scores[z_scores &gt; self.z_importance_threshold]
+    selected_score.name = self.name
     return selected_score</code></pre>
 </details>
-<div class="desc"><p>A functional stack of: Scoring and Choosing
-<br>
+<div class="desc"><p>pick features according to scores.
 if k == None, choose k such that:
 <br>
 z-scores = (scores - scores.mean())/scores.std()
@@ -391,12 +353,8 @@ z-scores = (scores - scores.mean())/scores.std()
 k = # (z-scores &gt; 1)</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
-<dd>The data to extract information.</dd>
-<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
-<dd>The target label for methods.</dd>
-<dt><strong><code>k</code></strong> :&ensp;<code>int</code></dt>
-<dd>Number of feature to select. The result may less than k.</dd>
+<dt><strong><code>scores</code></strong> :&ensp;<code>pandas.Series</code></dt>
+<dd>The score for each feature. Some elements may be empty.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -420,7 +378,20 @@ k = # (z-scores &gt; 1)</p>
         x (pandas.DataFrame or a 2D array): The data to extract information.
         y (pandas.Series or a 1D array): The target label for methods.
     &#34;&#34;&#34;
-    self.Select(x, y)
+    if self.n_cv &gt; 1:
+        scores = []
+        for train_idx, valid_idx in KFold(n_splits=self.n_cv,
+                                          shuffle=True,
+                                          random_state=20250915).split([
+                                              i for i in range(x.shape[0])
+                                          ]):
+            scores.append(
+                self.Scoring(x.iloc[train_idx], y.iloc[train_idx]))
+        self.scores = (concat(scores, axis=1).sum(axis=1) /
+                       self.n_cv).sort_values(ascending=False)
+    else:
+        self.scores = self.Scoring(x.copy(), y.copy())
+    self.selected_score = self.Select(self.scores.copy())
     return self</code></pre>
 </details>
 <div class="desc"><p>sklearn api</p>
@@ -533,7 +504,6 @@ If you want to access it in PineBioML api document, then click on the
 <li>
 <h4><code><a title="PineBioML.selection.SelectionPipeline" href="#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></code></h4>
 <ul class="two-column">
-<li><code><a title="PineBioML.selection.SelectionPipeline.Choose" href="#PineBioML.selection.SelectionPipeline.Choose">Choose</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Scoring" href="#PineBioML.selection.SelectionPipeline.Scoring">Scoring</a></code></li>
@@ -551,7 +521,7 @@ If you want to access it in PineBioML api document, then click on the
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
 </footer>
 </body>
 </html>

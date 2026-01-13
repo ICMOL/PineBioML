@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.5">
+<meta name="generator" content="pdoc3 0.11.6">
 <title>PineBioML.report.utils API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
@@ -69,10 +69,6 @@ el.replaceWith(d);
         y_true (pandas.Series or a 1D array): The label.
         y_pred_prob (pandas.Series or a 1D array): float in [0, 1]. prediction from model.
         target_label ( member of label, optional): The target class from y_true to compute sensitivity and specificity. Defaults to None.
-        prefix (str, optional): Prefix of label title. Defaults to &#34;&#34;.
-        save_path (str, optional): export path. Defaults to &#34;./output/images/&#34;.
-        save_fig (bool, optional): saving the figure or not. Defaults to True.
-        show_fig (bool, optional): showing the figure or not. Defaults to True.
     Todo:
         1. support to multi-class classification(on going)
         2. the label matching between y_true and y_pred
@@ -142,14 +138,6 @@ el.replaceWith(d);
 <dd>float in [0, 1]. prediction from model.</dd>
 <dt><strong><code>target_label</code></strong> :&ensp;<code> member</code> of <code>label</code>, optional</dt>
 <dd>The target class from y_true to compute sensitivity and specificity. Defaults to None.</dd>
-<dt><strong><code>prefix</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>Prefix of label title. Defaults to "".</dd>
-<dt><strong><code>save_path</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>export path. Defaults to "./output/images/".</dd>
-<dt><strong><code>save_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>saving the figure or not. Defaults to True.</dd>
-<dt><strong><code>show_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>showing the figure or not. Defaults to True.</dd>
 </dl>
 <h2 id="todo">Todo</h2>
 <ol>
@@ -187,10 +175,6 @@ el.replaceWith(d);
         y (pd.Series): the target variable (or the response variable).
         is_classification (bool, optional): whether the task to fit y is a classification task or a regression task. Defaults to True.
         discrete_legend (bool, optional): whether to use a discrete legend, otherwise a color bar will be used. If is_classification is True, then discrete_legend will forced to be Ture. Defaults to True.
-        prefix (str, optional): the name or the description to the task. It will be add into the title and the export figure name. Defaults to &#34;&#34;.
-        save_fig (bool, optional): To export the figure or not. Defaults to True.
-        save_path (str, optional): The export path of the figure. Defaults to &#34;./output/images/&#34;.
-        show_fig (bool, optional): To show the figure before export or not. Defaults to True.
     &#34;&#34;&#34;
 
     x = input_x.copy()
@@ -251,14 +235,6 @@ el.replaceWith(d);
 <dd>whether the task to fit y is a classification task or a regression task. Defaults to True.</dd>
 <dt><strong><code>discrete_legend</code></strong> :&ensp;<code>bool</code>, optional</dt>
 <dd>whether to use a discrete legend, otherwise a color bar will be used. If is_classification is True, then discrete_legend will forced to be Ture. Defaults to True.</dd>
-<dt><strong><code>prefix</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>the name or the description to the task. It will be add into the title and the export figure name. Defaults to "".</dd>
-<dt><strong><code>save_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>To export the figure or not. Defaults to True.</dd>
-<dt><strong><code>save_path</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>The export path of the figure. Defaults to "./output/images/".</dd>
-<dt><strong><code>show_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>To show the figure before export or not. Defaults to True.</dd>
 </dl></div>
 </dd>
 <dt id="PineBioML.report.utils.regression_summary"><code class="name flex">
@@ -284,10 +260,6 @@ el.replaceWith(d);
         y_true (pd.Series): Ground true
         y_pred (pd.Series): The estimates from model.
         x (pd.DataFrame, optional): features. If not None, it will be used to plot a feature pca residual plot. Defaults to None.
-        prefix (str, optional): prefix of figure title. Defaults to &#34;&#34;.
-        save_path (str, optional): The export path of the figure. Defaults to &#34;./output/images/&#34;.
-        save_fig (bool, optional): To export the figure or not. Defaults to True.
-        show_fig (bool, optional): To show the figure before export or not. Defaults to True.
     &#34;&#34;&#34;
 
     scores = pd.Series(
@@ -328,14 +300,6 @@ el.replaceWith(d);
 <dd>The estimates from model.</dd>
 <dt><strong><code>x</code></strong> :&ensp;<code>pd.DataFrame</code>, optional</dt>
 <dd>features. If not None, it will be used to plot a feature pca residual plot. Defaults to None.</dd>
-<dt><strong><code>prefix</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>prefix of figure title. Defaults to "".</dd>
-<dt><strong><code>save_path</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>The export path of the figure. Defaults to "./output/images/".</dd>
-<dt><strong><code>save_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>To export the figure or not. Defaults to True.</dd>
-<dt><strong><code>show_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>To show the figure before export or not. Defaults to True.</dd>
 </dl></div>
 </dd>
 </dl>
@@ -378,9 +342,14 @@ el.replaceWith(d);
         self.save_fig = save_fig
         self.show_fig = show_fig
 
-    @abstractmethod
     def save_name(self):
-        pass
+        &#34;&#34;&#34;
+        the file name to the saving figure.    
+
+        will be &#34;{prefix} {name}.png&#34;
+        &#34;&#34;&#34;
+
+        return &#34;{} {}&#34;.format(self.prefix, self.name)
 
     def reference(self) -&gt; dict[str, str]:
         &#34;&#34;&#34;
@@ -568,11 +537,18 @@ If you want to access it in PineBioML api document, then click on the
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@abstractmethod
-def save_name(self):
-    pass</code></pre>
+<pre><code class="python">def save_name(self):
+    &#34;&#34;&#34;
+    the file name to the saving figure.    
+
+    will be &#34;{prefix} {name}.png&#34;
+    &#34;&#34;&#34;
+
+    return &#34;{} {}&#34;.format(self.prefix, self.name)</code></pre>
 </details>
-<div class="desc"></div>
+<div class="desc"><p>the file name to the saving figure.
+</p>
+<p>will be "{prefix} {name}.png"</p></div>
 </dd>
 </dl>
 </dd>
@@ -597,12 +573,6 @@ def save_name(self):
                  show_fig=True):
         &#34;&#34;&#34;
 
-        Args:
-            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to &#34;&#34;.
-            save_path (str, optional): the path to export the figure. Defaults to &#34;./output/images/&#34;.
-            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
-            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
-
         Todo:
             value normalize by y_true and crowding problem in multi-class classification.
         &#34;&#34;&#34;
@@ -612,9 +582,6 @@ def save_name(self):
                          show_fig=show_fig)
         self.name = &#34;Confusion Matrix&#34;
         self.normalize = None
-
-    def save_name(self):
-        return &#34;{} {}&#34;.format(self.prefix, self.name)
 
     def draw(self, y_true: pd.Series, y_pred: pd.Series):
         &#34;&#34;&#34;
@@ -633,17 +600,6 @@ def save_name(self):
         plot.ax_.set_title(&#34;{} {}&#34;.format(self.prefix, self.name))</code></pre>
 </details>
 <div class="desc"><p>plot confusion matrix of given ground true label and predictions.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>prefix</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to "".</dd>
-<dt><strong><code>save_path</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>the path to export the figure. Defaults to "./output/images/".</dd>
-<dt><strong><code>save_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>whether to export the figure or not. Defaults to True.</dd>
-<dt><strong><code>show_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>whether to show the figure or not. Defaults to True.</dd>
-</dl>
 <h2 id="todo">Todo</h2>
 <p>value normalize by y_true and crowding problem in multi-class classification.</p></div>
 <h3>Ancestors</h3>
@@ -686,19 +642,6 @@ def save_name(self):
 <dd>prediction from an estimator.</dd>
 </dl></div>
 </dd>
-<dt id="PineBioML.report.utils.confusion_matrix_plot.save_name"><code class="name flex">
-<span>def <span class="ident">save_name</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def save_name(self):
-    return &#34;{} {}&#34;.format(self.prefix, self.name)</code></pre>
-</details>
-<div class="desc"></div>
-</dd>
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
@@ -706,6 +649,7 @@ def save_name(self):
 <ul class="hlist">
 <li><code><a title="PineBioML.report.utils.basic_plot.make_figure" href="#PineBioML.report.utils.basic_plot.make_figure">make_figure</a></code></li>
 <li><code><a title="PineBioML.report.utils.basic_plot.reference" href="#PineBioML.report.utils.basic_plot.reference">reference</a></code></li>
+<li><code><a title="PineBioML.report.utils.basic_plot.save_name" href="#PineBioML.report.utils.basic_plot.save_name">save_name</a></code></li>
 </ul>
 </li>
 </ul>
@@ -731,22 +675,11 @@ def save_name(self):
                  save_path=&#34;./output/images/&#34;,
                  save_fig=True,
                  show_fig=True):
-        &#34;&#34;&#34;
-
-        Args:
-            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to &#34;&#34;.
-            save_path (str, optional): the path to export the figure. Defaults to &#34;./output/images/&#34;.
-            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
-            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
-        &#34;&#34;&#34;
         super().__init__(prefix=prefix,
                          save_path=save_path,
                          save_fig=save_fig,
                          show_fig=show_fig)
-        self.name = &#34;Correlation Heatmap&#34;
-
-    def save_name(self):
-        return &#34;{} {} plot&#34;.format(self.prefix, self.name)
+        self.name = &#34;Correlation Heatmap plot&#34;
 
     def draw(self, x: pd.DataFrame, y: pd.Series = None):
         &#34;&#34;&#34;
@@ -781,9 +714,9 @@ def save_name(self):
 <dt><strong><code>prefix</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to "".</dd>
 <dt><strong><code>save_path</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>the path to export the figure. Defaults to "./output/images/".</dd>
+<dd>the path to export the figure. Defaults to "./".</dd>
 <dt><strong><code>save_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>whether to export the figure or not. Defaults to True.</dd>
+<dd>whether to export the figure or not. Defaults to False.</dd>
 <dt><strong><code>show_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
 <dd>whether to show the figure or not. Defaults to True.</dd>
 </dl></div>
@@ -840,19 +773,6 @@ def save_name(self):
 <dd>Label. Defaults to None.</dd>
 </dl></div>
 </dd>
-<dt id="PineBioML.report.utils.corr_heatmap_plot.save_name"><code class="name flex">
-<span>def <span class="ident">save_name</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def save_name(self):
-    return &#34;{} {} plot&#34;.format(self.prefix, self.name)</code></pre>
-</details>
-<div class="desc"></div>
-</dd>
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
@@ -860,6 +780,7 @@ def save_name(self):
 <ul class="hlist">
 <li><code><a title="PineBioML.report.utils.basic_plot.make_figure" href="#PineBioML.report.utils.basic_plot.make_figure">make_figure</a></code></li>
 <li><code><a title="PineBioML.report.utils.basic_plot.reference" href="#PineBioML.report.utils.basic_plot.reference">reference</a></code></li>
+<li><code><a title="PineBioML.report.utils.basic_plot.save_name" href="#PineBioML.report.utils.basic_plot.save_name">save_name</a></code></li>
 </ul>
 </li>
 </ul>
@@ -891,10 +812,6 @@ def save_name(self):
         Args:
             n_pc (int, optional): number of precipal compoment to plot. Defaults to 4.
             discrete_legend (bool, optional): To color the plot based on y in discrete hue or continuous color bar. If y is continuous, then you should set it to False. Defaults to True.
-            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to &#34;&#34;.
-            save_path (str, optional): the path to export the figure. Defaults to &#34;./output/images/&#34;.
-            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
-            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
         &#34;&#34;&#34;
         super().__init__(prefix=prefix,
                          save_path=save_path,
@@ -902,23 +819,10 @@ def save_name(self):
                          show_fig=show_fig)
         self.n_pc = n_pc
         self.discrete_legend = discrete_legend
-        self.name = &#34;PCA&#34;
-
-    def save_name(self) -&gt; str:
-        &#34;&#34;&#34;
-        Returns:
-            str: {prefix} PCA plot
-        &#34;&#34;&#34;
-        return &#34;{} {} plot&#34;.format(self.prefix, self.name)
+        self.name = &#34;PCA plot&#34;
 
     def reference(self) -&gt; dict[str, str]:
-        &#34;&#34;&#34;
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
 
-        Returns:
-            dict[str, str]: a dict of reference.
-        &#34;&#34;&#34;
         refer = super().reference()
         refer[
             self.name +
@@ -985,14 +889,6 @@ def save_name(self):
 <dd>number of precipal compoment to plot. Defaults to 4.</dd>
 <dt><strong><code>discrete_legend</code></strong> :&ensp;<code>bool</code>, optional</dt>
 <dd>To color the plot based on y in discrete hue or continuous color bar. If y is continuous, then you should set it to False. Defaults to True.</dd>
-<dt><strong><code>prefix</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to "".</dd>
-<dt><strong><code>save_path</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>the path to export the figure. Defaults to "./output/images/".</dd>
-<dt><strong><code>save_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>whether to export the figure or not. Defaults to True.</dd>
-<dt><strong><code>show_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>whether to show the figure or not. Defaults to True.</dd>
 </dl></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -1083,27 +979,6 @@ def save_name(self):
 <dd>label. Defaults to None.</dd>
 </dl></div>
 </dd>
-<dt id="PineBioML.report.utils.pca_plot.save_name"><code class="name flex">
-<span>def <span class="ident">save_name</span></span>(<span>self) ‑> str</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def save_name(self) -&gt; str:
-    &#34;&#34;&#34;
-    Returns:
-        str: {prefix} PCA plot
-    &#34;&#34;&#34;
-    return &#34;{} {} plot&#34;.format(self.prefix, self.name)</code></pre>
-</details>
-<div class="desc"><h2 id="returns">Returns</h2>
-<dl>
-<dt><code>str</code></dt>
-<dd>{prefix} PCA plot</dd>
-</dl></div>
-</dd>
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
@@ -1111,6 +986,7 @@ def save_name(self):
 <ul class="hlist">
 <li><code><a title="PineBioML.report.utils.basic_plot.make_figure" href="#PineBioML.report.utils.basic_plot.make_figure">make_figure</a></code></li>
 <li><code><a title="PineBioML.report.utils.basic_plot.reference" href="#PineBioML.report.utils.basic_plot.reference">reference</a></code></li>
+<li><code><a title="PineBioML.report.utils.basic_plot.save_name" href="#PineBioML.report.utils.basic_plot.save_name">save_name</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1147,10 +1023,6 @@ def save_name(self):
         Args:
             is_classification (bool): If (x, y) is a classification task, then set is_classification to True.
             discrete_legend (bool, optional): To color the plot based on y in discrete hue or continuous color bar. If y is continuous, then you should set it to False. Defaults to True.
-            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to &#34;&#34;.
-            save_path (str, optional): the path to export the figure. Defaults to &#34;./output/images/&#34;.
-            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
-            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
         &#34;&#34;&#34;
         super().__init__(prefix=prefix,
                          save_path=save_path,
@@ -1158,19 +1030,10 @@ def save_name(self):
                          show_fig=show_fig)
         self.discrete_legend = discrete_legend
         self.is_classification = is_classification
-        self.name = &#34;PLS&#34;
-
-    def save_name(self):
-        return &#34;{} {} plot&#34;.format(self.prefix, self.name)
+        self.name = &#34;PLS plot&#34;
 
     def reference(self) -&gt; dict[str, str]:
-        &#34;&#34;&#34;
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
 
-        Returns:
-            dict[str, str]: a dict of reference.
-        &#34;&#34;&#34;
         refer = super().reference()
         refer[
             self.name +
@@ -1263,14 +1126,6 @@ This function will plot the result of PLS-DA of given data.
 <dd>If (x, y) is a classification task, then set is_classification to True.</dd>
 <dt><strong><code>discrete_legend</code></strong> :&ensp;<code>bool</code>, optional</dt>
 <dd>To color the plot based on y in discrete hue or continuous color bar. If y is continuous, then you should set it to False. Defaults to True.</dd>
-<dt><strong><code>prefix</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to "".</dd>
-<dt><strong><code>save_path</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>the path to export the figure. Defaults to "./output/images/".</dd>
-<dt><strong><code>save_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>whether to export the figure or not. Defaults to True.</dd>
-<dt><strong><code>show_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>whether to show the figure or not. Defaults to True.</dd>
 </dl></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -1379,19 +1234,6 @@ This function will plot the result of PLS-DA of given data.
 <dd><em>description</em></dd>
 </dl></div>
 </dd>
-<dt id="PineBioML.report.utils.pls_plot.save_name"><code class="name flex">
-<span>def <span class="ident">save_name</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def save_name(self):
-    return &#34;{} {} plot&#34;.format(self.prefix, self.name)</code></pre>
-</details>
-<div class="desc"></div>
-</dd>
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
@@ -1399,6 +1241,7 @@ This function will plot the result of PLS-DA of given data.
 <ul class="hlist">
 <li><code><a title="PineBioML.report.utils.basic_plot.make_figure" href="#PineBioML.report.utils.basic_plot.make_figure">make_figure</a></code></li>
 <li><code><a title="PineBioML.report.utils.basic_plot.reference" href="#PineBioML.report.utils.basic_plot.reference">reference</a></code></li>
+<li><code><a title="PineBioML.report.utils.basic_plot.save_name" href="#PineBioML.report.utils.basic_plot.save_name">save_name</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1427,10 +1270,6 @@ This function will plot the result of PLS-DA of given data.
 
         Args:
             pos_label (Union[str, int, float], optional): If not None, the result will be pos_label vs rest (ovr) roc curve. Defaults to None.
-            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to &#34;&#34;.
-            save_path (str, optional): the path to export the figure. Defaults to &#34;./output/images/&#34;.
-            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
-            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
         &#34;&#34;&#34;
         super().__init__(prefix=prefix,
                          save_path=save_path,
@@ -1438,9 +1277,6 @@ This function will plot the result of PLS-DA of given data.
                          show_fig=show_fig)
         self.name = &#34;ROC Curve&#34;
         self.pos_label = pos_label
-
-    def save_name(self):
-        return &#34;{} {}&#34;.format(self.prefix, self.name)
 
     def draw(self, y_true: pd.Series, y_pred_prob: pd.DataFrame):
         &#34;&#34;&#34;
@@ -1487,14 +1323,6 @@ This function will plot the result of PLS-DA of given data.
 <dl>
 <dt><strong><code>pos_label</code></strong> :&ensp;<code>Union[str, int, float]</code>, optional</dt>
 <dd>If not None, the result will be pos_label vs rest (ovr) roc curve. Defaults to None.</dd>
-<dt><strong><code>prefix</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to "".</dd>
-<dt><strong><code>save_path</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>the path to export the figure. Defaults to "./output/images/".</dd>
-<dt><strong><code>save_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>whether to export the figure or not. Defaults to True.</dd>
-<dt><strong><code>show_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>whether to show the figure or not. Defaults to True.</dd>
 </dl></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -1559,19 +1387,6 @@ This function will plot the result of PLS-DA of given data.
 <dd>The probability that model predicted for each class. y_pred_prob should have shape (n_samples, n_class)</dd>
 </dl></div>
 </dd>
-<dt id="PineBioML.report.utils.roc_plot.save_name"><code class="name flex">
-<span>def <span class="ident">save_name</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def save_name(self):
-    return &#34;{} {}&#34;.format(self.prefix, self.name)</code></pre>
-</details>
-<div class="desc"></div>
-</dd>
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
@@ -1579,6 +1394,7 @@ This function will plot the result of PLS-DA of given data.
 <ul class="hlist">
 <li><code><a title="PineBioML.report.utils.basic_plot.make_figure" href="#PineBioML.report.utils.basic_plot.make_figure">make_figure</a></code></li>
 <li><code><a title="PineBioML.report.utils.basic_plot.reference" href="#PineBioML.report.utils.basic_plot.reference">reference</a></code></li>
+<li><code><a title="PineBioML.report.utils.basic_plot.save_name" href="#PineBioML.report.utils.basic_plot.save_name">save_name</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1611,29 +1427,16 @@ This function will plot the result of PLS-DA of given data.
 
         Args:
             discrete_legend (bool, optional): To color the plot based on y in discrete hue or continuous color bar. If y is continuous, then you should set it to False. Defaults to True.
-            prefix (str, optional): the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to &#34;&#34;.
-            save_path (str, optional): the path to export the figure. Defaults to &#34;./output/images/&#34;.
-            save_fig (bool, optional): whether to export the figure or not. Defaults to True.
-            show_fig (bool, optional): whether to show the figure or not. Defaults to True.
         &#34;&#34;&#34;
         super().__init__(prefix=prefix,
                          save_path=save_path,
                          save_fig=save_fig,
                          show_fig=show_fig)
         self.discrete_legend = discrete_legend
-        self.name = &#34;UMAP&#34;
-
-    def save_name(self):
-        return &#34;{} {} plot&#34;.format(self.prefix, self.name)
+        self.name = &#34;UMAP plot&#34;
 
     def reference(self) -&gt; dict[str, str]:
-        &#34;&#34;&#34;
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
 
-        Returns:
-            dict[str, str]: a dict of reference.
-        &#34;&#34;&#34;
         refer = super().reference()
         refer[self.name +
               &#34; document&#34;] = &#34;https://umap-learn.readthedocs.io/en/latest/&#34;
@@ -1713,14 +1516,6 @@ This function will plot the result of PLS-DA of given data.
 <dl>
 <dt><strong><code>discrete_legend</code></strong> :&ensp;<code>bool</code>, optional</dt>
 <dd>To color the plot based on y in discrete hue or continuous color bar. If y is continuous, then you should set it to False. Defaults to True.</dd>
-<dt><strong><code>prefix</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>the describe or title for the plot. the prefix will be added into the title of plot and saving name. Defaults to "".</dd>
-<dt><strong><code>save_path</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>the path to export the figure. Defaults to "./output/images/".</dd>
-<dt><strong><code>save_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>whether to export the figure or not. Defaults to True.</dd>
-<dt><strong><code>show_fig</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>whether to show the figure or not. Defaults to True.</dd>
 </dl></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -1821,19 +1616,6 @@ This function will plot the result of PLS-DA of given data.
 <dd>label. Defaults to None.</dd>
 </dl></div>
 </dd>
-<dt id="PineBioML.report.utils.umap_plot.save_name"><code class="name flex">
-<span>def <span class="ident">save_name</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def save_name(self):
-    return &#34;{} {} plot&#34;.format(self.prefix, self.name)</code></pre>
-</details>
-<div class="desc"></div>
-</dd>
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
@@ -1841,6 +1623,7 @@ This function will plot the result of PLS-DA of given data.
 <ul class="hlist">
 <li><code><a title="PineBioML.report.utils.basic_plot.make_figure" href="#PineBioML.report.utils.basic_plot.make_figure">make_figure</a></code></li>
 <li><code><a title="PineBioML.report.utils.basic_plot.reference" href="#PineBioML.report.utils.basic_plot.reference">reference</a></code></li>
+<li><code><a title="PineBioML.report.utils.basic_plot.save_name" href="#PineBioML.report.utils.basic_plot.save_name">save_name</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1880,42 +1663,36 @@ This function will plot the result of PLS-DA of given data.
 <h4><code><a title="PineBioML.report.utils.confusion_matrix_plot" href="#PineBioML.report.utils.confusion_matrix_plot">confusion_matrix_plot</a></code></h4>
 <ul class="">
 <li><code><a title="PineBioML.report.utils.confusion_matrix_plot.draw" href="#PineBioML.report.utils.confusion_matrix_plot.draw">draw</a></code></li>
-<li><code><a title="PineBioML.report.utils.confusion_matrix_plot.save_name" href="#PineBioML.report.utils.confusion_matrix_plot.save_name">save_name</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="PineBioML.report.utils.corr_heatmap_plot" href="#PineBioML.report.utils.corr_heatmap_plot">corr_heatmap_plot</a></code></h4>
 <ul class="">
 <li><code><a title="PineBioML.report.utils.corr_heatmap_plot.draw" href="#PineBioML.report.utils.corr_heatmap_plot.draw">draw</a></code></li>
-<li><code><a title="PineBioML.report.utils.corr_heatmap_plot.save_name" href="#PineBioML.report.utils.corr_heatmap_plot.save_name">save_name</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="PineBioML.report.utils.pca_plot" href="#PineBioML.report.utils.pca_plot">pca_plot</a></code></h4>
 <ul class="">
 <li><code><a title="PineBioML.report.utils.pca_plot.draw" href="#PineBioML.report.utils.pca_plot.draw">draw</a></code></li>
-<li><code><a title="PineBioML.report.utils.pca_plot.save_name" href="#PineBioML.report.utils.pca_plot.save_name">save_name</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="PineBioML.report.utils.pls_plot" href="#PineBioML.report.utils.pls_plot">pls_plot</a></code></h4>
 <ul class="">
 <li><code><a title="PineBioML.report.utils.pls_plot.draw" href="#PineBioML.report.utils.pls_plot.draw">draw</a></code></li>
-<li><code><a title="PineBioML.report.utils.pls_plot.save_name" href="#PineBioML.report.utils.pls_plot.save_name">save_name</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="PineBioML.report.utils.roc_plot" href="#PineBioML.report.utils.roc_plot">roc_plot</a></code></h4>
 <ul class="">
 <li><code><a title="PineBioML.report.utils.roc_plot.draw" href="#PineBioML.report.utils.roc_plot.draw">draw</a></code></li>
-<li><code><a title="PineBioML.report.utils.roc_plot.save_name" href="#PineBioML.report.utils.roc_plot.save_name">save_name</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="PineBioML.report.utils.umap_plot" href="#PineBioML.report.utils.umap_plot">umap_plot</a></code></h4>
 <ul class="">
 <li><code><a title="PineBioML.report.utils.umap_plot.draw" href="#PineBioML.report.utils.umap_plot.draw">draw</a></code></li>
-<li><code><a title="PineBioML.report.utils.umap_plot.save_name" href="#PineBioML.report.utils.umap_plot.save_name">save_name</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1924,7 +1701,7 @@ This function will plot the result of PLS-DA of given data.
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
 </footer>
 </body>
 </html>
