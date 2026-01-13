@@ -1,19 +1,20 @@
+import warnings
 import sklearn.metrics as metrics
 from sklearn.base import BaseEstimator
 import optuna
 from abc import ABC, abstractmethod
-from sklearn.base import ClassifierMixin
 from sklearn.model_selection import StratifiedKFold, KFold
 from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.preprocessing import LabelEncoder
 from optuna.samplers import TPESampler
 from numpy.random import RandomState, randint
-from numpy import where, zeros
+from numpy import zeros
 from pandas import Series, DataFrame, concat
+from shap import Explainer
 
 from sklearn.exceptions import ConvergenceWarning
 
-optuna.logging.set_verbosity(optuna.logging.WARNING)
+optuna.logging.set_verbosity(optuna.logging.ERROR)
 ConvergenceWarning('ignore')
 """
 class Binary_threshold_wrapper(ClassifierMixin):
@@ -35,18 +36,16 @@ class Binary_threshold_wrapper(ClassifierMixin):
 """
 
 
-class Basic_tuner(ABC):
+class Basic_tuner(ABC, BaseEstimator):
     """
     The base class of tuner. A tuner is a wrapper of optuna + models    
+
     What the tuners do:    
         1. interface of optuna and models with sklearn api style    
         2. randomity management.    
         3. providing a uniform interface to regression and classiciation(binary and multi-class)    
-
     To conserve the reproducibility and to reduce the hyper parameter overfitting along the process of hyper parameter tuning,    
     we first using valid_seed to randomly initialize a tape of integers and it will sequentially be used in optuna trials.    
-
-
     """
 
     def __init__(self,
@@ -54,6 +53,7 @@ class Basic_tuner(ABC):
                  n_cv: int,
                  target: str,
                  validate_penalty: bool,
+                 TT_coef: float,
                  kernel_seed: int = None,
                  valid_seed: int = None,
                  optuna_seed: int = None):
@@ -63,7 +63,8 @@ class Basic_tuner(ABC):
             n_try (int): The number of trials optuna should try.
             n_cv (int): The number of folds to execute cross validation evaluation in iteration of optuna optimization.
             target (str): The target of optuna optimization. Notice that is different from the training loss of model.
-            validate_penalty (bool): True to penalty the overfitting by difference between training score and cv score.
+            validate_penalty (bool): Deprecated.
+            TT_coef (float): The power of penalty to overfitting by Tibshirani & Tibshirani method. Ranges in [0, 1]. Add the difference between training score and cv score to the optimization target.
             kernel_seed (int, optional): Random seed for model. Defaults to None.
             valid_seed (int, optional): Random seed for cross validation. Defaults to None.
             optuna_seed (int, optional): Random seed for optuna's hyperparameter sampling. Defaults to None.
@@ -76,11 +77,21 @@ class Basic_tuner(ABC):
         """
         self.y_mapping = LabelEncoder()
 
-        self.validate_penalty = validate_penalty
+        if validate_penalty == True:
+            warnings.warn(
+                "validate_penalty will be remove in future. Use argument TT_coef.",
+                DeprecationWarning,
+                stacklevel=2)
+            self.TT_coef = TT_coef
+        else:
+            self.TT_coef = 0
 
+        self.fitted_ = None
         self.n_cv = n_cv
+        self.optuna_early_stop_counter = n_cv // 10 + 2
         self.n_try = n_try
         self.n_sample = 1
+        self.n_opt_jobs = 1
         self.default = False
         self.training = True
 
@@ -123,6 +134,8 @@ class Basic_tuner(ABC):
         # the stopping point of early stopping for Boosting methods.
         self.stop_points = zeros(self.n_try, dtype=int)
 
+        self.explainer = None
+
     def reference(self) -> dict[str, str]:
         """
         This function will return reference of this method in python dict.    
@@ -144,6 +157,8 @@ class Basic_tuner(ABC):
     @abstractmethod
     def name(self) -> str:
         """
+        To be determined.
+
         Returns:
             str: Name of this tuner.
         """
@@ -159,9 +174,15 @@ class Basic_tuner(ABC):
 
     def using_earlystopping(self) -> bool:
         """
-
         Returns:
             bool: True if applying earlystopping in optimizing training.
+        """
+        return False
+
+    def accepting_categorical_features(self) -> bool:
+        """
+        Returns:
+            bool: Ture if kernel receives categorical (discreate) features.
         """
         return False
 
@@ -231,7 +252,7 @@ class Basic_tuner(ABC):
             valid_data (tuple): (valid_x, valid_y) .
 
         Returns:
-            classification object: fitted object.
+            sklearn.base.BaseEstimator: A fitted sklearn style model object.
         """
         train_x, train_y = train_data
         valid_x, valid_y = valid_data
@@ -333,10 +354,7 @@ class Basic_tuner(ABC):
             test_score = self.metric(fitted_clr, x_test, y_test)
             train_score = self.metric(fitted_clr, x_train, y_train)
 
-            if self.validate_penalty:
-                score[i] = test_score + 0.1 * (test_score - train_score)
-            else:
-                score[i] = test_score
+            score[i] = test_score + self.TT_coef * (test_score - train_score)
 
         # averaging over cv
         if training:
@@ -365,7 +383,9 @@ class Basic_tuner(ABC):
         self.check_task()
 
         # Make the sampler behave in a deterministic way.
-        sampler = TPESampler(seed=self.optuna_seed)
+        sampler = TPESampler(seed=self.optuna_seed,
+                             multivariate=True,
+                             n_startup_trials=self.n_try // 3)
         self.study = optuna.create_study(direction="maximize", sampler=sampler)
 
         print(
@@ -377,7 +397,9 @@ class Basic_tuner(ABC):
         self.default = False
         self.study.optimize(self.evaluate,
                             n_trials=self.n_try,
-                            show_progress_bar=False)
+                            show_progress_bar=False,
+                            callbacks=[self.early_stop_callback],
+                            n_jobs=self.n_opt_jobs)
         self.optuna_model = self.create_model(self.study.best_trial,
                                               default=False,
                                               training=False)
@@ -423,6 +445,7 @@ class Basic_tuner(ABC):
             retune (bool): True to retune the model using given x and y, else using the tuned model to fit on given x, y.
         """
         self.label_name = y.name
+        self.fitted_ = True
 
         # label encoding
         if not self.is_regression():
@@ -572,6 +595,7 @@ class Basic_tuner(ABC):
             scorer_kargs.pop('greater_is_better')
         else:
             self.metric_great_better = True
+        self.metric_limit = 1 if self.metric_great_better else 0
 
         ### pos_label for f1 socres
         if "pos_label" in scorer_kargs:
@@ -593,6 +617,31 @@ class Basic_tuner(ABC):
                       annotation_text="Default setting",
                       annotation_position="bottom right")
         io.show(fig)
+
+    def _explainer(self, x: DataFrame) -> Explainer:
+        print("Not implement")
+        return None
+
+    def shap_explain(self, x: DataFrame) -> DataFrame:
+        """
+
+        Args:
+            x (DataFrame): the data to be explained which has shape (Samples, Features).
+        
+        Returns:
+            explainer (shap.Explaination): Indexing by (Features, Output, Samples)
+        """
+        self.explainer = self._explainer(x)
+        return self.explainer(x)
+
+    def early_stop_callback(self, study, trial):
+        if trial.value >= self.metric_limit:
+            self.optuna_early_stop_counter -= 1
+            if self.optuna_early_stop_counter <= 0:
+                print("optuna evaluate value {} reachs {}'s maximun value {}".
+                      format(study.best_value, self.metric_name,
+                             self.metric_limit))
+                study.stop()
 
     def detail(self):
         """

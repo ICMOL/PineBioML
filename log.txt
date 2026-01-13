@@ -1,3 +1,30 @@
+v1.3.0.1:
+    requirment:
+         - add shap
+    fixed:
+         - sklearn 1.8+ pipeline requires __sklearn_tags__
+
+v1.3.0:
+    description:
+        1. rf selector n_estimator 5sqrt(n_col) -> ln(n_col)*sqrt(n_col)
+        2. base_tuner TPESampler: multivariate = True
+        3. selector revised:
+            a. add cv score evaluation.
+            b. remove choose whose facility will be merge into select
+            c. please use sklearn api(fit, transform) and what_matters
+        4. interactive_impute -> iterative_impute
+        5. add TT_coef to control the power of TT correct term. Remove the arg valid_penalty.
+        6. model tuner add optuna_early_stop_counter to early stop optimization if the cv performance has already reached the theorical limit.
+        7. add shap explainer to corresponding model. 
+            a. computing issue: kernel shap is very slow. 
+            b. shall limit the number of explain data.
+        8. extend SVM kernel search range.
+        9. read_multiple_groups add label name (y name)
+        10. Pine will trace the modeling time and cv_std. you may get the them through experiment_results and its args.
+    
+        
+
+
 2025/4/16 v1.2.6:
     description:
         1. add data_source, a method to apply different feature sets in an experiment.

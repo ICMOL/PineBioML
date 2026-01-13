@@ -2,7 +2,6 @@ from . import SelectionPipeline
 
 import pandas as pd
 import numpy as np
-#from tqdm import tqdm
 import time
 
 from joblib import parallel_config
@@ -30,12 +29,18 @@ class Lasso_selection(SelectionPipeline):
     ~~Lasso_selection will use grid search to find out when all weights vanish.    ~~
     """
 
-    def __init__(self, k, unbalanced=True):
+    def __init__(self,
+                 k=None,
+                 z_importance_threshold=1.,
+                 unbalanced=True,
+                 n_cv=5):
         """
         Args:
             unbalanced (bool, optional): False to imply class weight to samples. Defaults to True.
         """
-        super().__init__(k=k)
+        super().__init__(k=k,
+                         z_importance_threshold=z_importance_threshold,
+                         n_cv=n_cv)
 
         # parameters
         self.regression = True
@@ -46,13 +51,6 @@ class Lasso_selection(SelectionPipeline):
         self.result = []
 
     def reference(self) -> dict[str, str]:
-        """
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    >Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        """
         refer = super().reference()
         refer[
             self.name() +
@@ -85,72 +83,42 @@ class Lasso_selection(SelectionPipeline):
     def Scoring(self, x, y=None):
         """
         Using Lasso Lars regression as scoring method.
-
-         Args:
-            x (pandas.DataFrame or a 2D array): The data to extract information.
-            y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-
-        Returns:
-            pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
-        
-        To do:
-            kfold validation performance threshold.
-        
+                
         """
 
         x_train = x.copy()
-        #x_train = (x_train - x_train.mean()) / x_train.std()
-
         y_train = y.copy()
-        y_train = (y_train - y_train.mean()) / y_train.std()
 
         kernel = self.create_kernel()
 
-        ### TODO: Sample weight for Lars.
-        if y_train.shape[1] == 2:
-            # Binary classification
-            task_set = [1]
-        else:
-            # multi-class classification
-            ### TODO: Multinomial classfication for Lars.
-            task_set = range(y_train.shape[1])
-
         result = []
-        for i in task_set:
-            y = y_train[:, i]
-            y = (y - y.mean()) / y.std()
-            kernel.fit(x_train, y)
+        y = y_train
+        y = (y - y.mean()) / y.std()
+        kernel.fit(x_train, y)
 
-            coef = np.clip(kernel.coef_path_.T, -1, 1)
-            alpha = kernel.alphas_
-            col = kernel.feature_names_in_
+        coef = np.clip(kernel.coef_path_.T, -1, 1)
+        alpha = kernel.alphas_
+        col = kernel.feature_names_in_
 
-            result.append(pd.DataFrame(coef, columns=col, index=alpha))
+        result.append(pd.DataFrame(coef, columns=col, index=alpha))
 
         var_dropout_alpha = []
         for s in result:
+            # the right end side(alpha) of the range that variable has a non-zero lars coefficient.
             tmp = (s != 0).idxmax(axis=0).replace(s.index[0], 0)**2
 
-            # max normalize along sample axis for each output.
+            # normalizing each task.
             tmp = tmp / tmp.max()
             var_dropout_alpha.append(tmp)
 
+        # collect the results
         self.result = result
-        self.scores = np.sqrt(
-            sum(var_dropout_alpha)).sort_values(ascending=False)
-        self.scores.name = self.name
-        return self.scores.copy()
+        scores = np.sqrt(sum(var_dropout_alpha)).sort_values(ascending=False)
+        scores.name = self.name
+        return scores
 
     def Plotting(self):
-        """
-        plot hist graph of selectied feature importance
-        """
-        fig, ax = plt.subplots(1, 1)
-        ax.bar(self.selected_score.index, self.selected_score)
-        for label in ax.get_xticklabels(which='major'):
-            label.set(rotation=45, horizontalalignment='right')
-        ax.set_title(self.name + " score")
-        plt.show()
+        super().Plotting()
 
         global_selected = self.selected_score.index
         for i_th in range(len(self.result)):
@@ -232,177 +200,53 @@ class Lasso_selection(SelectionPipeline):
             )
 
 
-class Lasso_bisection_selection(SelectionPipeline):
-    """
-    Using Lasso (L1 penalty) regression as scoring method.  More specifically, L1 penalty will force feature weights to be zeros. 
-    As the coefficient of penalty increases, more and more weights of features got killed and the important feature will remain.
-
-    Lasso_bisection_selection will use binary search to find out when all weights vanish.
-    
-    The trace of weight vanishment is not support.
-
-    """
-
-    def __init__(self, k):
-        """
-        Args:
-            unbalanced (bool, optional): False to imply class weight to samples. Defaults to True.
-            objective (str, optional): one of {"Regression", "BinaryClassification"}
-        """
-        super().__init__(k=k)
-        self.upper_init = 1e+5
-        self.lower_init = 1e-5
-        self.name = "LassoLinear"
-
-    def reference(self) -> dict[str, str]:
-        """
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    >Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        """
-        refer = super().reference()
-        refer[
-            self.name() +
-            " document"] = "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html"
-        refer[
-            " publication 1"] = "https://projecteuclid.org/journals/annals-of-statistics/volume-37/issue-5A/High-dimensional-variable-selection/10.1214/08-AOS646.full"
-        refer[
-            " publication 2"] = "https://www.tandfonline.com/doi/abs/10.1198/016214506000000735?casa_token=5HDhtyCfh40AAAAA:4NxSU97CZubZVpReaQNsSBpqA10_xNhspTQobPnb_z2YXe3Wf-HBHV8OygbqUkmJQPt2Jmp7ZlJPWd0"
-        return refer
-
-    def create_kernel(self, C):
-        return Lasso(alpha=C)
-
-    def Select(self, x, y):
-        """
-        Using Lasso (L1 penalty) regression as scoring method.  More specifically, L1 penalty will force feature weights to be zeros. 
-        As the coefficient of penalty increases, more and more weights of features got killed and the important feature will remain.
-
-        Lasso_bisection_selection will use binary search to find out when all weights vanish.
-
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to extract information.
-            y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-            k (int): Number of feature to select. The result may less than k
-
-        Returns:
-            pandas.Series: The score for k selected features. May less than k.
-        """
-
-        # train test split
-        X_train = x.copy()
-        y_train = y.copy()
-
-        if self.k == -1:
-            self.k = min(x.shape[0], x.shape[1]) // 2
-
-        lassoes = []
-        # Bisection searching
-        ### standardize x
-        X_train = X_train / X_train.values.std()
-
-        upper = self.upper_init
-        lassoes.append(self.create_kernel(C=upper))
-        lassoes[-1].fit(X_train, y_train)
-        upper_alive = (self.coef_to_importance(lassoes[-1].coef_) != 0).sum()
-        #print(upper, upper_alive)
-
-        lower = self.lower_init
-        lassoes.append(self.create_kernel(C=lower))
-        lassoes[-1].fit(X_train, y_train)
-        lower_alive = (self.coef_to_importance(lassoes[-1].coef_) != 0).sum()
-        #print(lower, lower_alive)
-
-        counter = 0
-        while not lower_alive == self.k:
-            alpha = (upper + lower) / 2
-            lassoes.append(self.create_kernel(C=alpha))
-            lassoes[-1].fit(X_train, y_train)
-            alive = (self.coef_to_importance(lassoes[-1].coef_) != 0).sum()
-            #print(alive, alpha)
-
-            if alive >= self.k:
-                lower = alpha
-                lower_alive = alive
-            else:
-                upper = alpha
-                upper_alive = alive
-
-            counter += 1
-            if counter > 40:
-                break
-
-        coef = np.array([clr.coef_ for clr in lassoes])
-
-        self.scores = pd.Series(self.coef_to_importance(coef[-1]),
-                                index=x.columns,
-                                name=self.name).sort_values(ascending=False)
-        self.selected_score = self.scores.head(self.k)
-        return self.selected_score
-
-    def coef_to_importance(self, coef):
-        return np.linalg.norm(coef, ord=2, axis=0)
-
-
 class multi_Lasso_selection(SelectionPipeline):
     """
     A stack of Lasso_bisection_selection. Because of collinearity, if there are a batch of featres with high corelation, only one of them will remain.
     That leads to diffirent behavior between select k features in a time and select k//n features in n times.
     """
 
-    def __init__(self, k):
+    def __init__(self, k=None, z_importance_threshold=1., n=4, n_cv=5):
         """
         Args:
             objective (str, optional): one of {"Regression", "BinaryClassification"}
         """
-        super().__init__(k=k)
+        super().__init__(k=k,
+                         z_importance_threshold=z_importance_threshold,
+                         n_cv=n_cv)
         self.name = "multi_Lasso"
+        self.backend = Lasso_selection  #Lasso_bisection_selection
+        self.n = n
+        self.n_cv = 1 # multi lasso calls lasso which already applied cv
+
 
     def reference(self) -> dict[str, str]:
-        """
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    >Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        """
         refer = super().reference()
         refer[
             " Warning"] = "We do not have a reference and this method's effectivity has not been proven yet."
         return refer
 
-    def Select(self, x, y, n=5):
-        """
-        Select k//n features for n times, and then concatenate the results.
-
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to extract information.
-            y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-            n (int, optional): Number of batch which splits k to select. Defaults to 10.
-
-        Returns:
-            pandas.Series: The score for k selected features. May less than k.
-            
-        """
+    def Scoring(self, x, y):
         result = []
-        if self.k == -1:
+        if self.k == -1 or self.k is None:
             self.k = min(x.shape[0], x.shape[1]) // 2
-        batch_size = self.k // n + 1
+        batch_size = self.k // self.n + 1
 
-        for i in range(n):
-            result.append(Lasso_bisection_selection(k=batch_size).Select(x, y))
-            x = x.drop(result[-1].index, axis=1)
+        num_selected = 0
+        #for i in range(self.n):
+        while (num_selected < self.k):
+            kernel = self.backend(k=batch_size).fit(x, y)
+            result.append(kernel.selected_score)
+            batch_selected = result[-1].index
+            x = x.drop(batch_selected, axis=1)
+            num_selected += len(batch_selected)
             if x.shape[1] == 0:
                 break
-        result = pd.concat(result)
-        result = result - result.min()
+        result = pd.concat(result).sort_values(ascending=False)
+        #result = result - result.min()
         result.name = self.name
 
-        self.selected_score = result.sort_values(ascending=False).head(self.k)
-        return self.selected_score.copy()
-
+        return result
 
 class SVM_selection(SelectionPipeline):
     """
@@ -414,19 +258,14 @@ class SVM_selection(SelectionPipeline):
 
     """
 
-    def __init__(self, k):
-        super().__init__(k=k)
+    def __init__(self, k=None, z_importance_threshold=1., n_cv=5):
+        super().__init__(k=k,
+                         z_importance_threshold=z_importance_threshold,
+                         n_cv=n_cv)
         self.kernel = LinearSVR(random_state=142)
         self.name = "SVM"
 
     def reference(self) -> dict[str, str]:
-        """
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    >Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        """
         refer = super().reference()
         refer[
             self.name() +
@@ -439,10 +278,6 @@ class SVM_selection(SelectionPipeline):
         """
         Using the support vector of linear support vector classifier as scoring method.
 
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to extract information.
-            y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-
         Returns:
             pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
         """
@@ -450,9 +285,9 @@ class SVM_selection(SelectionPipeline):
         svm_weights = np.abs(self.kernel.coef_).sum(axis=0)
         svm_weights /= svm_weights.sum()
 
-        self.scores = pd.Series(svm_weights, index=x.columns,
+        scores = pd.Series(svm_weights, index=x.columns,
                                 name=self.name).sort_values(ascending=False)
-        return self.scores.copy()
+        return scores
 
 
 # ToDo: CART
@@ -542,33 +377,29 @@ class RF_selection(SelectionPipeline):
 
     """
 
-    def __init__(self, k, strategy="squared_error"):
+    def __init__(self,
+                 k=None,
+                 z_importance_threshold=1.,
+                 strategy="squared_error",
+                 n_cv=5):
         """
         Args:
-            trees (int, optional): Number of trees. Defaults to 1024*16.
-            strategy (str, optional): Scoring strategy, one of {“squared_error”, “absolute_error”, “friedman_mse”, “poisson” }.
-            unbalanced (bool, optional): True to imply class weight to samples. Defaults to True.
+            strategy (str, optional): Scoring strategy, one of {"squared_error", "absolute_error", "friedman_mse", "poisson" }.
         """
-        super().__init__(k=k)
+        super().__init__(k=k,
+                         z_importance_threshold=z_importance_threshold,
+                         n_cv=n_cv)
         self.strategy = strategy
-
         self.kernel = RandomForestRegressor(n_estimators=64,
                                             n_jobs=-1,
                                             max_samples=0.7,
                                             criterion=strategy,
                                             verbose=0,
                                             random_state=142,
-                                            min_samples_leaf=3)
+                                            min_samples_leaf=2)
         self.name = "RandomForest_" + self.strategy
 
     def reference(self) -> dict[str, str]:
-        """
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    >Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        """
         refer = super().reference()
         refer[self.name() + " document"] = ""
         refer[
@@ -586,20 +417,17 @@ class RF_selection(SelectionPipeline):
         """
         Using random forest to scoring (gini impurity / entropy) features.
 
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to extract information.
-            y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-
         Returns:
             pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
         """
-        self.kernel.n_estimators = round(np.sqrt(x.shape[1]) * 5)
+        self.kernel.n_estimators = round(2 * np.sqrt(x.shape[1]) *
+                                         np.log(x.shape[1]))
         with parallel_config(backend='loky'):
             self.kernel.fit(x, y)
         score = self.kernel.feature_importances_
-        self.scores = pd.Series(score, index=x.columns,
+        scores = pd.Series(score, index=x.columns,
                                 name=self.name).sort_values(ascending=False)
-        return self.scores.copy()
+        return scores
 
 
 class XGboost_selection(SelectionPipeline):
@@ -609,25 +437,24 @@ class XGboost_selection(SelectionPipeline):
     Warning: If data is too easy, boosting methods is difficult to give score to all features.
     """
 
-    def __init__(self, k):
+    def __init__(self,
+                 k=None,
+                 z_importance_threshold=1.,
+                 unbalanced=True,
+                 n_cv=5):
         """
         Args:
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
         """
-        super().__init__(k=k)
+        super().__init__(k=k,
+                         z_importance_threshold=z_importance_threshold,
+                         n_cv=n_cv)
         from xgboost import XGBRegressor
 
         self.kernel = XGBRegressor(random_state=142, subsample=0.7)
         self.name = "XGboost"
 
     def reference(self) -> dict[str, str]:
-        """
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    >Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        """
         refer = super().reference()
         refer[
             self.name() +
@@ -638,19 +465,15 @@ class XGboost_selection(SelectionPipeline):
         """
         Using XGboost to scoring (gini impurity / entropy) features.
 
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to extract information.
-            y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-
         Returns:
             pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
         """
 
         self.kernel.fit(x, y)
         score = self.kernel.feature_importances_
-        self.scores = pd.Series(score, index=x.columns,
+        scores = pd.Series(score, index=x.columns,
                                 name=self.name).sort_values(ascending=False)
-        return self.scores.copy()
+        return scores
 
 
 class Lightgbm_selection(SelectionPipeline):
@@ -660,13 +483,14 @@ class Lightgbm_selection(SelectionPipeline):
     Warning: If data is too easy, boosting methods is difficult to give score to all features.
     """
 
-    def __init__(self, k, unbalanced=True):
-        """
-        Args:
-            unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
-        """
-        super().__init__(k=k)
-        self.unbalanced = unbalanced
+    def __init__(self,
+                 k=None,
+                 z_importance_threshold=1.,
+                 unbalanced=True,
+                 n_cv=5):
+        super().__init__(k=k,
+                         z_importance_threshold=z_importance_threshold,
+                         n_cv=n_cv)
         from lightgbm import LGBMRegressor
 
         self.kernel = LGBMRegressor(learning_rate=0.01,
@@ -677,13 +501,6 @@ class Lightgbm_selection(SelectionPipeline):
         self.name = "Lightgbm"
 
     def reference(self) -> dict[str, str]:
-        """
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    >Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        """
         refer = super().reference()
         refer[
             self.name() +
@@ -694,19 +511,15 @@ class Lightgbm_selection(SelectionPipeline):
         """
         Using Lightgbm to scoring (gini impurity / entropy) features.
 
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to extract information.
-            y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-
         Returns:
             pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
         """
 
         self.kernel.fit(x, y)
         score = self.kernel.feature_importances_
-        self.scores = pd.Series(score, index=x.columns,
+        scores = pd.Series(score, index=x.columns,
                                 name=self.name).sort_values(ascending=False)
-        return self.scores.copy()
+        return scores
 
 
 class AdaBoost_selection(SelectionPipeline):
@@ -716,15 +529,20 @@ class AdaBoost_selection(SelectionPipeline):
     Warning: If data is too easy, boosting methods is difficult to give score to all features.
     """
 
-    def __init__(self, k, unbalanced=True, n_iter=128, learning_rate=0.01):
+    def __init__(self,
+                 k=None,
+                 z_importance_threshold=1.,
+                 n_iter=128,
+                 learning_rate=0.01,
+                 n_cv=5):
         """
         Args:
             n_iter (int, optional): Number of trees also number of iteration to boost. Defaults to 64.
             learning_rate (float, optional): boosting learning rate. Defaults to 0.01.
-            unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
         """
-        super().__init__(k=k)
-        self.unbalanced = unbalanced
+        super().__init__(k=k,
+                         z_importance_threshold=z_importance_threshold,
+                         n_cv=n_cv)
         self.kernel = AdaBoostRegressor(
             n_estimators=n_iter,
             learning_rate=learning_rate,
@@ -733,13 +551,6 @@ class AdaBoost_selection(SelectionPipeline):
         self.name = "AdaBoost" + str(n_iter)
 
     def reference(self) -> dict[str, str]:
-        """
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    >Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        """
         refer = super().reference()
         refer[
             self.name() +
@@ -750,113 +561,83 @@ class AdaBoost_selection(SelectionPipeline):
         """
         Using AdaBoost to scoring (gini impurity / entropy) features.
 
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to extract information.
-            y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-
         Returns:
             pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
         """
         self.kernel.fit(x, y)
         score = self.kernel.feature_importances_
-        self.scores = pd.Series(score, index=x.columns,
+        scores = pd.Series(score, index=x.columns,
                                 name=self.name).sort_values(ascending=False)
-        return self.scores.copy()
+        return scores
 
 
 class ensemble_selector(SelectionPipeline):
     """
-    A functional stack of diffirent methods.
+    A functional stack of diffirent methods.    
+    What we do here is:    
+        1. calculate feature importance in different methods.    
+        2. standardize the scores and then averaging through methods.    
+        3. If z_importance_threshold not None, then all features with averaging score higher than z_importance_threshold will be selected.    
+           else top k feature with averaging score will be selected.    
     
     """
 
-    def __init__(self, k=-1, z_importance_threshold=None):
-        """
-
-        Args:
-
-        """
-        self.z_importance_threshold = z_importance_threshold
-        self.k = k
-
+    def __init__(self,
+                 k: int = None,
+                 z_importance_threshold: float = 1.,
+                 n_cv=5):
+        
+        super().__init__(k=k,
+                         z_importance_threshold=z_importance_threshold,
+                         n_cv=n_cv)
+        
+        self.name = "ensemble"
         self.kernels = {
             "RF_gini": RF_selection(k=k),
-            "Lasso_Bisection": Lasso_bisection_selection(k=k),
+            "Lasso": Lasso_selection(k=k),
             "multi_Lasso": multi_Lasso_selection(k=k),
             "SVM": SVM_selection(k=k),
+
             #"AdaBoost": AdaBoost_selection(k=k),
             #"XGboost": XGboost_selection(k=k),
             #"Lightgbm": Lightgbm_selection(k=k)
         }
+        self.n_cv = 1
 
     def reference(self) -> dict[str, str]:
-        """
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    >Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        """
         refer = super().reference()
         refer[
             self.name() +
             " WARNING"] = "This method has no reference yet. That means the effectivity has not been proven yet. It somehow works in experience."
         return refer
 
-    def Select(self, x, y):
-        """
-        Calling all the methods in kernel sequancially.
-
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to extract information.
-            y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-            k (int): Number of feature to select. The result may less than k
-
-        Returns:
-            pandas.Series: The concatenated results. Top k (may less than k) important feature from diffient methods.
-        """
+    def Scoring(self, x, y=None):
         results = []
         for method in self.kernels:
-            print("Using ", method, " to select.")
+            print("Using ", method, " to score.")
             start_time = time.time()
-            results.append(self.kernels[method].Select(x.copy(), y))
+
+            self.kernels[method].fit(x, y)
+
+            results.append(self.kernels[method].selected_score)
             end_time = time.time()
             print(method,
                   " is done. Using {t:.4f}\n".format(t=end_time - start_time))
 
-        self.selected_score = pd.concat(results, axis=1)
-        return self.selected_score
-
-    def fit(self, x, y):
-        """
-        sklearn api
-
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to extract information.
-            y (pandas.Series or a 1D array): The target label for methods.
-        """
-        importance = self.Select(x, y)
-
-        return self
-
-    def transform(self, x):
-        z_scores = (self.selected_score - self.selected_score.mean()) / (
-            self.selected_score.std() + 1e-4)
-
-        scores = z_scores.sum(axis=1)
-
+        scores = pd.concat(results, axis=1)
         z_scores = (scores - scores.mean()) / (scores.std() + 1e-4)
-        z_scores = z_scores.sort_values(ascending=False)
+        scores[self.name] = z_scores.sum(axis=1)
 
-        if self.z_importance_threshold is None:
-            return x[z_scores.index[:self.k]]
-        else:
-            return x[z_scores[z_scores > self.z_importance_threshold].index]
+        return scores
 
-    def fit_transform(self, x, y):
-        self.fit(x, y)
-        return self.transform(x)
+    def Select(self, scores):
+        z_scores = scores[self.name].sort_values(ascending=False)
 
-    def plotting(self):
+        return super().Select(z_scores)
+
+    def what_matters(self):
+        return self.scores
+
+    def Plotting(self):
         for method in self.kernels:
-            self.kernels[method].plotting()
+            self.kernels[method].Plotting()

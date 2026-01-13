@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.5">
+<meta name="generator" content="pdoc3 0.11.6">
 <title>PineBioML.preprocessing.impute API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
@@ -193,7 +193,7 @@ el.replaceWith(d);
 </dl></div>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li><a title="PineBioML.preprocessing.impute.interative_imputer" href="#PineBioML.preprocessing.impute.interative_imputer">interative_imputer</a></li>
+<li><a title="PineBioML.preprocessing.impute.iterative_imputer" href="#PineBioML.preprocessing.impute.iterative_imputer">iterative_imputer</a></li>
 <li><a title="PineBioML.preprocessing.impute.knn_imputer" href="#PineBioML.preprocessing.impute.knn_imputer">knn_imputer</a></li>
 <li><a title="PineBioML.preprocessing.impute.simple_imputer" href="#PineBioML.preprocessing.impute.simple_imputer">simple_imputer</a></li>
 </ul>
@@ -356,8 +356,8 @@ el.replaceWith(d);
 </dd>
 </dl>
 </dd>
-<dt id="PineBioML.preprocessing.impute.interative_imputer"><code class="flex name class">
-<span>class <span class="ident">interative_imputer</span></span>
+<dt id="PineBioML.preprocessing.impute.iterative_imputer"><code class="flex name class">
+<span>class <span class="ident">iterative_imputer</span></span>
 <span>(</span><span>threshold=0.333,<br>max_iter=10,<br>estimator: Literal['RandomForest', 'LightGBM'] = 'RandomForest')</span>
 </code></dt>
 <dd>
@@ -365,7 +365,7 @@ el.replaceWith(d);
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class interative_imputer(imputer):
+<pre><code class="python">class iterative_imputer(imputer):
     &#34;&#34;&#34;
     Using iterative imputer to impute missing value.
     &#34;&#34;&#34;
@@ -378,7 +378,6 @@ el.replaceWith(d);
         &#34;&#34;&#34;
 
         Args:
-            threshold (float): float from (0, 1]. If missing value rate of a feature is higher than threshold, it will be deleted. Defaults to 0.333
             max_iter (int, optional): The maximum number of imputation iteration. Defaults to 10.
         &#34;&#34;&#34;
         super().__init__(threshold)
@@ -420,8 +419,6 @@ el.replaceWith(d);
 <div class="desc"><p>Using iterative imputer to impute missing value.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>threshold</code></strong> :&ensp;<code>float</code></dt>
-<dd>float from (0, 1]. If missing value rate of a feature is higher than threshold, it will be deleted. Defaults to 0.333</dd>
 <dt><strong><code>max_iter</code></strong> :&ensp;<code>int</code>, optional</dt>
 <dd>The maximum number of imputation iteration. Defaults to 10.</dd>
 </dl></div>
@@ -459,7 +456,6 @@ el.replaceWith(d);
         &#34;&#34;&#34;
 
         Args:
-            threshold (float): float from (0, 1]. If missing value rate of a feature is higher than threshold, it will be deleted. Defaults to 0.333
             n_neighbor (int, optional): Number of nearest neighbor to use. Defaults to 5.
         &#34;&#34;&#34;
         super().__init__(threshold)
@@ -469,8 +465,6 @@ el.replaceWith(d);
 <div class="desc"><p>Using K nearest neighbor to impute missing value</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>threshold</code></strong> :&ensp;<code>float</code></dt>
-<dd>float from (0, 1]. If missing value rate of a feature is higher than threshold, it will be deleted. Defaults to 0.333</dd>
 <dt><strong><code>n_neighbor</code></strong> :&ensp;<code>int</code>, optional</dt>
 <dd>Number of nearest neighbor to use. Defaults to 5.</dd>
 </dl></div>
@@ -507,7 +501,6 @@ el.replaceWith(d);
         &#34;&#34;&#34;
 
         Args:
-            threshold (float): float from (0, 1]. If missing value rate of a feature is higher than threshold, it will be deleted. Defaults to 0.333
             strategy (str, optional): The strategy to impute. One of {&#34;mean&#34;, &#34;median&#34;, &#34;constant&#34;}. Defaults to &#34;median&#34;.
         Todo: 
             1. filling value for constant mode.
@@ -519,8 +512,6 @@ el.replaceWith(d);
 <div class="desc"><p>Using a constant value (0, mean, median&hellip; etc.) to impute all missing value in a feature.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>threshold</code></strong> :&ensp;<code>float</code></dt>
-<dd>float from (0, 1]. If missing value rate of a feature is higher than threshold, it will be deleted. Defaults to 0.333</dd>
 <dt><strong><code>strategy</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>The strategy to impute. One of {"mean", "median", "constant"}. Defaults to "median".</dd>
 </dl>
@@ -566,7 +557,7 @@ el.replaceWith(d);
 </ul>
 </li>
 <li>
-<h4><code><a title="PineBioML.preprocessing.impute.interative_imputer" href="#PineBioML.preprocessing.impute.interative_imputer">interative_imputer</a></code></h4>
+<h4><code><a title="PineBioML.preprocessing.impute.iterative_imputer" href="#PineBioML.preprocessing.impute.iterative_imputer">iterative_imputer</a></code></h4>
 </li>
 <li>
 <h4><code><a title="PineBioML.preprocessing.impute.knn_imputer" href="#PineBioML.preprocessing.impute.knn_imputer">knn_imputer</a></code></h4>
@@ -580,7 +571,7 @@ el.replaceWith(d);
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
 </footer>
 </body>
 </html>

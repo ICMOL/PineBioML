@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.5">
+<meta name="generator" content="pdoc3 0.11.6">
 <title>PineBioML.selection.classification API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
@@ -48,7 +48,7 @@ el.replaceWith(d);
 <dl>
 <dt id="PineBioML.selection.classification.AdaBoost_selection"><code class="flex name class">
 <span>class <span class="ident">AdaBoost_selection</span></span>
-<span>(</span><span>k, unbalanced=True, n_iter=128, learning_rate=0.01)</span>
+<span>(</span><span>k=None,<br>z_importance_threshold=1.0,<br>unbalanced=True,<br>n_iter=128,<br>learning_rate=0.01,<br>n_cv=5)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -62,7 +62,13 @@ el.replaceWith(d);
     Warning: If data is too easy, boosting methods is difficult to give score to all features.
     &#34;&#34;&#34;
 
-    def __init__(self, k, unbalanced=True, n_iter=128, learning_rate=0.01):
+    def __init__(self,
+                 k=None,
+                 z_importance_threshold=1.,
+                 unbalanced=True,
+                 n_iter=128,
+                 learning_rate=0.01,
+                 n_cv=5):
         &#34;&#34;&#34;
         Args:
             n_iter (int, optional): Number of trees also number of iteration to boost. Defaults to 64.
@@ -70,24 +76,19 @@ el.replaceWith(d);
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
         &#34;&#34;&#34;
         from sklearn.ensemble import AdaBoostClassifier
-        super().__init__(k=k)
+        super().__init__(k=k,
+                         z_importance_threshold=z_importance_threshold,
+                         n_cv=n_cv)
         self.unbalanced = unbalanced
         self.kernel = AdaBoostClassifier(
             n_estimators=n_iter,
             learning_rate=learning_rate,
             random_state=142,
-            algorithm=&#34;SAMME&#34;,
         )
         self.name = &#34;AdaBoost&#34; + str(n_iter)
 
     def reference(self) -&gt; dict[str, str]:
-        &#34;&#34;&#34;
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
 
-        Returns:
-            dict[str, str]: a dict of reference.
-        &#34;&#34;&#34;
         refer = super().reference()
         refer[
             self.name() +
@@ -97,10 +98,6 @@ el.replaceWith(d);
     def Scoring(self, x, y=None):
         &#34;&#34;&#34;
         Using AdaBoost to scoring (gini impurity / entropy) features.
-
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to extract information.
-            y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
 
         Returns:
             pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
@@ -112,9 +109,9 @@ el.replaceWith(d);
             sample_weight = np.ones(len(y))
         self.kernel.fit(x, y, sample_weight)
         score = self.kernel.feature_importances_
-        self.scores = pd.Series(score, index=x.columns,
-                                name=self.name).sort_values(ascending=False)
-        return self.scores.copy()</code></pre>
+        scores = pd.Series(score, index=x.columns,
+                           name=self.name).sort_values(ascending=False)
+        return scores</code></pre>
 </details>
 <div class="desc"><p>Using AdaBoost to scoring (gini impurity / entropy) features.</p>
 <p>Warning: If data is too easy, boosting methods is difficult to give score to all features.</p>
@@ -145,10 +142,6 @@ el.replaceWith(d);
     &#34;&#34;&#34;
     Using AdaBoost to scoring (gini impurity / entropy) features.
 
-    Args:
-        x (pandas.DataFrame or a 2D array): The data to extract information.
-        y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-
     Returns:
         pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
     &#34;&#34;&#34;
@@ -159,18 +152,11 @@ el.replaceWith(d);
         sample_weight = np.ones(len(y))
     self.kernel.fit(x, y, sample_weight)
     score = self.kernel.feature_importances_
-    self.scores = pd.Series(score, index=x.columns,
-                            name=self.name).sort_values(ascending=False)
-    return self.scores.copy()</code></pre>
+    scores = pd.Series(score, index=x.columns,
+                       name=self.name).sort_values(ascending=False)
+    return scores</code></pre>
 </details>
 <div class="desc"><p>Using AdaBoost to scoring (gini impurity / entropy) features.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
-<dd>The data to extract information.</dd>
-<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
-<dd>The target label for methods. Defaults to None.</dd>
-</dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>pandas.Series</code> or <code>pandas.DataFrame</code></dt>
@@ -182,7 +168,6 @@ el.replaceWith(d);
 <ul class="hlist">
 <li><code><b><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></b></code>:
 <ul class="hlist">
-<li><code><a title="PineBioML.selection.SelectionPipeline.Choose" href="index.html#PineBioML.selection.SelectionPipeline.Choose">Choose</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Select" href="index.html#PineBioML.selection.SelectionPipeline.Select">Select</a></code></li>
@@ -194,7 +179,7 @@ el.replaceWith(d);
 </dd>
 <dt id="PineBioML.selection.classification.DT_selection"><code class="flex name class">
 <span>class <span class="ident">DT_selection</span></span>
-<span>(</span><span>k, bins=10, q=0.05, strategy='c45')</span>
+<span>(</span><span>k=None, z_importance_threshold=1.0, bins=10, q=0.05, strategy='c45', n_cv=5)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -213,28 +198,28 @@ el.replaceWith(d);
         4. compute c4.5    
     &#34;&#34;&#34;
 
-    def __init__(self, k, bins=10, q=0.05, strategy=&#34;c45&#34;):
+    def __init__(self,
+                 k=None,
+                 z_importance_threshold=1.,
+                 bins=10,
+                 q=0.05,
+                 strategy=&#34;c45&#34;,
+                 n_cv=5):
         &#34;&#34;&#34;
         Args:
             bins (int, optional): Bins to esimate data distribution entropy. Defaults to 10.
             q (float, optional): Clip data values out of [q, 1-q] percentile to reduce the affect of outliers while estimate entropy. Defaults to 0.05.
-            strategy (str, optional): One of {&#34;id3&#34;, &#34;c45&#34;}. The strategy to build decision tree. Defaults to &#34;c45&#34;.
+            strategy (str, optional): One of {&#34;gini&#34;, &#34;c45&#34;}. The strategy to build decision tree. Defaults to &#34;c45&#34;.
         &#34;&#34;&#34;
-        super().__init__(k=k)
+        super().__init__(k=k,
+                         z_importance_threshold=z_importance_threshold,
+                         n_cv=n_cv)
         self.bins = bins - 1
         self.q = q
         self.strategy = strategy
         self.name = &#34;DT_score_&#34; + self.strategy
-        self.label_name = &#34;$%^&amp;UYHGV&#34;
 
     def reference(self) -&gt; dict[str, str]:
-        &#34;&#34;&#34;
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        &#34;&#34;&#34;
         refer = super().reference()
         refer[self.name() +
               &#34; document&#34;] = &#34;PineBioML.selection.classification.DT_selection&#34;
@@ -246,67 +231,165 @@ el.replaceWith(d);
         &#34;&#34;&#34;
         Using Decision stump (a single Decision tree) to scoring features. Though, single layer stump is equivalent to compare the id3/c4.5 score directly.
 
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to extract information.
-            y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-
         Returns:
             pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
         &#34;&#34;&#34;
-        upper = x.quantile(1 - self.q)
-        lower = x.quantile(self.q)
-        normed = (x - lower) / (upper - lower + 1e-5)
-        normed = normed.clip(0, 1)
-        bin_idx = (normed * self.bins - 0.5).round().astype(np.int32)
-        columns = bin_idx.columns
+        self.y_encoder = OneHotEncoder(sparse_output=False)
+        y = self.y_encoder.fit_transform(y.to_numpy().reshape(
+            -1, 1)).argmax(axis=-1)
 
-        y.name = self.label_name
+        if self.strategy == &#39;c45&#39;:
+            score = self.best_splits_c45_batch_optimized(x, y)
+        elif self.strategy == &#39;gini&#39;:
+            score = self.best_splits_gini_batch_optimized(x, y)
 
-        #scores = []
-        #for i in tqdm(columns):
-        #   scores.append(self.compute_col_gini(bin_idx[i], y))
-        with parallel_config(backend=&#39;loky&#39;, n_jobs=-1):
-            scores = Parallel()(delayed(self.compute_col_gini)(bin_idx[i], y)
-                                for i in tqdm(columns))
-
-        scores = pd.Series(scores, index=columns,
+        scores = pd.Series(score, index=x.columns,
                            name=self.name).sort_values(ascending=False)
-        scores = scores - scores.min()
         return scores
 
-    def compute_col_gini(self, col, label):
-        i = col.name
-        #print(i)
-        feature_hists = pd.concat([col, label], axis=1).groupby(i)
-        feature_entropy = feature_hists.apply(self.entropy)
-        feature_size = feature_hists.apply(len) + 1e-3
-
-        info = (feature_entropy / feature_size).sum()
-        gain = 0 - info
-        if self.strategy == &#34;c45&#34;:
-            freq = col.value_counts()
-            p = freq / freq.sum()
-            split_info = -p * np.log(p) + 1e-6
-            gain /= split_info.sum()
-
-        return gain
-
-    def entropy(self, x):
+    def compute_gain_ratio(self, y_sorted, n_classes, n, eps=1e-12):
         &#34;&#34;&#34;
-        Estimate entropy
+        Compute best Gain Ratio for one sorted feature
+        &#34;&#34;&#34;
+        # one-hot encode
+        one_hot = np.eye(n_classes)[y_sorted]
 
+        # cumulative counts (exclude last split)
+        left_counts = np.cumsum(one_hot, axis=0)[:-1]
+        total_counts = left_counts[-1]
+        right_counts = total_counts - left_counts
+
+        # sample counts
+        left_totals = np.arange(1, n)
+        right_totals = n - left_totals
+
+        # ---- entropy computation ----
+        def entropy(counts, totals):
+            probs = counts / totals[:, None]
+            probs = np.clip(probs, eps, 1.0)
+            return -np.sum(probs * np.log2(probs), axis=1)
+
+        # parent entropy
+        parent_probs = total_counts / n
+        parent_probs = np.clip(parent_probs, eps, 1.0)
+        parent_entropy = -np.sum(parent_probs * np.log2(parent_probs))
+
+        # left / right entropy
+        entropy_left = entropy(left_counts, left_totals)
+        entropy_right = entropy(right_counts, right_totals)
+
+        # information gain
+        info_gain = parent_entropy - (
+            (left_totals / n) * entropy_left +
+            (right_totals / n) * entropy_right
+        )
+
+        # split information
+        p_left = left_totals / n
+        p_right = right_totals / n
+        split_info = -(
+            p_left * np.log2(np.clip(p_left, eps, 1.0)) +
+            p_right * np.log2(np.clip(p_right, eps, 1.0))
+        )
+
+        # gain ratio
+        gain_ratio = info_gain / np.clip(split_info, eps, None)
+
+        # C4.5 chooses the **maximum** gain ratio
+        return np.max(gain_ratio)
+
+    def compute_gini(self, y_sorted, n_classes, n):
+        one_hot = np.eye(n_classes)[y_sorted]
+        left_counts = np.cumsum(one_hot, axis=0)[:-1]
+
+        # right counts
+        total_counts = left_counts[-1]
+        right_counts = total_counts - left_counts
+
+        # total counts
+        left_totals = np.arange(1, n)
+        right_totals = n - left_totals
+
+        # vectorizing left &amp; right Gini computing
+        gini_left = 1.0 - np.sum(
+            (left_counts / left_totals[:, np.newaxis])**2, axis=1)
+        gini_right = 1.0 - np.sum(
+            (right_counts / right_totals[:, np.newaxis])**2, axis=1)
+
+        # weighted Gini
+        weighted_gini = (left_totals * gini_left +
+                         right_totals * gini_right) / n
+        return np.min(weighted_gini)
+
+    def best_splits_gini_batch_optimized(self, X, Y):
+        &#34;&#34;&#34;
+        compute gini in batch
+        
         Args:
-            x (pandas.DataFrame): data with bined label
-
-        Returns:
-            float: entropy
+            X (pandas.DataFrame): (n_samples, n_features) in numerical dtypes.
+            y (pandas.Series): (n_samples,) in int.
+        
+        return:
+            best_ginis: (n_features,)
+            best_thresholds: (n_features,) placeholder, we don&#39;t need it here
         &#34;&#34;&#34;
-        label_nums = x[self.label_name].value_counts()
-        label_prop = label_nums / label_nums.sum()
+        x = X  #.to_numpy()
+        y = Y  #.to_numpy().astype(np.int8)
+        n, n_features = X.shape
+        n_classes = y.max() + 1
 
-        entropy = -(label_prop * np.log(label_prop + 1e-6)).sum()
+        # sorting all the features
+        sort_idx = np.argsort(x, axis=0)
 
-        return entropy</code></pre>
+        #X_sorted = np.take_along_axis(X, sort_idx, axis=0)
+        y_sorted_all = np.take_along_axis(np.tile(y[:, None], (1, n_features)),
+                                          sort_idx,
+                                          axis=0)
+
+        best_ginis = np.ones(n_features)
+
+        with parallel_config(backend=&#39;loky&#39;, n_jobs=-1):
+            best_ginis = Parallel()(
+                delayed(self.compute_gini)(y_sorted_all[:, i], n_classes, n)
+                for i in tqdm(np.arange(n_features)))
+
+        return best_ginis
+    
+    def best_splits_c45_batch_optimized(self, X, Y):
+        &#34;&#34;&#34;
+        compute C4.5 gain ratio in batch
+        
+        Args:
+            X (pandas.DataFrame): (n_samples, n_features)
+            Y (pandas.Series): (n_samples,) int labels
+        
+        return:
+            best_gain_ratios: (n_features,)
+        &#34;&#34;&#34;
+        x = X
+        y = Y
+        n, n_features = X.shape
+        n_classes = y.max() + 1
+
+        # sort indices per feature
+        sort_idx = np.argsort(x, axis=0)
+
+        # reorder y for each feature
+        y_sorted_all = np.take_along_axis(
+            np.tile(y[:, None], (1, n_features)),
+            sort_idx,
+            axis=0
+        )
+
+        with parallel_config(backend=&#39;loky&#39;, n_jobs=-1):
+            best_gain_ratios = Parallel()(
+                delayed(self.compute_gain_ratio)(
+                    y_sorted_all[:, i], n_classes, n
+                )
+                for i in tqdm(range(n_features))
+            )
+
+        return np.array(best_gain_ratios)</code></pre>
 </details>
 <div class="desc"><p>A child class of SelectionPipeline.</p>
 <p>Using Decision stump (a single Decision tree) to scoring features.
@@ -328,7 +411,7 @@ What we do here is:
 <dt><strong><code>q</code></strong> :&ensp;<code>float</code>, optional</dt>
 <dd>Clip data values out of [q, 1-q] percentile to reduce the affect of outliers while estimate entropy. Defaults to 0.05.</dd>
 <dt><strong><code>strategy</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>One of {"id3", "c45"}. The strategy to build decision tree. Defaults to "c45".</dd>
+<dd>One of {"gini", "c45"}. The strategy to build decision tree. Defaults to "c45".</dd>
 </dl></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -348,118 +431,237 @@ What we do here is:
     &#34;&#34;&#34;
     Using Decision stump (a single Decision tree) to scoring features. Though, single layer stump is equivalent to compare the id3/c4.5 score directly.
 
-    Args:
-        x (pandas.DataFrame or a 2D array): The data to extract information.
-        y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-
     Returns:
         pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
     &#34;&#34;&#34;
-    upper = x.quantile(1 - self.q)
-    lower = x.quantile(self.q)
-    normed = (x - lower) / (upper - lower + 1e-5)
-    normed = normed.clip(0, 1)
-    bin_idx = (normed * self.bins - 0.5).round().astype(np.int32)
-    columns = bin_idx.columns
+    self.y_encoder = OneHotEncoder(sparse_output=False)
+    y = self.y_encoder.fit_transform(y.to_numpy().reshape(
+        -1, 1)).argmax(axis=-1)
 
-    y.name = self.label_name
+    if self.strategy == &#39;c45&#39;:
+        score = self.best_splits_c45_batch_optimized(x, y)
+    elif self.strategy == &#39;gini&#39;:
+        score = self.best_splits_gini_batch_optimized(x, y)
 
-    #scores = []
-    #for i in tqdm(columns):
-    #   scores.append(self.compute_col_gini(bin_idx[i], y))
-    with parallel_config(backend=&#39;loky&#39;, n_jobs=-1):
-        scores = Parallel()(delayed(self.compute_col_gini)(bin_idx[i], y)
-                            for i in tqdm(columns))
-
-    scores = pd.Series(scores, index=columns,
+    scores = pd.Series(score, index=x.columns,
                        name=self.name).sort_values(ascending=False)
-    scores = scores - scores.min()
     return scores</code></pre>
 </details>
 <div class="desc"><p>Using Decision stump (a single Decision tree) to scoring features. Though, single layer stump is equivalent to compare the id3/c4.5 score directly.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
-<dd>The data to extract information.</dd>
-<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
-<dd>The target label for methods. Defaults to None.</dd>
-</dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>pandas.Series</code> or <code>pandas.DataFrame</code></dt>
 <dd>The score for each feature. Some elements may be empty.</dd>
 </dl></div>
 </dd>
-<dt id="PineBioML.selection.classification.DT_selection.compute_col_gini"><code class="name flex">
-<span>def <span class="ident">compute_col_gini</span></span>(<span>self, col, label)</span>
+<dt id="PineBioML.selection.classification.DT_selection.best_splits_c45_batch_optimized"><code class="name flex">
+<span>def <span class="ident">best_splits_c45_batch_optimized</span></span>(<span>self, X, Y)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def compute_col_gini(self, col, label):
-    i = col.name
-    #print(i)
-    feature_hists = pd.concat([col, label], axis=1).groupby(i)
-    feature_entropy = feature_hists.apply(self.entropy)
-    feature_size = feature_hists.apply(len) + 1e-3
-
-    info = (feature_entropy / feature_size).sum()
-    gain = 0 - info
-    if self.strategy == &#34;c45&#34;:
-        freq = col.value_counts()
-        p = freq / freq.sum()
-        split_info = -p * np.log(p) + 1e-6
-        gain /= split_info.sum()
-
-    return gain</code></pre>
-</details>
-<div class="desc"></div>
-</dd>
-<dt id="PineBioML.selection.classification.DT_selection.entropy"><code class="name flex">
-<span>def <span class="ident">entropy</span></span>(<span>self, x)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def entropy(self, x):
+<pre><code class="python">def best_splits_c45_batch_optimized(self, X, Y):
     &#34;&#34;&#34;
-    Estimate entropy
-
+    compute C4.5 gain ratio in batch
+    
     Args:
-        x (pandas.DataFrame): data with bined label
-
-    Returns:
-        float: entropy
+        X (pandas.DataFrame): (n_samples, n_features)
+        Y (pandas.Series): (n_samples,) int labels
+    
+    return:
+        best_gain_ratios: (n_features,)
     &#34;&#34;&#34;
-    label_nums = x[self.label_name].value_counts()
-    label_prop = label_nums / label_nums.sum()
+    x = X
+    y = Y
+    n, n_features = X.shape
+    n_classes = y.max() + 1
 
-    entropy = -(label_prop * np.log(label_prop + 1e-6)).sum()
+    # sort indices per feature
+    sort_idx = np.argsort(x, axis=0)
 
-    return entropy</code></pre>
+    # reorder y for each feature
+    y_sorted_all = np.take_along_axis(
+        np.tile(y[:, None], (1, n_features)),
+        sort_idx,
+        axis=0
+    )
+
+    with parallel_config(backend=&#39;loky&#39;, n_jobs=-1):
+        best_gain_ratios = Parallel()(
+            delayed(self.compute_gain_ratio)(
+                y_sorted_all[:, i], n_classes, n
+            )
+            for i in tqdm(range(n_features))
+        )
+
+    return np.array(best_gain_ratios)</code></pre>
 </details>
-<div class="desc"><p>Estimate entropy</p>
+<div class="desc"><p>compute C4.5 gain ratio in batch</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code></dt>
-<dd>data with bined label</dd>
+<dt><strong><code>X</code></strong> :&ensp;<code>pandas.DataFrame</code></dt>
+<dd>(n_samples, n_features)</dd>
+<dt><strong><code>Y</code></strong> :&ensp;<code>pandas.Series</code></dt>
+<dd>(n_samples,) int labels</dd>
 </dl>
-<h2 id="returns">Returns</h2>
+<p>return:
+best_gain_ratios: (n_features,)</p></div>
+</dd>
+<dt id="PineBioML.selection.classification.DT_selection.best_splits_gini_batch_optimized"><code class="name flex">
+<span>def <span class="ident">best_splits_gini_batch_optimized</span></span>(<span>self, X, Y)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def best_splits_gini_batch_optimized(self, X, Y):
+    &#34;&#34;&#34;
+    compute gini in batch
+    
+    Args:
+        X (pandas.DataFrame): (n_samples, n_features) in numerical dtypes.
+        y (pandas.Series): (n_samples,) in int.
+    
+    return:
+        best_ginis: (n_features,)
+        best_thresholds: (n_features,) placeholder, we don&#39;t need it here
+    &#34;&#34;&#34;
+    x = X  #.to_numpy()
+    y = Y  #.to_numpy().astype(np.int8)
+    n, n_features = X.shape
+    n_classes = y.max() + 1
+
+    # sorting all the features
+    sort_idx = np.argsort(x, axis=0)
+
+    #X_sorted = np.take_along_axis(X, sort_idx, axis=0)
+    y_sorted_all = np.take_along_axis(np.tile(y[:, None], (1, n_features)),
+                                      sort_idx,
+                                      axis=0)
+
+    best_ginis = np.ones(n_features)
+
+    with parallel_config(backend=&#39;loky&#39;, n_jobs=-1):
+        best_ginis = Parallel()(
+            delayed(self.compute_gini)(y_sorted_all[:, i], n_classes, n)
+            for i in tqdm(np.arange(n_features)))
+
+    return best_ginis</code></pre>
+</details>
+<div class="desc"><p>compute gini in batch</p>
+<h2 id="args">Args</h2>
 <dl>
-<dt><code>float</code></dt>
-<dd>entropy</dd>
-</dl></div>
+<dt><strong><code>X</code></strong> :&ensp;<code>pandas.DataFrame</code></dt>
+<dd>(n_samples, n_features) in numerical dtypes.</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code></dt>
+<dd>(n_samples,) in int.</dd>
+</dl>
+<p>return:
+best_ginis: (n_features,)
+best_thresholds: (n_features,) placeholder, we don't need it here</p></div>
+</dd>
+<dt id="PineBioML.selection.classification.DT_selection.compute_gain_ratio"><code class="name flex">
+<span>def <span class="ident">compute_gain_ratio</span></span>(<span>self, y_sorted, n_classes, n, eps=1e-12)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def compute_gain_ratio(self, y_sorted, n_classes, n, eps=1e-12):
+    &#34;&#34;&#34;
+    Compute best Gain Ratio for one sorted feature
+    &#34;&#34;&#34;
+    # one-hot encode
+    one_hot = np.eye(n_classes)[y_sorted]
+
+    # cumulative counts (exclude last split)
+    left_counts = np.cumsum(one_hot, axis=0)[:-1]
+    total_counts = left_counts[-1]
+    right_counts = total_counts - left_counts
+
+    # sample counts
+    left_totals = np.arange(1, n)
+    right_totals = n - left_totals
+
+    # ---- entropy computation ----
+    def entropy(counts, totals):
+        probs = counts / totals[:, None]
+        probs = np.clip(probs, eps, 1.0)
+        return -np.sum(probs * np.log2(probs), axis=1)
+
+    # parent entropy
+    parent_probs = total_counts / n
+    parent_probs = np.clip(parent_probs, eps, 1.0)
+    parent_entropy = -np.sum(parent_probs * np.log2(parent_probs))
+
+    # left / right entropy
+    entropy_left = entropy(left_counts, left_totals)
+    entropy_right = entropy(right_counts, right_totals)
+
+    # information gain
+    info_gain = parent_entropy - (
+        (left_totals / n) * entropy_left +
+        (right_totals / n) * entropy_right
+    )
+
+    # split information
+    p_left = left_totals / n
+    p_right = right_totals / n
+    split_info = -(
+        p_left * np.log2(np.clip(p_left, eps, 1.0)) +
+        p_right * np.log2(np.clip(p_right, eps, 1.0))
+    )
+
+    # gain ratio
+    gain_ratio = info_gain / np.clip(split_info, eps, None)
+
+    # C4.5 chooses the **maximum** gain ratio
+    return np.max(gain_ratio)</code></pre>
+</details>
+<div class="desc"><p>Compute best Gain Ratio for one sorted feature</p></div>
+</dd>
+<dt id="PineBioML.selection.classification.DT_selection.compute_gini"><code class="name flex">
+<span>def <span class="ident">compute_gini</span></span>(<span>self, y_sorted, n_classes, n)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def compute_gini(self, y_sorted, n_classes, n):
+    one_hot = np.eye(n_classes)[y_sorted]
+    left_counts = np.cumsum(one_hot, axis=0)[:-1]
+
+    # right counts
+    total_counts = left_counts[-1]
+    right_counts = total_counts - left_counts
+
+    # total counts
+    left_totals = np.arange(1, n)
+    right_totals = n - left_totals
+
+    # vectorizing left &amp; right Gini computing
+    gini_left = 1.0 - np.sum(
+        (left_counts / left_totals[:, np.newaxis])**2, axis=1)
+    gini_right = 1.0 - np.sum(
+        (right_counts / right_totals[:, np.newaxis])**2, axis=1)
+
+    # weighted Gini
+    weighted_gini = (left_totals * gini_left +
+                     right_totals * gini_right) / n
+    return np.min(weighted_gini)</code></pre>
+</details>
+<div class="desc"></div>
 </dd>
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></b></code>:
 <ul class="hlist">
-<li><code><a title="PineBioML.selection.SelectionPipeline.Choose" href="index.html#PineBioML.selection.SelectionPipeline.Choose">Choose</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Select" href="index.html#PineBioML.selection.SelectionPipeline.Select">Select</a></code></li>
@@ -469,397 +671,9 @@ What we do here is:
 </li>
 </ul>
 </dd>
-<dt id="PineBioML.selection.classification.Lasso_bisection_selection"><code class="flex name class">
-<span>class <span class="ident">Lasso_bisection_selection</span></span>
-<span>(</span><span>k, unbalanced=True, objective='regression')</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class Lasso_bisection_selection(SelectionPipeline):
-    &#34;&#34;&#34;
-    Using Lasso (L1 penalty) regression as scoring method.  More specifically, L1 penalty will force feature weights to be zeros. 
-    As the coefficient of penalty increases, more and more weights of features got killed and the important feature will remain.
-
-    Lasso_bisection_selection will use binary search to find out when all weights vanish.
-    
-    The trace of weight vanishment is not support.
-
-    &#34;&#34;&#34;
-
-    def __init__(self, k, unbalanced=True, objective=&#34;regression&#34;):
-        &#34;&#34;&#34;
-        Args:
-            unbalanced (bool, optional): False to imply class weight to samples. Defaults to True.
-            objective (str, optional): one of {&#34;Regression&#34;, &#34;BinaryClassification&#34;}
-        &#34;&#34;&#34;
-        super().__init__(k=k)
-        self.upper_init = 1e+4
-        self.lower_init = 1e-4
-        self.objective = objective
-        if self.objective in [&#34;regression&#34;, &#34;Regression&#34;]:
-            self.regression = True
-        else:
-            self.regression = False
-
-        self.sample_weights = 1
-        self.unbalanced = unbalanced
-        self.name = &#34;LassoBisection&#34;
-        self.kernel = self.create_kernel(1)
-
-    def reference(self) -&gt; dict[str, str]:
-        &#34;&#34;&#34;
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        &#34;&#34;&#34;
-        refer = super().reference()
-        refer[
-            self.name() +
-            &#34; document&#34;] = &#34;https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html&#34;
-        refer[
-            &#34; publication 1&#34;] = &#34;https://projecteuclid.org/journals/annals-of-statistics/volume-37/issue-5A/High-dimensional-variable-selection/10.1214/08-AOS646.full&#34;
-        refer[
-            &#34; publication 2&#34;] = &#34;https://www.tandfonline.com/doi/abs/10.1198/016214506000000735?casa_token=5HDhtyCfh40AAAAA:4NxSU97CZubZVpReaQNsSBpqA10_xNhspTQobPnb_z2YXe3Wf-HBHV8OygbqUkmJQPt2Jmp7ZlJPWd0&#34;
-        return refer
-
-    def create_kernel(self, C):
-        if self.regression:
-            return Lasso(alpha=C, warm_start=True)
-        else:
-            return LogisticRegression(penalty=&#34;l1&#34;,
-                                      C=1 / C,
-                                      solver=&#34;liblinear&#34;,
-                                      random_state=142)
-
-    def assign_alpha(self, C, coef=None):
-        if self.regression:
-            self.kernel.alpha = C
-        else:
-            self.kernel.C = 1 / C
-        if coef is not None:
-            self.kernel.coef_ = coef
-
-    def lasso_alive(self, x, y, log_alpha: float, coef=None):
-        alpha = self.to_alpha(log_alpha)
-
-        self.assign_alpha(alpha, coef=coef)
-        self.kernel.fit(x, y, self.sample_weights)
-
-        importance = self.coef_to_importance(self.kernel.coef_)
-        num_alives = (importance &gt; 0).sum()
-
-        return num_alives
-
-    def to_alpha(self, log_alpha):
-        return log_alpha  #np.power(10., log_alpha)
-
-    def coef_to_importance(self, coef):
-        return np.linalg.norm(coef, ord=2, axis=0)
-
-    def Select(self, x, y):
-        &#34;&#34;&#34;
-        Using Lasso (L1 penalty) regression as scoring method.  More specifically, L1 penalty will force feature weights to be zeros. 
-        As the coefficient of penalty increases, more and more weights of features got killed and the important feature will remain.
-
-        Lasso_bisection_selection will use binary search to find out when all weights vanish.
-
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to extract information.
-            y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-            k (int): Number of feature to select. The result may less than k
-
-        Returns:
-            pandas.Series: The score for k selected features. May less than k.
-        &#34;&#34;&#34;
-
-        # train test split
-        x_train = x.copy()
-        y_train = y.copy()
-
-        if self.unbalanced:
-            self.sample_weights = compute_sample_weight(
-                class_weight=&#34;balanced&#34;, y=y_train)
-        else:
-            self.sample_weights = np.ones_like(y_train)
-
-        if self.k == -1:
-            self.k = min(x.shape[0], x.shape[1]) // 2
-
-        y_train = OneHotEncoder(sparse_output=False).fit_transform(
-            y_train.to_numpy().reshape(-1, 1))
-
-        # Bisection searching
-        ### standardize x
-        x_train = x_train / x_train.values.std()
-        if self.regression:
-            y_train = (y_train - y_train.mean(
-                axis=0, keepdims=True)) / y_train.std(axis=0, keepdims=True)
-
-        upper = self.upper_init
-        upper_alive = self.lasso_alive(x_train, y_train, upper)
-        upper_coef = self.kernel.coef_
-        #print(upper, upper_alive)
-
-        lower = self.lower_init
-        lower_alive = self.lasso_alive(x_train, y_train, lower)
-        lower_coef = self.kernel.coef_
-        #print(lower, lower_alive)
-
-        alpha = (upper + lower) / 2
-        coef = (upper_coef + lower_coef) / 2
-        alive = self.lasso_alive(x_train, y_train, alpha, coef)
-        counter = 1
-        while not alive == self.k:
-            #print(alive, alpha)
-            if alive &gt;= self.k:
-                lower = alpha
-                lower_coef = self.kernel.coef_
-            else:
-                upper = alpha
-                upper_coef = self.kernel.coef_
-
-            alpha = (upper + lower) / 2
-            coef = (upper_coef + lower_coef) / 2
-            alive = self.lasso_alive(x_train, y_train, alpha, coef)
-
-            counter += 1
-            if counter &gt; 20:
-                break
-
-        self.scores = pd.Series(self.coef_to_importance(self.kernel.coef_),
-                                index=x.columns,
-                                name=self.name).sort_values(ascending=False)
-        self.selected_score = self.scores.head(self.k)
-        return self.selected_score</code></pre>
-</details>
-<div class="desc"><p>Using Lasso (L1 penalty) regression as scoring method.
-More specifically, L1 penalty will force feature weights to be zeros.
-As the coefficient of penalty increases, more and more weights of features got killed and the important feature will remain.</p>
-<p>Lasso_bisection_selection will use binary search to find out when all weights vanish.</p>
-<p>The trace of weight vanishment is not support.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>unbalanced</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>False to imply class weight to samples. Defaults to True.</dd>
-<dt><strong><code>objective</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>one of {"Regression", "BinaryClassification"}</dd>
-</dl></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></li>
-</ul>
-<h3>Methods</h3>
-<dl>
-<dt id="PineBioML.selection.classification.Lasso_bisection_selection.Select"><code class="name flex">
-<span>def <span class="ident">Select</span></span>(<span>self, x, y)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def Select(self, x, y):
-    &#34;&#34;&#34;
-    Using Lasso (L1 penalty) regression as scoring method.  More specifically, L1 penalty will force feature weights to be zeros. 
-    As the coefficient of penalty increases, more and more weights of features got killed and the important feature will remain.
-
-    Lasso_bisection_selection will use binary search to find out when all weights vanish.
-
-    Args:
-        x (pandas.DataFrame or a 2D array): The data to extract information.
-        y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-        k (int): Number of feature to select. The result may less than k
-
-    Returns:
-        pandas.Series: The score for k selected features. May less than k.
-    &#34;&#34;&#34;
-
-    # train test split
-    x_train = x.copy()
-    y_train = y.copy()
-
-    if self.unbalanced:
-        self.sample_weights = compute_sample_weight(
-            class_weight=&#34;balanced&#34;, y=y_train)
-    else:
-        self.sample_weights = np.ones_like(y_train)
-
-    if self.k == -1:
-        self.k = min(x.shape[0], x.shape[1]) // 2
-
-    y_train = OneHotEncoder(sparse_output=False).fit_transform(
-        y_train.to_numpy().reshape(-1, 1))
-
-    # Bisection searching
-    ### standardize x
-    x_train = x_train / x_train.values.std()
-    if self.regression:
-        y_train = (y_train - y_train.mean(
-            axis=0, keepdims=True)) / y_train.std(axis=0, keepdims=True)
-
-    upper = self.upper_init
-    upper_alive = self.lasso_alive(x_train, y_train, upper)
-    upper_coef = self.kernel.coef_
-    #print(upper, upper_alive)
-
-    lower = self.lower_init
-    lower_alive = self.lasso_alive(x_train, y_train, lower)
-    lower_coef = self.kernel.coef_
-    #print(lower, lower_alive)
-
-    alpha = (upper + lower) / 2
-    coef = (upper_coef + lower_coef) / 2
-    alive = self.lasso_alive(x_train, y_train, alpha, coef)
-    counter = 1
-    while not alive == self.k:
-        #print(alive, alpha)
-        if alive &gt;= self.k:
-            lower = alpha
-            lower_coef = self.kernel.coef_
-        else:
-            upper = alpha
-            upper_coef = self.kernel.coef_
-
-        alpha = (upper + lower) / 2
-        coef = (upper_coef + lower_coef) / 2
-        alive = self.lasso_alive(x_train, y_train, alpha, coef)
-
-        counter += 1
-        if counter &gt; 20:
-            break
-
-    self.scores = pd.Series(self.coef_to_importance(self.kernel.coef_),
-                            index=x.columns,
-                            name=self.name).sort_values(ascending=False)
-    self.selected_score = self.scores.head(self.k)
-    return self.selected_score</code></pre>
-</details>
-<div class="desc"><p>Using Lasso (L1 penalty) regression as scoring method.
-More specifically, L1 penalty will force feature weights to be zeros.
-As the coefficient of penalty increases, more and more weights of features got killed and the important feature will remain.</p>
-<p>Lasso_bisection_selection will use binary search to find out when all weights vanish.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
-<dd>The data to extract information.</dd>
-<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
-<dd>The target label for methods. Defaults to None.</dd>
-<dt><strong><code>k</code></strong> :&ensp;<code>int</code></dt>
-<dd>Number of feature to select. The result may less than k</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>pandas.Series</code></dt>
-<dd>The score for k selected features. May less than k.</dd>
-</dl></div>
-</dd>
-<dt id="PineBioML.selection.classification.Lasso_bisection_selection.assign_alpha"><code class="name flex">
-<span>def <span class="ident">assign_alpha</span></span>(<span>self, C, coef=None)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def assign_alpha(self, C, coef=None):
-    if self.regression:
-        self.kernel.alpha = C
-    else:
-        self.kernel.C = 1 / C
-    if coef is not None:
-        self.kernel.coef_ = coef</code></pre>
-</details>
-<div class="desc"></div>
-</dd>
-<dt id="PineBioML.selection.classification.Lasso_bisection_selection.coef_to_importance"><code class="name flex">
-<span>def <span class="ident">coef_to_importance</span></span>(<span>self, coef)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def coef_to_importance(self, coef):
-    return np.linalg.norm(coef, ord=2, axis=0)</code></pre>
-</details>
-<div class="desc"></div>
-</dd>
-<dt id="PineBioML.selection.classification.Lasso_bisection_selection.create_kernel"><code class="name flex">
-<span>def <span class="ident">create_kernel</span></span>(<span>self, C)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def create_kernel(self, C):
-    if self.regression:
-        return Lasso(alpha=C, warm_start=True)
-    else:
-        return LogisticRegression(penalty=&#34;l1&#34;,
-                                  C=1 / C,
-                                  solver=&#34;liblinear&#34;,
-                                  random_state=142)</code></pre>
-</details>
-<div class="desc"></div>
-</dd>
-<dt id="PineBioML.selection.classification.Lasso_bisection_selection.lasso_alive"><code class="name flex">
-<span>def <span class="ident">lasso_alive</span></span>(<span>self, x, y, log_alpha: float, coef=None)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def lasso_alive(self, x, y, log_alpha: float, coef=None):
-    alpha = self.to_alpha(log_alpha)
-
-    self.assign_alpha(alpha, coef=coef)
-    self.kernel.fit(x, y, self.sample_weights)
-
-    importance = self.coef_to_importance(self.kernel.coef_)
-    num_alives = (importance &gt; 0).sum()
-
-    return num_alives</code></pre>
-</details>
-<div class="desc"></div>
-</dd>
-<dt id="PineBioML.selection.classification.Lasso_bisection_selection.to_alpha"><code class="name flex">
-<span>def <span class="ident">to_alpha</span></span>(<span>self, log_alpha)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_alpha(self, log_alpha):
-    return log_alpha  #np.power(10., log_alpha)</code></pre>
-</details>
-<div class="desc"></div>
-</dd>
-</dl>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></b></code>:
-<ul class="hlist">
-<li><code><a title="PineBioML.selection.SelectionPipeline.Choose" href="index.html#PineBioML.selection.SelectionPipeline.Choose">Choose</a></code></li>
-<li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
-<li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
-<li><code><a title="PineBioML.selection.SelectionPipeline.Scoring" href="index.html#PineBioML.selection.SelectionPipeline.Scoring">Scoring</a></code></li>
-<li><code><a title="PineBioML.selection.SelectionPipeline.fit" href="index.html#PineBioML.selection.SelectionPipeline.fit">fit</a></code></li>
-<li><code><a title="PineBioML.selection.SelectionPipeline.reference" href="index.html#PineBioML.selection.SelectionPipeline.reference">reference</a></code></li>
-</ul>
-</li>
-</ul>
-</dd>
 <dt id="PineBioML.selection.classification.Lasso_selection"><code class="flex name class">
 <span>class <span class="ident">Lasso_selection</span></span>
-<span>(</span><span>k, unbalanced=True, objective='regression')</span>
+<span>(</span><span>k=None, z_importance_threshold=1.0, unbalanced=True, n_cv=5)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -880,28 +694,25 @@ As the coefficient of penalty increases, more and more weights of features got k
     ~~Lasso_selection will use grid search to find out when all weights vanish.    ~~
     &#34;&#34;&#34;
 
-    def __init__(self, k, unbalanced=True, objective=&#34;regression&#34;):
+    def __init__(self,
+                 k=None,
+                 z_importance_threshold=1.,
+                 unbalanced=True,
+                 n_cv=5):
         &#34;&#34;&#34;
         Args:
             unbalanced (bool, optional): False to imply class weight to samples. Defaults to True.
         &#34;&#34;&#34;
-        super().__init__(k=k)
+        super().__init__(k=k,
+                         z_importance_threshold=z_importance_threshold,
+                         n_cv=n_cv)
 
         # parameters
         self.regression = True
         self.unbalanced = unbalanced
         self.name = &#34;LassoLars&#34;
 
-        self.important_path = None
-
     def reference(self) -&gt; dict[str, str]:
-        &#34;&#34;&#34;
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        &#34;&#34;&#34;
         refer = super().reference()
         refer[
             self.name() +
@@ -929,32 +740,20 @@ As the coefficient of penalty increases, more and more weights of features got k
             
         &#34;&#34;&#34;
 
-        return LassoLars(alpha=C)
+        return LassoLars(alpha=C, random_state=142)
 
     def Scoring(self, x, y=None):
         &#34;&#34;&#34;
         Using Lasso Lars regression as scoring method.
-
-         Args:
-            x (pandas.DataFrame or a 2D array): The data to extract information.
-            y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-
-        Returns:
-            pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
-        
-        To do:
-            kfold validation performance threshold.
-        
+                
         &#34;&#34;&#34;
 
         x_train = x.copy()
-        #x_train = (x_train - x_train.mean()) / x_train.std()
-
         y_train = y.copy()
+
         self.y_encoder = OneHotEncoder(sparse_output=False)
-        y_train = self.y_encoder.fit_transform(y_train.to_numpy().reshape(
-            -1, 1))
-        class_pos_weights = y_train.mean(axis=0)
+        self.y_encoder.fit(y.to_numpy().reshape(-1, 1))
+        y_train = self.y_encoder.transform(y_train.to_numpy().reshape(-1, 1))
 
         kernel = self.create_kernel()
 
@@ -969,6 +768,7 @@ As the coefficient of penalty increases, more and more weights of features got k
 
         result = []
         for i in task_set:
+            # TODO: cross validation, alpha interpolation
             y = y_train[:, i]
             y = (y - y.mean()) / y.std()
             kernel.fit(x_train, y)
@@ -981,28 +781,21 @@ As the coefficient of penalty increases, more and more weights of features got k
 
         var_dropout_alpha = []
         for s in result:
+            # the right end side(alpha) of the range that variable has a non-zero lars coefficient.
             tmp = (s != 0).idxmax(axis=0).replace(s.index[0], 0)**2
 
-            # max normalize along sample axis for each output.
+            # normalizing each task.
             tmp = tmp / tmp.max()
             var_dropout_alpha.append(tmp)
 
+        # collect the results
         self.result = result
-        self.scores = np.sqrt(
-            sum(var_dropout_alpha)).sort_values(ascending=False)
-        self.scores.name = self.name
-        return self.scores.copy()
+        scores = np.sqrt(sum(var_dropout_alpha)).sort_values(ascending=False)
+        scores.name = self.name
+        return scores
 
     def Plotting(self):
-        &#34;&#34;&#34;
-        plot hist graph of selectied feature importance
-        &#34;&#34;&#34;
-        fig, ax = plt.subplots(1, 1)
-        ax.bar(self.selected_score.index, self.selected_score)
-        for label in ax.get_xticklabels(which=&#39;major&#39;):
-            label.set(rotation=45, horizontalalignment=&#39;right&#39;)
-        ax.set_title(self.name + &#34; score&#34;)
-        plt.show()
+        super().Plotting()
 
         global_selected = self.selected_score.index
         for i_th in range(len(self.result)):
@@ -1119,27 +912,15 @@ Multi-class classification problem will be devided into ovr (one vs rest) classi
 <pre><code class="python">def Scoring(self, x, y=None):
     &#34;&#34;&#34;
     Using Lasso Lars regression as scoring method.
-
-     Args:
-        x (pandas.DataFrame or a 2D array): The data to extract information.
-        y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-
-    Returns:
-        pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
-    
-    To do:
-        kfold validation performance threshold.
-    
+            
     &#34;&#34;&#34;
 
     x_train = x.copy()
-    #x_train = (x_train - x_train.mean()) / x_train.std()
-
     y_train = y.copy()
+
     self.y_encoder = OneHotEncoder(sparse_output=False)
-    y_train = self.y_encoder.fit_transform(y_train.to_numpy().reshape(
-        -1, 1))
-    class_pos_weights = y_train.mean(axis=0)
+    self.y_encoder.fit(y.to_numpy().reshape(-1, 1))
+    y_train = self.y_encoder.transform(y_train.to_numpy().reshape(-1, 1))
 
     kernel = self.create_kernel()
 
@@ -1154,6 +935,7 @@ Multi-class classification problem will be devided into ovr (one vs rest) classi
 
     result = []
     for i in task_set:
+        # TODO: cross validation, alpha interpolation
         y = y_train[:, i]
         y = (y - y.mean()) / y.std()
         kernel.fit(x_train, y)
@@ -1166,29 +948,20 @@ Multi-class classification problem will be devided into ovr (one vs rest) classi
 
     var_dropout_alpha = []
     for s in result:
+        # the right end side(alpha) of the range that variable has a non-zero lars coefficient.
         tmp = (s != 0).idxmax(axis=0).replace(s.index[0], 0)**2
 
-        # max normalize along sample axis for each output.
+        # normalizing each task.
         tmp = tmp / tmp.max()
         var_dropout_alpha.append(tmp)
 
+    # collect the results
     self.result = result
-    self.scores = np.sqrt(
-        sum(var_dropout_alpha)).sort_values(ascending=False)
-    self.scores.name = self.name
-    return self.scores.copy()</code></pre>
+    scores = np.sqrt(sum(var_dropout_alpha)).sort_values(ascending=False)
+    scores.name = self.name
+    return scores</code></pre>
 </details>
-<div class="desc"><p>Using Lasso Lars regression as scoring method.</p>
-<p>Args:
-x (pandas.DataFrame or a 2D array): The data to extract information.
-y (pandas.Series or a 1D array): The target label for methods. Defaults to None.</p>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>pandas.Series</code> or <code>pandas.DataFrame</code></dt>
-<dd>The score for each feature. Some elements may be empty.</dd>
-</dl>
-<p>To do:
-kfold validation performance threshold.</p></div>
+<div class="desc"><p>Using Lasso Lars regression as scoring method.</p></div>
 </dd>
 <dt id="PineBioML.selection.classification.Lasso_selection.create_kernel"><code class="name flex">
 <span>def <span class="ident">create_kernel</span></span>(<span>self, C=0.01)</span>
@@ -1213,7 +986,7 @@ kfold validation performance threshold.</p></div>
         
     &#34;&#34;&#34;
 
-    return LassoLars(alpha=C)</code></pre>
+    return LassoLars(alpha=C, random_state=142)</code></pre>
 </details>
 <div class="desc"><p>Create diffirent kernel according to opjective.</p>
 <h2 id="args">Args</h2>
@@ -1274,7 +1047,6 @@ kfold validation performance threshold.</p></div>
 <ul class="hlist">
 <li><code><b><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></b></code>:
 <ul class="hlist">
-<li><code><a title="PineBioML.selection.SelectionPipeline.Choose" href="index.html#PineBioML.selection.SelectionPipeline.Choose">Choose</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Select" href="index.html#PineBioML.selection.SelectionPipeline.Select">Select</a></code></li>
@@ -1286,7 +1058,7 @@ kfold validation performance threshold.</p></div>
 </dd>
 <dt id="PineBioML.selection.classification.Lightgbm_selection"><code class="flex name class">
 <span>class <span class="ident">Lightgbm_selection</span></span>
-<span>(</span><span>k, unbalanced=True)</span>
+<span>(</span><span>k=None, z_importance_threshold=1.0, unbalanced=True, n_cv=5)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -1300,12 +1072,18 @@ kfold validation performance threshold.</p></div>
     Warning: If data is too easy, boosting methods is difficult to give score to all features.
     &#34;&#34;&#34;
 
-    def __init__(self, k, unbalanced=True):
+    def __init__(self,
+                 k=None,
+                 z_importance_threshold=1.,
+                 unbalanced=True,
+                 n_cv=5):
         &#34;&#34;&#34;
         Args:
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
         &#34;&#34;&#34;
-        super().__init__(k=k)
+        super().__init__(k=k,
+                         z_importance_threshold=z_importance_threshold,
+                         n_cv=n_cv)
         self.unbalanced = unbalanced
         from lightgbm import LGBMClassifier
 
@@ -1317,13 +1095,6 @@ kfold validation performance threshold.</p></div>
         self.name = &#34;Lightgbm&#34;
 
     def reference(self) -&gt; dict[str, str]:
-        &#34;&#34;&#34;
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        &#34;&#34;&#34;
         refer = super().reference()
         refer[
             self.name() +
@@ -1333,10 +1104,6 @@ kfold validation performance threshold.</p></div>
     def Scoring(self, x, y=None):
         &#34;&#34;&#34;
         Using Lightgbm to scoring (gini impurity / entropy) features.
-
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to extract information.
-            y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
 
         Returns:
             pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
@@ -1348,9 +1115,9 @@ kfold validation performance threshold.</p></div>
 
         self.kernel.fit(x, y, sample_weight=sample_weight)
         score = self.kernel.feature_importances_
-        self.scores = pd.Series(score, index=x.columns,
-                                name=self.name).sort_values(ascending=False)
-        return self.scores.copy()</code></pre>
+        scores = pd.Series(score, index=x.columns,
+                           name=self.name).sort_values(ascending=False)
+        return scores</code></pre>
 </details>
 <div class="desc"><p>Using Lightgbm to scoring (gini impurity / entropy) features. </p>
 <p>Warning: If data is too easy, boosting methods is difficult to give score to all features.</p>
@@ -1377,10 +1144,6 @@ kfold validation performance threshold.</p></div>
     &#34;&#34;&#34;
     Using Lightgbm to scoring (gini impurity / entropy) features.
 
-    Args:
-        x (pandas.DataFrame or a 2D array): The data to extract information.
-        y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-
     Returns:
         pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
     &#34;&#34;&#34;
@@ -1391,18 +1154,11 @@ kfold validation performance threshold.</p></div>
 
     self.kernel.fit(x, y, sample_weight=sample_weight)
     score = self.kernel.feature_importances_
-    self.scores = pd.Series(score, index=x.columns,
-                            name=self.name).sort_values(ascending=False)
-    return self.scores.copy()</code></pre>
+    scores = pd.Series(score, index=x.columns,
+                       name=self.name).sort_values(ascending=False)
+    return scores</code></pre>
 </details>
 <div class="desc"><p>Using Lightgbm to scoring (gini impurity / entropy) features.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
-<dd>The data to extract information.</dd>
-<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
-<dd>The target label for methods. Defaults to None.</dd>
-</dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>pandas.Series</code> or <code>pandas.DataFrame</code></dt>
@@ -1414,7 +1170,6 @@ kfold validation performance threshold.</p></div>
 <ul class="hlist">
 <li><code><b><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></b></code>:
 <ul class="hlist">
-<li><code><a title="PineBioML.selection.SelectionPipeline.Choose" href="index.html#PineBioML.selection.SelectionPipeline.Choose">Choose</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Select" href="index.html#PineBioML.selection.SelectionPipeline.Select">Select</a></code></li>
@@ -1426,7 +1181,7 @@ kfold validation performance threshold.</p></div>
 </dd>
 <dt id="PineBioML.selection.classification.RF_selection"><code class="flex name class">
 <span>class <span class="ident">RF_selection</span></span>
-<span>(</span><span>k, unbalanced=True, strategy='gini')</span>
+<span>(</span><span>k=None, z_importance_threshold=1.0, unbalanced=True, strategy='gini', n_cv=5)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -1440,15 +1195,21 @@ kfold validation performance threshold.</p></div>
 
     &#34;&#34;&#34;
 
-    def __init__(self, k, unbalanced=True, strategy=&#34;gini&#34;):
+    def __init__(self,
+                 k=None,
+                 z_importance_threshold=1.,
+                 unbalanced=True,
+                 strategy=&#34;gini&#34;,
+                 n_cv=5):
         &#34;&#34;&#34;
         Args:
-            trees (int, optional): Number of trees. Defaults to 1024*16.
             strategy (str, optional): Scoring strategy, one of {&#34;gini&#34;, &#34;entropy&#34;}. Defaults to &#34;gini&#34;.
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to True.
         &#34;&#34;&#34;
         from sklearn.ensemble import RandomForestClassifier
-        super().__init__(k=k)
+        super().__init__(k=k,
+                         z_importance_threshold=z_importance_threshold,
+                         n_cv=n_cv)
         self.strategy = strategy
         if unbalanced:
             class_weight = &#34;balanced&#34;
@@ -1462,18 +1223,12 @@ kfold validation performance threshold.</p></div>
                                              criterion=strategy,
                                              verbose=0,
                                              random_state=142,
-                                             min_samples_leaf=3)
+                                             min_samples_leaf=2)
 
         self.name = &#34;RandomForest_&#34; + self.strategy
 
     def reference(self) -&gt; dict[str, str]:
-        &#34;&#34;&#34;
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
 
-        Returns:
-            dict[str, str]: a dict of reference.
-        &#34;&#34;&#34;
         refer = super().reference()
         refer[self.name() + &#34; document&#34;] = &#34;&#34;
         refer[
@@ -1491,28 +1246,23 @@ kfold validation performance threshold.</p></div>
         &#34;&#34;&#34;
         Using random forest to scoring (gini impurity / entropy) features.
 
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to extract information.
-            y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-
         Returns:
             pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
         &#34;&#34;&#34;
-        self.kernel.n_estimators = round(np.sqrt(x.shape[1]) * 5)
+        self.kernel.n_estimators = round(2 * np.sqrt(x.shape[1]) *
+                                         np.log(x.shape[1]))
         with parallel_config(backend=&#39;loky&#39;):
             self.kernel.fit(x, y)
         score = self.kernel.feature_importances_
-        self.scores = pd.Series(score, index=x.columns,
-                                name=self.name).sort_values(ascending=False)
-        return self.scores.copy()</code></pre>
+        scores = pd.Series(score, index=x.columns,
+                           name=self.name).sort_values(ascending=False)
+        return scores</code></pre>
 </details>
 <div class="desc"><p>Using random forest to scoring features by gini/entropy gain.
 <br>
 We do not provide permutation importance(VI, variable importance) here.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>trees</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Number of trees. Defaults to 1024*16.</dd>
 <dt><strong><code>strategy</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>Scoring strategy, one of {"gini", "entropy"}. Defaults to "gini".</dd>
 <dt><strong><code>unbalanced</code></strong> :&ensp;<code>bool</code>, optional</dt>
@@ -1536,29 +1286,19 @@ We do not provide permutation importance(VI, variable importance) here.</p>
     &#34;&#34;&#34;
     Using random forest to scoring (gini impurity / entropy) features.
 
-    Args:
-        x (pandas.DataFrame or a 2D array): The data to extract information.
-        y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-
     Returns:
         pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
     &#34;&#34;&#34;
-    self.kernel.n_estimators = round(np.sqrt(x.shape[1]) * 5)
+    self.kernel.n_estimators = round(2 * np.sqrt(x.shape[1]) *
+                                     np.log(x.shape[1]))
     with parallel_config(backend=&#39;loky&#39;):
         self.kernel.fit(x, y)
     score = self.kernel.feature_importances_
-    self.scores = pd.Series(score, index=x.columns,
-                            name=self.name).sort_values(ascending=False)
-    return self.scores.copy()</code></pre>
+    scores = pd.Series(score, index=x.columns,
+                       name=self.name).sort_values(ascending=False)
+    return scores</code></pre>
 </details>
 <div class="desc"><p>Using random forest to scoring (gini impurity / entropy) features.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
-<dd>The data to extract information.</dd>
-<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
-<dd>The target label for methods. Defaults to None.</dd>
-</dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>pandas.Series</code> or <code>pandas.DataFrame</code></dt>
@@ -1570,7 +1310,6 @@ We do not provide permutation importance(VI, variable importance) here.</p>
 <ul class="hlist">
 <li><code><b><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></b></code>:
 <ul class="hlist">
-<li><code><a title="PineBioML.selection.SelectionPipeline.Choose" href="index.html#PineBioML.selection.SelectionPipeline.Choose">Choose</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Select" href="index.html#PineBioML.selection.SelectionPipeline.Select">Select</a></code></li>
@@ -1582,7 +1321,7 @@ We do not provide permutation importance(VI, variable importance) here.</p>
 </dd>
 <dt id="PineBioML.selection.classification.SVM_selection"><code class="flex name class">
 <span>class <span class="ident">SVM_selection</span></span>
-<span>(</span><span>k)</span>
+<span>(</span><span>k=None, z_importance_threshold=1.0, n_cv=5)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -1599,21 +1338,16 @@ We do not provide permutation importance(VI, variable importance) here.</p>
 
     &#34;&#34;&#34;
 
-    def __init__(self, k):
-        super().__init__(k=k)
+    def __init__(self, k=None, z_importance_threshold=1., n_cv=5):
+        super().__init__(k=k,
+                         z_importance_threshold=z_importance_threshold,
+                         n_cv=n_cv)
         self.kernel = LinearSVC(dual=&#34;auto&#34;,
                                 class_weight=&#34;balanced&#34;,
                                 random_state=142)
         self.name = &#34;SVM&#34;
 
     def reference(self) -&gt; dict[str, str]:
-        &#34;&#34;&#34;
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        &#34;&#34;&#34;
         refer = super().reference()
         refer[
             self.name() +
@@ -1626,10 +1360,6 @@ We do not provide permutation importance(VI, variable importance) here.</p>
         &#34;&#34;&#34;
         Using the support vector of linear support vector classifier as scoring method.
 
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to extract information.
-            y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-
         Returns:
             pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
         &#34;&#34;&#34;
@@ -1637,9 +1367,9 @@ We do not provide permutation importance(VI, variable importance) here.</p>
         svm_weights = np.abs(self.kernel.coef_).sum(axis=0)
         svm_weights /= svm_weights.sum()
 
-        self.scores = pd.Series(svm_weights, index=x.columns,
-                                name=self.name).sort_values(ascending=False)
-        return self.scores.copy()</code></pre>
+        scores = pd.Series(svm_weights, index=x.columns,
+                           name=self.name).sort_values(ascending=False)
+        return scores</code></pre>
 </details>
 <div class="desc"><p>Using the support vector of linear support vector classifier as scoring method.
 </p>
@@ -1651,6 +1381,8 @@ We do not provide permutation importance(VI, variable importance) here.</p>
 <dl>
 <dt><strong><code>k</code></strong> :&ensp;<code>int</code> or <code>None</code></dt>
 <dd>select top k important feature. k = -1 means selecting all, k = None means selecting the feature that have standarized score &gt; 1. Default = None</dd>
+<dt><strong><code>z_importance_threshold</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The threshold to picking features. Defaults to 1.</dd>
 </dl></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -1670,10 +1402,6 @@ We do not provide permutation importance(VI, variable importance) here.</p>
     &#34;&#34;&#34;
     Using the support vector of linear support vector classifier as scoring method.
 
-    Args:
-        x (pandas.DataFrame or a 2D array): The data to extract information.
-        y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-
     Returns:
         pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
     &#34;&#34;&#34;
@@ -1681,18 +1409,11 @@ We do not provide permutation importance(VI, variable importance) here.</p>
     svm_weights = np.abs(self.kernel.coef_).sum(axis=0)
     svm_weights /= svm_weights.sum()
 
-    self.scores = pd.Series(svm_weights, index=x.columns,
-                            name=self.name).sort_values(ascending=False)
-    return self.scores.copy()</code></pre>
+    scores = pd.Series(svm_weights, index=x.columns,
+                       name=self.name).sort_values(ascending=False)
+    return scores</code></pre>
 </details>
 <div class="desc"><p>Using the support vector of linear support vector classifier as scoring method.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
-<dd>The data to extract information.</dd>
-<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
-<dd>The target label for methods. Defaults to None.</dd>
-</dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>pandas.Series</code> or <code>pandas.DataFrame</code></dt>
@@ -1704,7 +1425,6 @@ We do not provide permutation importance(VI, variable importance) here.</p>
 <ul class="hlist">
 <li><code><b><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></b></code>:
 <ul class="hlist">
-<li><code><a title="PineBioML.selection.SelectionPipeline.Choose" href="index.html#PineBioML.selection.SelectionPipeline.Choose">Choose</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Select" href="index.html#PineBioML.selection.SelectionPipeline.Select">Select</a></code></li>
@@ -1716,7 +1436,7 @@ We do not provide permutation importance(VI, variable importance) here.</p>
 </dd>
 <dt id="PineBioML.selection.classification.XGboost_selection"><code class="flex name class">
 <span>class <span class="ident">XGboost_selection</span></span>
-<span>(</span><span>k, unbalanced=True)</span>
+<span>(</span><span>k=None, z_importance_threshold=1.0, unbalanced=True, n_cv=5)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -1730,12 +1450,18 @@ We do not provide permutation importance(VI, variable importance) here.</p>
     Warning: If data is too easy, boosting methods is difficult to give score to all features.
     &#34;&#34;&#34;
 
-    def __init__(self, k, unbalanced=True):
+    def __init__(self,
+                 k=None,
+                 z_importance_threshold=1.,
+                 unbalanced=True,
+                 n_cv=5):
         &#34;&#34;&#34;
         Args:
             unbalanced (bool, optional): True to imply class weight to samples. Defaults to False.
         &#34;&#34;&#34;
-        super().__init__(k=k)
+        super().__init__(k=k,
+                         z_importance_threshold=z_importance_threshold,
+                         n_cv=n_cv)
         self.unbalanced = unbalanced
 
         from xgboost import XGBClassifier
@@ -1744,13 +1470,6 @@ We do not provide permutation importance(VI, variable importance) here.</p>
         self.name = &#34;XGboost&#34;
 
     def reference(self) -&gt; dict[str, str]:
-        &#34;&#34;&#34;
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        &#34;&#34;&#34;
         refer = super().reference()
         refer[
             self.name() +
@@ -1760,10 +1479,6 @@ We do not provide permutation importance(VI, variable importance) here.</p>
     def Scoring(self, x, y=None):
         &#34;&#34;&#34;
         Using XGboost to scoring (gini impurity / entropy) features.
-
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to extract information.
-            y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
 
         Returns:
             pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
@@ -1777,9 +1492,9 @@ We do not provide permutation importance(VI, variable importance) here.</p>
             y.to_numpy().reshape(-1, 1))
         self.kernel.fit(x, y, sample_weight=sample_weight)
         score = self.kernel.feature_importances_
-        self.scores = pd.Series(score, index=x.columns,
-                                name=self.name).sort_values(ascending=False)
-        return self.scores.copy()</code></pre>
+        scores = pd.Series(score, index=x.columns,
+                           name=self.name).sort_values(ascending=False)
+        return scores</code></pre>
 </details>
 <div class="desc"><p>Using XGboost to scoring (gini impurity / entropy) features.</p>
 <p>Warning: If data is too easy, boosting methods is difficult to give score to all features.</p>
@@ -1806,10 +1521,6 @@ We do not provide permutation importance(VI, variable importance) here.</p>
     &#34;&#34;&#34;
     Using XGboost to scoring (gini impurity / entropy) features.
 
-    Args:
-        x (pandas.DataFrame or a 2D array): The data to extract information.
-        y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-
     Returns:
         pandas.Series or pandas.DataFrame: The score for each feature. Some elements may be empty.
     &#34;&#34;&#34;
@@ -1822,18 +1533,11 @@ We do not provide permutation importance(VI, variable importance) here.</p>
         y.to_numpy().reshape(-1, 1))
     self.kernel.fit(x, y, sample_weight=sample_weight)
     score = self.kernel.feature_importances_
-    self.scores = pd.Series(score, index=x.columns,
-                            name=self.name).sort_values(ascending=False)
-    return self.scores.copy()</code></pre>
+    scores = pd.Series(score, index=x.columns,
+                       name=self.name).sort_values(ascending=False)
+    return scores</code></pre>
 </details>
 <div class="desc"><p>Using XGboost to scoring (gini impurity / entropy) features.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
-<dd>The data to extract information.</dd>
-<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
-<dd>The target label for methods. Defaults to None.</dd>
-</dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>pandas.Series</code> or <code>pandas.DataFrame</code></dt>
@@ -1845,7 +1549,6 @@ We do not provide permutation importance(VI, variable importance) here.</p>
 <ul class="hlist">
 <li><code><b><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></b></code>:
 <ul class="hlist">
-<li><code><a title="PineBioML.selection.SelectionPipeline.Choose" href="index.html#PineBioML.selection.SelectionPipeline.Choose">Choose</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Select" href="index.html#PineBioML.selection.SelectionPipeline.Select">Select</a></code></li>
@@ -1857,7 +1560,7 @@ We do not provide permutation importance(VI, variable importance) here.</p>
 </dd>
 <dt id="PineBioML.selection.classification.ensemble_selector"><code class="flex name class">
 <span>class <span class="ident">ensemble_selector</span></span>
-<span>(</span><span>k=-1, z_importance_threshold: int = None)</span>
+<span>(</span><span>k: int = None, z_importance_threshold: float = 1.0, n_cv=5)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -1874,103 +1577,65 @@ We do not provide permutation importance(VI, variable importance) here.</p>
            else top k feature with averaging score will be selected.    
     &#34;&#34;&#34;
 
-    def __init__(self, k=-1, z_importance_threshold: int = None):
-        &#34;&#34;&#34;
+    def __init__(self,
+                 k: int = None,
+                 z_importance_threshold: float = 1.,
+                 n_cv=5):
 
-        Args:
-            k (int, optional): The number of features to be selected. Defaults to -1.
-            RF_trees (int, optional): number of trees using for randomforest. Defaults to 1024.
-            z_importance_threshold (int, optional): The threshold to picking features. Defaults to None.
-        
-        TODO:
-            auto adjust the RF_Trees by number of input features.
-        &#34;&#34;&#34;
-        self.k = k
-        self.z_importance_threshold = z_importance_threshold
-
+        super().__init__(k=k,
+                         z_importance_threshold=z_importance_threshold,
+                         n_cv=n_cv)
+        self.name = &#34;ensemble&#34;
         self.kernels = {
-            &#34;c45&#34;: DT_selection(k=k, strategy=&#34;c45&#34;),
-            &#34;RF_gini&#34;: RF_selection(k=k, strategy=&#34;gini&#34;),
-            &#34;Lasso&#34;: Lasso_selection(k=k),
-            &#34;multi_Lasso&#34;: multi_Lasso_selection(k=k),
-            &#34;SVM&#34;: SVM_selection(k=k),
+            &#34;c45&#34;: DT_selection(k=k, strategy=&#34;c45&#34;, n_cv=n_cv),
+            &#34;RF_gini&#34;: RF_selection(k=k, strategy=&#34;gini&#34;, n_cv=n_cv),
+            &#34;Lasso&#34;: Lasso_selection(k=k, n_cv=n_cv),
+            &#34;multi_Lasso&#34;: multi_Lasso_selection(k=k, n_cv=n_cv),
+            &#34;SVM&#34;: SVM_selection(k=k, n_cv=n_cv),
 
             #&#34;AdaBoost&#34;: AdaBoost_selection(k=k),
             #&#34;XGboost&#34;: XGboost_selection(k=k),
             #&#34;Lightgbm&#34;: Lightgbm_selection(k=k)
         }
+        self.n_cv = 1
 
     def reference(self) -&gt; dict[str, str]:
-        &#34;&#34;&#34;
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        &#34;&#34;&#34;
         refer = super().reference()
         refer[
             self.name() +
             &#34; WARNING&#34;] = &#34;This method has no reference yet. That means the effectivity has not been proven yet. It somehow works in experience.&#34;
         return refer
 
-    def Select(self, x, y):
-        &#34;&#34;&#34;
-        Calling all the methods in kernel sequancially.
-
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to extract information.
-            y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-            k (int): Number of feature to select. The result may less than k
-
-        Returns:
-            pandas.Series: The concatenated results. Top k (may less than k) important feature from diffient methods.
-        &#34;&#34;&#34;
+    def Scoring(self, x, y=None):
         results = []
         for method in self.kernels:
-            print(&#34;Using &#34;, method, &#34; to select.&#34;)
+            print(&#34;Using &#34;, method, &#34; to score.&#34;)
             start_time = time.time()
-            results.append(self.kernels[method].Select(x.copy(), y))
+
+            self.kernels[method].fit(x, y)
+
+            results.append(self.kernels[method].selected_score)
             end_time = time.time()
             print(method,
                   &#34; is done. Using {t:.4f}\n&#34;.format(t=end_time - start_time))
 
-        self.selected_score = pd.concat(results, axis=1)
-        return self.selected_score
-
-    def fit(self, x, y):
-        &#34;&#34;&#34;
-        sklearn api
-
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to extract information.
-            y (pandas.Series or a 1D array): The target label for methods.
-        &#34;&#34;&#34;
-        importance = self.Select(x, y)
-
-        return self
-
-    def transform(self, x):
-        z_scores = (self.selected_score - self.selected_score.mean()) / (
-            self.selected_score.std() + 1e-4)
-
-        scores = z_scores.sum(axis=1)
-
+        scores = pd.concat(results, axis=1)
         z_scores = (scores - scores.mean()) / (scores.std() + 1e-4)
-        z_scores = z_scores.sort_values(ascending=False)
+        scores[self.name] = z_scores.sum(axis=1)
 
-        if self.z_importance_threshold is None:
-            return x[z_scores.index[:self.k]]
-        else:
-            return x[z_scores[z_scores &gt; self.z_importance_threshold].index]
+        return scores
 
-    def fit_transform(self, x, y):
-        self.fit(x, y)
-        return self.transform(x)
+    def Select(self, scores):
+        z_scores = scores[self.name].sort_values(ascending=False)
 
-    def plotting(self):
+        return super().Select(z_scores)
+
+    def what_matters(self):
+        return self.scores
+
+    def Plotting(self):
         for method in self.kernels:
-            self.kernels[method].plotting()</code></pre>
+            self.kernels[method].Plotting()</code></pre>
 </details>
 <div class="desc"><p>A functional stack of diffirent methods.
 <br>
@@ -1984,120 +1649,30 @@ What we do here is:
 <br>
 else top k feature with averaging score will be selected.
 </p>
+<p>Initialize the selection pipeline.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>k</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>The number of features to be selected. Defaults to -1.</dd>
-<dt><strong><code>RF_trees</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>number of trees using for randomforest. Defaults to 1024.</dd>
+<dt><strong><code>k</code></strong> :&ensp;<code>int</code> or <code>None</code></dt>
+<dd>select top k important feature. k = -1 means selecting all, k = None means selecting the feature that have standarized score &gt; 1. Default = None</dd>
 <dt><strong><code>z_importance_threshold</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>The threshold to picking features. Defaults to None.</dd>
-</dl>
-<h2 id="todo">Todo</h2>
-<p>auto adjust the RF_Trees by number of input features.</p></div>
+<dd>The threshold to picking features. Defaults to 1.</dd>
+</dl></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="PineBioML.selection.classification.ensemble_selector.Select"><code class="name flex">
-<span>def <span class="ident">Select</span></span>(<span>self, x, y)</span>
+<dt id="PineBioML.selection.classification.ensemble_selector.what_matters"><code class="name flex">
+<span>def <span class="ident">what_matters</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def Select(self, x, y):
-    &#34;&#34;&#34;
-    Calling all the methods in kernel sequancially.
-
-    Args:
-        x (pandas.DataFrame or a 2D array): The data to extract information.
-        y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-        k (int): Number of feature to select. The result may less than k
-
-    Returns:
-        pandas.Series: The concatenated results. Top k (may less than k) important feature from diffient methods.
-    &#34;&#34;&#34;
-    results = []
-    for method in self.kernels:
-        print(&#34;Using &#34;, method, &#34; to select.&#34;)
-        start_time = time.time()
-        results.append(self.kernels[method].Select(x.copy(), y))
-        end_time = time.time()
-        print(method,
-              &#34; is done. Using {t:.4f}\n&#34;.format(t=end_time - start_time))
-
-    self.selected_score = pd.concat(results, axis=1)
-    return self.selected_score</code></pre>
-</details>
-<div class="desc"><p>Calling all the methods in kernel sequancially.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
-<dd>The data to extract information.</dd>
-<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
-<dd>The target label for methods. Defaults to None.</dd>
-<dt><strong><code>k</code></strong> :&ensp;<code>int</code></dt>
-<dd>Number of feature to select. The result may less than k</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>pandas.Series</code></dt>
-<dd>The concatenated results. Top k (may less than k) important feature from diffient methods.</dd>
-</dl></div>
-</dd>
-<dt id="PineBioML.selection.classification.ensemble_selector.fit_transform"><code class="name flex">
-<span>def <span class="ident">fit_transform</span></span>(<span>self, x, y)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def fit_transform(self, x, y):
-    self.fit(x, y)
-    return self.transform(x)</code></pre>
-</details>
-<div class="desc"></div>
-</dd>
-<dt id="PineBioML.selection.classification.ensemble_selector.plotting"><code class="name flex">
-<span>def <span class="ident">plotting</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def plotting(self):
-    for method in self.kernels:
-        self.kernels[method].plotting()</code></pre>
-</details>
-<div class="desc"></div>
-</dd>
-<dt id="PineBioML.selection.classification.ensemble_selector.transform"><code class="name flex">
-<span>def <span class="ident">transform</span></span>(<span>self, x)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def transform(self, x):
-    z_scores = (self.selected_score - self.selected_score.mean()) / (
-        self.selected_score.std() + 1e-4)
-
-    scores = z_scores.sum(axis=1)
-
-    z_scores = (scores - scores.mean()) / (scores.std() + 1e-4)
-    z_scores = z_scores.sort_values(ascending=False)
-
-    if self.z_importance_threshold is None:
-        return x[z_scores.index[:self.k]]
-    else:
-        return x[z_scores[z_scores &gt; self.z_importance_threshold].index]</code></pre>
+<pre><code class="python">def what_matters(self):
+    return self.scores</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -2106,10 +1681,10 @@ else top k feature with averaging score will be selected.
 <ul class="hlist">
 <li><code><b><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></b></code>:
 <ul class="hlist">
-<li><code><a title="PineBioML.selection.SelectionPipeline.Choose" href="index.html#PineBioML.selection.SelectionPipeline.Choose">Choose</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Scoring" href="index.html#PineBioML.selection.SelectionPipeline.Scoring">Scoring</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Select" href="index.html#PineBioML.selection.SelectionPipeline.Select">Select</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.fit" href="index.html#PineBioML.selection.SelectionPipeline.fit">fit</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.reference" href="index.html#PineBioML.selection.SelectionPipeline.reference">reference</a></code></li>
 </ul>
@@ -2118,7 +1693,7 @@ else top k feature with averaging score will be selected.
 </dd>
 <dt id="PineBioML.selection.classification.multi_Lasso_selection"><code class="flex name class">
 <span>class <span class="ident">multi_Lasso_selection</span></span>
-<span>(</span><span>k, objective='regression')</span>
+<span>(</span><span>k=None, z_importance_threshold=1.0, n=4, n_cv=5)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -2127,71 +1702,61 @@ else top k feature with averaging score will be selected.
 </summary>
 <pre><code class="python">class multi_Lasso_selection(SelectionPipeline):
     &#34;&#34;&#34;
-    A stack of Lasso_bisection_selection. Because of collinearity, if there are a batch of featres with high corelation, only one of them will remain.    
+    A stack of Lasso_selection. Because of collinearity, if there are a batch of featres with high corelation, only one of them will remain.    
     That leads to diffirent behavior between select k features in a time and select k//n features in n times.    
     &#34;&#34;&#34;
 
-    def __init__(self, k, objective=&#34;regression&#34;):
+    def __init__(self, k=None, z_importance_threshold=1., n=4, n_cv=5):
         &#34;&#34;&#34;
         Args:
+            n (int , optional): How many times should lasso be performed.    
             objective (str, optional): one of {&#34;Regression&#34;, &#34;BinaryClassification&#34;}
         &#34;&#34;&#34;
-        super().__init__(k=k)
+        super().__init__(k=k,
+                         z_importance_threshold=z_importance_threshold,
+                         n_cv=n_cv)
         self.name = &#34;multi_Lasso&#34;
-        self.objective = objective
         self.backend = Lasso_selection  #Lasso_bisection_selection
+        self.n = n
+        self.n_cv = 1  # multi lasso calls lasso which already applied cv
 
     def reference(self) -&gt; dict[str, str]:
-        &#34;&#34;&#34;
-        This function will return reference of this method in python dict.    
-        If you want to access it in PineBioML api document, then click on the    &gt;Expand source code     
-
-        Returns:
-            dict[str, str]: a dict of reference.
-        &#34;&#34;&#34;
         refer = super().reference()
         refer[
             &#34; Warning&#34;] = &#34;We do not have a reference and this method&#39;s effectivity has not been proven yet.&#34;
         return refer
 
-    def Select(self, x, y, n=4):
-        &#34;&#34;&#34;
-        Select k//n features for n times, and then concatenate the results.
-
-        Args:
-            x (pandas.DataFrame or a 2D array): The data to extract information.
-            y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-            n (int, optional): Number of batch which splits k to select. Defaults to 10.
-
-        Returns:
-            pandas.Series: The score for k selected features. May less than k.
-            
-        &#34;&#34;&#34;
+    def Scoring(self, x, y):
         result = []
-        if self.k == -1:
+        if self.k == -1 or self.k is None:
             self.k = min(x.shape[0], x.shape[1]) // 2
-        batch_size = self.k // n + 1
+        batch_size = self.k // self.n + 1
 
-        for i in range(n):
-            result.append(
-                self.backend(k=batch_size,
-                             objective=self.objective).Select(x, y))
-            x = x.drop(result[-1].index, axis=1)
+        num_selected = 0
+        #for i in range(self.n):
+        while (num_selected &lt; self.k):
+            kernel = self.backend(k=batch_size).fit(x, y)
+            result.append(kernel.selected_score)
+            batch_selected = result[-1].index
+            x = x.drop(batch_selected, axis=1)
+            num_selected += len(batch_selected)
             if x.shape[1] == 0:
                 break
-        result = pd.concat(result)
-        result = result - result.min()
+        result = pd.concat(result).sort_values(ascending=False)
+        #result = result - result.min()
         result.name = self.name
 
-        self.selected_score = result.sort_values(ascending=False).head(self.k)
-        return self.selected_score.copy()</code></pre>
+        return result</code></pre>
 </details>
-<div class="desc"><p>A stack of Lasso_bisection_selection. Because of collinearity, if there are a batch of featres with high corelation, only one of them will remain.
+<div class="desc"><p>A stack of Lasso_selection. Because of collinearity, if there are a batch of featres with high corelation, only one of them will remain.
 <br>
 That leads to diffirent behavior between select k features in a time and select k//n features in n times.
 </p>
 <h2 id="args">Args</h2>
 <dl>
+<dt><strong><code>n</code></strong> :&ensp;<code>int</code> , optional</dt>
+<dd>How many times should lasso be performed.
+</dd>
 <dt><strong><code>objective</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>one of {"Regression", "BinaryClassification"}</dd>
 </dl></div>
@@ -2199,73 +1764,14 @@ That leads to diffirent behavior between select k features in a time and select 
 <ul class="hlist">
 <li><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></li>
 </ul>
-<h3>Methods</h3>
-<dl>
-<dt id="PineBioML.selection.classification.multi_Lasso_selection.Select"><code class="name flex">
-<span>def <span class="ident">Select</span></span>(<span>self, x, y, n=4)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def Select(self, x, y, n=4):
-    &#34;&#34;&#34;
-    Select k//n features for n times, and then concatenate the results.
-
-    Args:
-        x (pandas.DataFrame or a 2D array): The data to extract information.
-        y (pandas.Series or a 1D array): The target label for methods. Defaults to None.
-        n (int, optional): Number of batch which splits k to select. Defaults to 10.
-
-    Returns:
-        pandas.Series: The score for k selected features. May less than k.
-        
-    &#34;&#34;&#34;
-    result = []
-    if self.k == -1:
-        self.k = min(x.shape[0], x.shape[1]) // 2
-    batch_size = self.k // n + 1
-
-    for i in range(n):
-        result.append(
-            self.backend(k=batch_size,
-                         objective=self.objective).Select(x, y))
-        x = x.drop(result[-1].index, axis=1)
-        if x.shape[1] == 0:
-            break
-    result = pd.concat(result)
-    result = result - result.min()
-    result.name = self.name
-
-    self.selected_score = result.sort_values(ascending=False).head(self.k)
-    return self.selected_score.copy()</code></pre>
-</details>
-<div class="desc"><p>Select k//n features for n times, and then concatenate the results.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>x</code></strong> :&ensp;<code>pandas.DataFrame</code> or <code>a 2D array</code></dt>
-<dd>The data to extract information.</dd>
-<dt><strong><code>y</code></strong> :&ensp;<code>pandas.Series</code> or <code>a 1D array</code></dt>
-<dd>The target label for methods. Defaults to None.</dd>
-<dt><strong><code>n</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Number of batch which splits k to select. Defaults to 10.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>pandas.Series</code></dt>
-<dd>The score for k selected features. May less than k.</dd>
-</dl></div>
-</dd>
-</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="PineBioML.selection.SelectionPipeline" href="index.html#PineBioML.selection.SelectionPipeline">SelectionPipeline</a></b></code>:
 <ul class="hlist">
-<li><code><a title="PineBioML.selection.SelectionPipeline.Choose" href="index.html#PineBioML.selection.SelectionPipeline.Choose">Choose</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Plotting" href="index.html#PineBioML.selection.SelectionPipeline.Plotting">Plotting</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Report" href="index.html#PineBioML.selection.SelectionPipeline.Report">Report</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.Scoring" href="index.html#PineBioML.selection.SelectionPipeline.Scoring">Scoring</a></code></li>
+<li><code><a title="PineBioML.selection.SelectionPipeline.Select" href="index.html#PineBioML.selection.SelectionPipeline.Select">Select</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.fit" href="index.html#PineBioML.selection.SelectionPipeline.fit">fit</a></code></li>
 <li><code><a title="PineBioML.selection.SelectionPipeline.reference" href="index.html#PineBioML.selection.SelectionPipeline.reference">reference</a></code></li>
 </ul>
@@ -2297,19 +1803,10 @@ That leads to diffirent behavior between select k features in a time and select 
 <h4><code><a title="PineBioML.selection.classification.DT_selection" href="#PineBioML.selection.classification.DT_selection">DT_selection</a></code></h4>
 <ul class="">
 <li><code><a title="PineBioML.selection.classification.DT_selection.Scoring" href="#PineBioML.selection.classification.DT_selection.Scoring">Scoring</a></code></li>
-<li><code><a title="PineBioML.selection.classification.DT_selection.compute_col_gini" href="#PineBioML.selection.classification.DT_selection.compute_col_gini">compute_col_gini</a></code></li>
-<li><code><a title="PineBioML.selection.classification.DT_selection.entropy" href="#PineBioML.selection.classification.DT_selection.entropy">entropy</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="PineBioML.selection.classification.Lasso_bisection_selection" href="#PineBioML.selection.classification.Lasso_bisection_selection">Lasso_bisection_selection</a></code></h4>
-<ul class="two-column">
-<li><code><a title="PineBioML.selection.classification.Lasso_bisection_selection.Select" href="#PineBioML.selection.classification.Lasso_bisection_selection.Select">Select</a></code></li>
-<li><code><a title="PineBioML.selection.classification.Lasso_bisection_selection.assign_alpha" href="#PineBioML.selection.classification.Lasso_bisection_selection.assign_alpha">assign_alpha</a></code></li>
-<li><code><a title="PineBioML.selection.classification.Lasso_bisection_selection.coef_to_importance" href="#PineBioML.selection.classification.Lasso_bisection_selection.coef_to_importance">coef_to_importance</a></code></li>
-<li><code><a title="PineBioML.selection.classification.Lasso_bisection_selection.create_kernel" href="#PineBioML.selection.classification.Lasso_bisection_selection.create_kernel">create_kernel</a></code></li>
-<li><code><a title="PineBioML.selection.classification.Lasso_bisection_selection.lasso_alive" href="#PineBioML.selection.classification.Lasso_bisection_selection.lasso_alive">lasso_alive</a></code></li>
-<li><code><a title="PineBioML.selection.classification.Lasso_bisection_selection.to_alpha" href="#PineBioML.selection.classification.Lasso_bisection_selection.to_alpha">to_alpha</a></code></li>
+<li><code><a title="PineBioML.selection.classification.DT_selection.best_splits_c45_batch_optimized" href="#PineBioML.selection.classification.DT_selection.best_splits_c45_batch_optimized">best_splits_c45_batch_optimized</a></code></li>
+<li><code><a title="PineBioML.selection.classification.DT_selection.best_splits_gini_batch_optimized" href="#PineBioML.selection.classification.DT_selection.best_splits_gini_batch_optimized">best_splits_gini_batch_optimized</a></code></li>
+<li><code><a title="PineBioML.selection.classification.DT_selection.compute_gain_ratio" href="#PineBioML.selection.classification.DT_selection.compute_gain_ratio">compute_gain_ratio</a></code></li>
+<li><code><a title="PineBioML.selection.classification.DT_selection.compute_gini" href="#PineBioML.selection.classification.DT_selection.compute_gini">compute_gini</a></code></li>
 </ul>
 </li>
 <li>
@@ -2347,17 +1844,11 @@ That leads to diffirent behavior between select k features in a time and select 
 <li>
 <h4><code><a title="PineBioML.selection.classification.ensemble_selector" href="#PineBioML.selection.classification.ensemble_selector">ensemble_selector</a></code></h4>
 <ul class="">
-<li><code><a title="PineBioML.selection.classification.ensemble_selector.Select" href="#PineBioML.selection.classification.ensemble_selector.Select">Select</a></code></li>
-<li><code><a title="PineBioML.selection.classification.ensemble_selector.fit_transform" href="#PineBioML.selection.classification.ensemble_selector.fit_transform">fit_transform</a></code></li>
-<li><code><a title="PineBioML.selection.classification.ensemble_selector.plotting" href="#PineBioML.selection.classification.ensemble_selector.plotting">plotting</a></code></li>
-<li><code><a title="PineBioML.selection.classification.ensemble_selector.transform" href="#PineBioML.selection.classification.ensemble_selector.transform">transform</a></code></li>
+<li><code><a title="PineBioML.selection.classification.ensemble_selector.what_matters" href="#PineBioML.selection.classification.ensemble_selector.what_matters">what_matters</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="PineBioML.selection.classification.multi_Lasso_selection" href="#PineBioML.selection.classification.multi_Lasso_selection">multi_Lasso_selection</a></code></h4>
-<ul class="">
-<li><code><a title="PineBioML.selection.classification.multi_Lasso_selection.Select" href="#PineBioML.selection.classification.multi_Lasso_selection.Select">Select</a></code></li>
-</ul>
 </li>
 </ul>
 </li>
@@ -2365,7 +1856,7 @@ That leads to diffirent behavior between select k features in a time and select 
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
 </footer>
 </body>
 </html>

@@ -9,7 +9,8 @@ if you want to have a good understanding of parallel computation in python, you 
 https://joblib.readthedocs.io/en/latest/parallel.html
 https://zhuanlan.zhihu.com/p/637640783
 
-
+ALS datasets
+https://ampals.synapse.org/Explore/Datasets
 
 ##########################################################
 ### features
@@ -64,8 +65,13 @@ https://docs.readthedocs.io/en/stable/
 pydata-sphinx-theme
 https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html
 
+mkdocs + mkdocstrings
+https://www.mkdocs.org/
+https://github.com/mkdocstrings/mkdocstrings
+
 awesome MLops
 https://github.com/visenger/awesome-mlops
+
 
 ##########################################################
 ### competitor
@@ -109,13 +115,12 @@ https://github.com/nliulab/AutoScore
 ##########################################################
  - to generate the documents
 # pdoc3
-> pdoc3 --html --output-dir ./documents/API PineBioML
+> pdoc3 --html --output-dir ./documents/ PineBioML
 
- - to push version onto pipy
+ - to push version onto pypi
 # to publish
-requirement: setuptools twine wheel
-  (remove early version in dist/*)
+python -m pip install --upgrade pip
+pip install --upgrade build twine
+python -m build
+twine upload dist/*
 
-python setup.py sdist bdist_wheel
-python -m twine check dist/*
-python -m twine upload dist/*
