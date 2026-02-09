@@ -2,11 +2,12 @@ from sklearn.decomposition import PCA
 from sklearn.cross_decomposition import PLSSVD
 import pandas as pd
 import numpy as np
+from sklearn.base import BaseEstimator
 
 # Todo: sklearn.pipeline.FeatureUnion
 
 
-class feature_extension():
+class feature_extension(BaseEstimator):
 
     def __init__(self,
                  alpha=0.9,
@@ -15,22 +16,28 @@ class feature_extension():
                  cross=True,
                  ratio=True,
                  name="extend "):
-        self.name = name
+
         self.alpha = alpha
-        if pca:
+        self.pca = pca
+        self.pls = pls
+        self.cross = cross
+        self.ratio = ratio
+        self.name = name
+
+    def _set_up(self):
+        if self.pca:
             self.pca = PCA()
         else:
             self.pca = None
 
-        if pls:
+        if self.pls:
             self.pls = PLSSVD(4)
         else:
             self.pls = None
 
-        self.cross = cross
-        self.ratio = ratio
-
     def fit(self, x, y):
+        self._set_up()
+        self.fitted_ = True
         results = [x.copy()]
 
         self.monotonic_feature = x.columns[np.logical_or(

@@ -1,14 +1,15 @@
 import sklearn.preprocessing as skprpr
 from pandas import DataFrame
+from sklearn.base import BaseEstimator
 
 
-class RemoveDummy():
+class RemoveDummy(BaseEstimator):
     """ 
     Remove dummy features. Dummy features are those with a constant value.
     """
 
     def __init__(self):
-        self.to_drop = []
+        pass
 
     def fit(self, x, y=None):
         """
@@ -21,7 +22,8 @@ class RemoveDummy():
         Returns:
             remove: self after fitting.
         """
-        self.to_drop = x.columns[x.nunique() <= 1]
+
+        self.to_drop_ = x.columns[x.nunique() <= 1]
         return self
 
     def transform(self, x):
@@ -34,7 +36,7 @@ class RemoveDummy():
         Returns:
             pandas.DataFrame or a 2D array: Cleared x.
         """
-        x_dropped = x.drop(self.to_drop, axis=1)
+        x_dropped = x.drop(self.to_drop_, axis=1)
 
         return x_dropped
 
@@ -54,7 +56,7 @@ class RemoveDummy():
         return x_dropped
 
 
-class Normalizer():
+class Normalizer(BaseEstimator):
     """ 
     A wrapper of sklearn normalizers. This will conserve pandas features.    
     method be one of ["StandardScaler", "RobustScaler", "MinMaxScaler", "Normalizer", "PowerTransformer"]    
@@ -73,12 +75,17 @@ class Normalizer():
             scale (bool, optional): Whether to scaling data after centralized. Default to True.
             method (str, optional): the way to normalize data. Be one of ["StandardScaler", "RobustScaler", "MinMaxScaler", "Normalizer", "PowerTransformer"]
         """
+        self.center = center
+        self.scale = scale
+        self.method = method
 
+    def _set_up(self):
         kernels = {
             "StandardScaler":
-            skprpr.StandardScaler(with_mean=center, with_std=scale),
+            skprpr.StandardScaler(with_mean=self.center, with_std=self.scale),
             "RobustScaler":
-            skprpr.RobustScaler(with_centering=center, with_scaling=scale),
+            skprpr.RobustScaler(with_centering=self.center,
+                                with_scaling=self.scale),
             "MinMaxScaler":
             skprpr.MinMaxScaler(),
             "Normalizer":
@@ -86,7 +93,7 @@ class Normalizer():
             "PowerTransformer":
             skprpr.PowerTransformer()
         }
-        self.kernel = kernels[method]
+        self.kernel_ = kernels[self.method]
 
     def fit(self, x, y=None):
         """
@@ -99,8 +106,8 @@ class Normalizer():
         Returns:
             Normalizer: self after fitting.
         """
-
-        self.kernel.fit(x, y)
+        self._set_up()
+        self.kernel_.fit(x, y)
 
         return self
 
@@ -116,7 +123,7 @@ class Normalizer():
             pandas.DataFrame or a 2D array: Normalized x.
             pandas.Series or a 1D array: Same as input y.
         """
-        x_normalized = DataFrame(self.kernel.transform(x),
+        x_normalized = DataFrame(self.kernel_.transform(x),
                                  index=x.index,
                                  columns=x.columns)
 
@@ -149,14 +156,14 @@ class Normalizer():
             pandas.DataFrame or a 2D array: x in original scale.
         """
 
-        x_original = DataFrame(self.kernel.inverse_transform(x),
+        x_original = DataFrame(self.kernel_.inverse_transform(x),
                                index=x.index,
                                columns=x.columns)
 
         return x_original
 
 
-class Pass():
+class Pass(BaseEstimator):
     """ 
     Do nothing.
     """
@@ -175,6 +182,7 @@ class Pass():
         Returns:
             Pass: No, do nothing.
         """
+        self.do_nothing_ = True
 
         return self
 

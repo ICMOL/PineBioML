@@ -75,51 +75,52 @@ class Basic_tuner(ABC, BaseEstimator):
             3. Winner's curse
 
         """
-        self.y_mapping = LabelEncoder()
-
-        if validate_penalty == True:
+        self.validate_penalty = validate_penalty
+        self.TT_coef = TT_coef
+        self.n_cv = n_cv
+        self.n_try = n_try
+        self.target = target
+        self.kernel_seed = kernel_seed
+        self.valid_seed = valid_seed
+        self.optuna_seed = optuna_seed
+        
+    
+    def _set_up(self):
+        if self.validate_penalty == True:
             warnings.warn(
                 "validate_penalty will be remove in future. Use argument TT_coef.",
                 DeprecationWarning,
                 stacklevel=2)
-            self.TT_coef = TT_coef
-        else:
-            self.TT_coef = 0
-
+            
+        self.y_mapping = LabelEncoder()
         self.fitted_ = None
-        self.n_cv = n_cv
-        self.optuna_early_stop_counter = n_cv // 10 + 2
-        self.n_try = n_try
+        self.optuna_early_stop_counter = self.n_cv // 10 + 2
         self.n_sample = 1
         self.n_opt_jobs = 1
         self.default = False
         self.training = True
 
         # initialize the random seeds
-        if kernel_seed is None:
+        if self.kernel_seed is None:
             self.kernel_seed = randint(16384)
         else:
-            self.kernel_seed = kernel_seed
+            self.kernel_seed = self.kernel_seed
 
-        if valid_seed is None:
+        if self.valid_seed is None:
             self.valid_seed = randint(16384)
         else:
-            self.valid_seed = valid_seed
+            self.valid_seed = self.valid_seed
 
-        if optuna_seed is None:
+        if self.optuna_seed is None:
             self.optuna_seed = randint(16384)
         else:
-            self.optuna_seed = optuna_seed
+            self.optuna_seed = self.optuna_seed
 
         # The random seed tapes for cross validation along the optuna's optimization trials.
-        self.valid_seed_tape = RandomState(self.valid_seed).randint(low=0,
-                                                                    high=16384,
-                                                                    size=n_try)
-        self.kernel_seed_tape = RandomState(self.kernel_seed).randint(
-            low=0, high=16384, size=n_try)
+        self.valid_seed_tape = RandomState(self.valid_seed).randint(low=0, high=16384, size=self.n_try)
+        self.kernel_seed_tape = RandomState(self.kernel_seed).randint(low=0, high=16384, size=self.n_try)
 
-        # Get the scorer
-        self.metric = self.get_scorer(target)
+        self.metric = self.get_scorer(self.target)
 
         # the model optuna tuned
         self.optuna_model = None
@@ -444,14 +445,23 @@ class Basic_tuner(ABC, BaseEstimator):
             y (pandas.Series or 1D-array): ground true.
             retune (bool): True to retune the model using given x and y, else using the tuned model to fit on given x, y.
         """
-        self.label_name = y.name
-        self.fitted_ = True
+        if retune:
+            self._set_up()
+            
+        if hasattr(y, "name"):
+            self.label_name_ = y.name
+        else:
+            self.label_name_ = None
 
         # label encoding
+        if hasattr(y, "index"):
+            idx = y.index
+        else:
+            idx = None
         if not self.is_regression():
             y = Series(self.y_mapping.fit_transform(y),
-                       index=y.index,
-                       name=y.name)
+                       index=idx,
+                       name=self.label_name_)
 
         # tune the model.
         if retune:
@@ -463,6 +473,8 @@ class Basic_tuner(ABC, BaseEstimator):
         else:
             sample_weight = compute_sample_weight(class_weight="balanced", y=y)
         self.best_model.fit(x, y, sample_weight=sample_weight)
+
+        self.fitted_ = True
 
         return self
 
@@ -485,10 +497,15 @@ class Basic_tuner(ABC, BaseEstimator):
         """
         y_pred = self.best_model.predict(x)
 
-        # label decoding
+        # label encoding
         if not self.is_regression():
             y_pred = self.y_mapping.inverse_transform(y_pred)
-        y_pred = Series(y_pred, index=x.index, name=self.label_name)
+        if hasattr(x, "index"):
+            idx = x.index
+        else:
+            idx = None
+            
+        y_pred = Series(y_pred, index=idx, name=self.label_name_)
 
         return y_pred
 

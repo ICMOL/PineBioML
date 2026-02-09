@@ -3,11 +3,12 @@ from pandas import concat
 import warnings
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold
+from sklearn.base import BaseEstimator
 # Suppress only ConvergenceWarning
 warnings.filterwarnings("ignore", category=ConvergenceWarning)
 
 
-class SelectionPipeline:
+class SelectionPipeline(BaseEstimator):
     """
     The basic pipeline for selection methods. It includes 2 parts: Scoring and Choosing.
     The detail methods is to be determinded.
@@ -25,12 +26,13 @@ class SelectionPipeline:
             k (int or None): select top k important feature. k = -1 means selecting all, k = None means selecting the feature that have standarized score > 1. Default = None
             z_importance_threshold (int, optional): The threshold to picking features. Defaults to 1.
         """
-        self.n_cv = n_cv
         self.k = k
         self.z_importance_threshold = z_importance_threshold
-        self.name = "base"
-        self.scores = None
-        self.selected_score = None
+        self.n_cv = n_cv
+
+    def _set_up(self):
+        self.scores_ = None
+        self.selected_score_ = None
 
     def Scoring(self, x, y=None):
         """
@@ -78,6 +80,8 @@ class SelectionPipeline:
             x (pandas.DataFrame or a 2D array): The data to extract information.
             y (pandas.Series or a 1D array): The target label for methods.
         """
+        self._set_up()
+
         if self.n_cv > 1:
             scores = []
             for train_idx, valid_idx in KFold(n_splits=self.n_cv,
@@ -87,22 +91,22 @@ class SelectionPipeline:
                                               ]):
                 scores.append(
                     self.Scoring(x.iloc[train_idx], y.iloc[train_idx]))
-            self.scores = (concat(scores, axis=1).sum(axis=1) /
-                           self.n_cv).sort_values(ascending=False)
+            self.scores_ = (concat(scores, axis=1).sum(axis=1) /
+                            self.n_cv).sort_values(ascending=False)
         else:
-            self.scores = self.Scoring(x.copy(), y.copy())
-        self.selected_score = self.Select(self.scores.copy())
+            self.scores_ = self.Scoring(x.copy(), y.copy())
+        self.selected_score_ = self.Select(self.scores_.copy())
         return self
 
     def transform(self, x):
-        return x[self.selected_score.index]
+        return x[self.selected_score_.index]
 
     def fit_transform(self, x, y):
         self.fit(x, y)
         return self.transform(x)
 
     def what_matters(self):
-        return self.selected_score
+        return self.selected_score_
 
     def Plotting(self):
         """
@@ -111,7 +115,7 @@ class SelectionPipeline:
         plt.rcParams['font.family'] = 'Arial'
         plt.rcParams['font.size'] = 14
         fig, ax = plt.subplots(1, 1)
-        ax.bar(self.selected_score.index, self.selected_score)
+        ax.bar(self.selected_score_.index, self.selected_score_)
         for label in ax.get_xticklabels(which='major'):
             label.set(rotation=45, horizontalalignment='right')
         ax.set_title(self.name + " score")

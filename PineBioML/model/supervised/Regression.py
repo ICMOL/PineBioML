@@ -124,7 +124,7 @@ class ElasticNet_tuner(Regression_tuner):
             maxiter=0,
         )
         print(sm_ols.summary())
-    
+
     def _explainer(self, x):
         return shap.LinearExplainer(self.best_model, x)
 
@@ -185,7 +185,7 @@ class RandomForest_tuner(Regression_tuner):
             'max_samples': ('max_samples', "float", 0.4, 0.8),
             "max_depth":
             ("max_depth", "int", round(np.log2(self.n_sample) / 2),
-             int(np.log2(self.n_sample)) + 2)
+             int(np.log2(self.n_sample)) * 2)
         }
 
     def create_model(self, trial, default=False, training=False):
@@ -228,7 +228,7 @@ class RandomForest_tuner(Regression_tuner):
                                          default=default,
                                          training=training)
         return score
-    
+
     def _explainer(self, x):
         return shap.TreeExplainer(self.best_model)
 
@@ -278,8 +278,8 @@ class SVM_tuner(Regression_tuner):
     def parms_range(self) -> dict:
         # scaling penalty: https://scikit-learn.org/stable/auto_examples/svm/plot_svm_scale_c.html#sphx-glr-auto-examples-svm-plot-svm-scale-c-py
         return {
-            "kernel":
-            ('kernel', "category", ["linear", "poly", "rbf", "sigmoid"], None),
+            "kernel": ('kernel', "category", ["linear", "rbf",
+                                              "sigmoid"], None),
             'C': ('C', "float", 1e-3 * np.sqrt(self.n_sample),
                   1e+2 * np.sqrt(self.n_sample))
         }
@@ -287,6 +287,7 @@ class SVM_tuner(Regression_tuner):
     def create_model(self, trial, default=False, training=False):
         parms = {
             "kernel": "rbf",
+            'cache_size': 2000,
         }
         if not default:
             parms_to_tune = self.parms_range()
@@ -295,7 +296,7 @@ class SVM_tuner(Regression_tuner):
                                                       parms_to_tune[par])
         svm = SVR(**parms)
         return svm
-    
+
     def _explainer(self, x):
         return shap.KernelExplainer(self.best_model.predict, x)
 
@@ -356,14 +357,14 @@ class XGBoost_tuner(Regression_tuner):
             "n_estimators": ('n_estimators', "int", 4, 256),
             "max_depth":
             ("max_depth", "int", round(np.log2(self.n_sample) / 2),
-             int(np.log2(self.n_sample)) + 2),
+             int(np.log2(self.n_sample)) * 2),
             "gamma": ('gamma', "float", 1e-4, 1e-2),
             "min_child_weight": ("min_child_weight", "float", 1,
                                  round(np.sqrt(self.n_sample) / 2)),
-            "learning_rate": ('learning_rate', "float", 1e-1, 1.),
+            "learning_rate": ('learning_rate', "float", 1e-2, 1.),
             "subsample": ('subsample', "float", 0.5, 1.),
             "colsample_bytree": ('colsample_bytree', "float", 0.5, 1),
-            "reg_lambda": ('reg_lambda', "float", 1e-3, 1),
+            "reg_lambda": ('reg_lambda', "float", 1e-4, 1),
             "reg_alpha": ('reg_alpha', "float", 1e-4, 1.)
         }
 
@@ -405,7 +406,7 @@ class XGBoost_tuner(Regression_tuner):
                        sample_weight=sample_weight,
                        eval_set=[valid_data],
                        verbose=False)
-    
+
     def _explainer(self, x):
         return shap.TreeExplainer(self.best_model)
 
@@ -457,13 +458,13 @@ class LightGBM_tuner(Regression_tuner):
             "n_estimators": ('n_estimators', "int", 4, 256),
             "max_depth":
             ("max_depth", "int", round(np.log2(self.n_sample) / 2),
-             int(np.log2(self.n_sample)) + 2),
+             int(np.log2(self.n_sample)) * 2),
             "min_child_samples":
             ("min_child_samples", "int", 1, int(np.sqrt(self.n_sample) / 2)),
             "learning_rate": ('learning_rate', "float", 1e-2, 1.),
             "subsample": ('subsample', "float", 0.5, 1.),
             "colsample_bytree": ('colsample_bytree', "float", 0.5, 1.),
-            "reg_lambda": ('reg_lambda', "float", 1e-3, 1),
+            "reg_lambda": ('reg_lambda', "float", 1e-4, 1),
             "reg_alpha": ('reg_alpha', "float", 1e-4, 1.)
         }
 
@@ -504,7 +505,7 @@ class LightGBM_tuner(Regression_tuner):
                            early_stopping(round(clr.n_estimators * 0.1) + 2,
                                           verbose=False)
                        ])
-    
+
     def _explainer(self, x):
         return shap.TreeExplainer(self.best_model)
 
@@ -564,7 +565,7 @@ class AdaBoost_tuner(Regression_tuner):
     def parms_range(self) -> dict:
         return {
             "n_estimators": ('n_estimators', "int", 4, 64),
-            "learning_rate": ('learning_rate', "float", 1e-2, 1.),
+            "learning_rate": ('learning_rate', "float", 1e-2, 2.),
             "loss": ("loss", "category", ["linear", "square",
                                           "exponential"], None)
         }
@@ -582,6 +583,7 @@ class AdaBoost_tuner(Regression_tuner):
 
     def _explainer(self, x):
         return shap.KernelExplainer(self.best_model.predict, x)
+
 
 # DT
 class DecisionTree_tuner(Regression_tuner):
@@ -643,7 +645,7 @@ class DecisionTree_tuner(Regression_tuner):
             parms["random_state"] = self.kernel_seed_tape[trial.number]
         DT = DecisionTreeRegressor(**parms)
         return DT
-    
+
     def _explainer(self, x):
         return shap.TreeExplainer(self.best_model)
 

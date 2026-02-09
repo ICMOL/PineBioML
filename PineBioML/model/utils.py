@@ -4,8 +4,7 @@ from sklearn.pipeline import Pipeline
 from pandas import DataFrame, Series, concat
 from sklearn.base import is_classifier, is_regressor
 import time
-
-#TODO: grouped cv
+from sklearn.base import BaseEstimator
 
 
 class data_source():
@@ -35,7 +34,7 @@ class data_source():
         return self.train_x
 
 
-class sklearn_esitimator_wrapper():
+class sklearn_esitimator_wrapper(BaseEstimator):
     """
     A basic wrapper for sklearn_esitimator. It transfer the data pipeline of sklearn from numpy.array to pandas.DataFrame.    
     If you want to pass any model with api in sklearn style into Pine, you should wrap it in wrapper.
@@ -62,7 +61,7 @@ class sklearn_esitimator_wrapper():
         Returns:
             object: A sklearn_esitimator within pandas data flow.
         """
-        self.label_name = y.name
+        self.label_name_ = y.name
         self.kernel.fit(x, y)
         return self
 
@@ -79,7 +78,7 @@ class sklearn_esitimator_wrapper():
 
         return Series(self.kernel.predict(x),
                       index=x.index,
-                      name=self.label_name)
+                      name=self.label_name_)
 
     def predict_proba(self, x: DataFrame) -> DataFrame:
         """
@@ -323,7 +322,6 @@ class Pine():
 
             # the last layer, it should be models
             else:
-
                 model = opt
                 if "predict_proba" in dir(model):
                     # is not regression
@@ -409,9 +407,12 @@ class Pine():
                     valid_scores = {}
                     valid_std = {}
 
+                # re-fit
+                model.fit(train_x, train_y, retune=False)
+
                 # concatenate the score dicts
                 all_scores = dict(**record_path, **record_time, **train_scores,
-                                  **valid_scores, **test_scores, **valid_std)
+                                  **valid_scores, **valid_std, **test_scores)
                 self.result.append(all_scores)
 
     def do_experiment(self, train_x, train_y, test_x=None, test_y=None):
@@ -433,7 +434,7 @@ class Pine():
         self.do_stage(train_x, train_y, test_x, test_y, 0, {}, {})
         return self.experiment_results()
 
-    def experiment_results(self, timer=False, std = False) -> DataFrame:
+    def experiment_results(self, timer=False, std=False) -> DataFrame:
         """
         Args:
             timer (bool): To return the time records.
@@ -449,7 +450,7 @@ class Pine():
         if not std:
             to_drop += [i for i in result.columns if i[-4:] == "_std"]
 
-        if len(to_drop)==0:
+        if len(to_drop) == 0:
             return result
         else:
             return result.drop(to_drop, axis=1)
@@ -486,7 +487,7 @@ class Pine():
     def experiment_detail(self):
         """
         show the experiment settings including:    
-            1. models parameters searching range.    
+            1. models parameters searching range and results of the last experiment round.
 
         Returns:
             pandas.DataFrame

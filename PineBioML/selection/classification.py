@@ -134,7 +134,7 @@ class Lasso_selection(SelectionPipeline):
     def Plotting(self):
         super().Plotting()
 
-        global_selected = self.selected_score.index
+        global_selected = self.selected_score_.index
         for i_th in range(len(self.result)):
             s = self.result[-i_th - 1]
 
@@ -245,17 +245,23 @@ class multi_Lasso_selection(SelectionPipeline):
         if self.k == -1 or self.k is None:
             self.k = min(x.shape[0], x.shape[1]) // 2
         batch_size = self.k // self.n + 1
+        loop_lim = x.shape[1] // batch_size
 
         num_selected = 0
-        #for i in range(self.n):
+        counter = 0
         while (num_selected < self.k):
             kernel = self.backend(k=batch_size).fit(x, y)
-            result.append(kernel.selected_score)
+            result.append(kernel.selected_score_)
             batch_selected = result[-1].index
             x = x.drop(batch_selected, axis=1)
             num_selected += len(batch_selected)
             if x.shape[1] == 0:
                 break
+
+            counter += 1
+            if counter > loop_lim:
+                break
+
         result = pd.concat(result).sort_values(ascending=False)
         #result = result - result.min()
         result.name = self.name
@@ -400,18 +406,14 @@ class DT_selection(SelectionPipeline):
         entropy_right = entropy(right_counts, right_totals)
 
         # information gain
-        info_gain = parent_entropy - (
-            (left_totals / n) * entropy_left +
-            (right_totals / n) * entropy_right
-        )
+        info_gain = parent_entropy - ((left_totals / n) * entropy_left +
+                                      (right_totals / n) * entropy_right)
 
         # split information
         p_left = left_totals / n
         p_right = right_totals / n
-        split_info = -(
-            p_left * np.log2(np.clip(p_left, eps, 1.0)) +
-            p_right * np.log2(np.clip(p_right, eps, 1.0))
-        )
+        split_info = -(p_left * np.log2(np.clip(p_left, eps, 1.0)) +
+                       p_right * np.log2(np.clip(p_right, eps, 1.0)))
 
         # gain ratio
         gain_ratio = info_gain / np.clip(split_info, eps, None)
@@ -475,7 +477,7 @@ class DT_selection(SelectionPipeline):
                 for i in tqdm(np.arange(n_features)))
 
         return best_ginis
-    
+
     def best_splits_c45_batch_optimized(self, X, Y):
         """
         compute C4.5 gain ratio in batch
@@ -496,21 +498,18 @@ class DT_selection(SelectionPipeline):
         sort_idx = np.argsort(x, axis=0)
 
         # reorder y for each feature
-        y_sorted_all = np.take_along_axis(
-            np.tile(y[:, None], (1, n_features)),
-            sort_idx,
-            axis=0
-        )
+        y_sorted_all = np.take_along_axis(np.tile(y[:, None], (1, n_features)),
+                                          sort_idx,
+                                          axis=0)
 
         with parallel_config(backend='loky', n_jobs=-1):
             best_gain_ratios = Parallel()(
-                delayed(self.compute_gain_ratio)(
-                    y_sorted_all[:, i], n_classes, n
-                )
-                for i in tqdm(range(n_features))
-            )
+                delayed(self.compute_gain_ratio)(y_sorted_all[:,
+                                                              i], n_classes, n)
+                for i in tqdm(range(n_features)))
 
         return np.array(best_gain_ratios)
+
 
 class RF_selection(SelectionPipeline):
     """
@@ -798,7 +797,7 @@ class ensemble_selector(SelectionPipeline):
 
             self.kernels[method].fit(x, y)
 
-            results.append(self.kernels[method].selected_score)
+            results.append(self.kernels[method].selected_score_)
             end_time = time.time()
             print(method,
                   " is done. Using {t:.4f}\n".format(t=end_time - start_time))
@@ -815,7 +814,7 @@ class ensemble_selector(SelectionPipeline):
         return super().Select(z_scores)
 
     def what_matters(self):
-        return self.scores
+        return self.scores_
 
     def Plotting(self):
         for method in self.kernels:
