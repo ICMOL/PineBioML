@@ -163,19 +163,19 @@ class Volcano_selection(SelectionPipeline):
             saving (bool, optional): True to save the plot. Defaults to False.
             save_path (str, optional): The path to save plot. Only activate when saving == True. Defaults to "./output/images/".
         """
-        log_fold = self.scores["log_fold_change"]
-        log_p = self.scores["log_p_value"]
+        log_fold = self.scores_["log_fold_change"]
+        log_p = self.scores_["log_p_value"]
         # choose fold change > 2 and p value < 0.05 in log scale
         significant = np.logical_and(
             np.abs(log_fold) >= np.log2(self.fc_threshold), log_p
             > -np.log10(self.p_threshold))
 
         if external:
-            selected = pd.Series(False, index=self.scores.index)
+            selected = pd.Series(False, index=self.scores_.index)
             selected.loc[external_score.index] = True
         else:
             selected = pd.Series(False, index=significant.index)
-            selected.loc[self.selected_score.index] = True
+            selected.loc[self.selected_score_.index] = True
 
         # silent
         plt.scatter(x=log_fold[~significant],

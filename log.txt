@@ -1,8 +1,33 @@
+v1.3.0.4:
+    fixed:
+        - xgboost==3.1.3 conflicts to shap
+
+v1.3.0.3:
+    fixed:
+        - preprocessing, selection, sklearn_wrapper followed up the pipeline api checking.
+        - sklearnex 2025.10.1
+
+v1.3.0.2:
+    description:
+        - change reports title
+        - catboost back to line
+    fixed:
+        - pipeline has a more strict api checking.
+    bug:
+        - sklearnex 2025.10.0 leads to misbehavior of sklearn train_test_split. (Reported)
+        - For classifier, sklearn calls np.unique to deal with class labels in y. 
+          The problem is that the order is not guaranteed while the labels are not comparable (not int, bool or float), 
+          and this may lead to reversed shap value explaination.
+        - shap_explain inconsistant behavior between xgb and rf.
+        - inconsistant f1-score between model.utils and report.classification_summary
+
 v1.3.0.1:
     requirment:
          - add shap
     fixed:
          - sklearn 1.8+ pipeline requires __sklearn_tags__
+         - pipeline has a more strict api checking.
+         
 
 v1.3.0:
     description:
@@ -70,8 +95,8 @@ v1.3.0:
             b. The only OPLS da reliable(compare to others), alive, python implement 
                https://github.com/Omicometrics/pypls?tab=readme-ov-file 
             c. https://www.omicsanalyst.ca/docs/Gallery.xhtml
-        3. fairness learning (mljar, fairlearn)
-        4. cv std
+        3. fairness learning (mljar, fairlearn) (denied)
+        4. cv std (done)
         5. revise estimator acording to 
             https://scikit-learn.org/stable/developers/develop.html#estimator-types
             https://scikit-learn.org/stable/glossary.html#glossary

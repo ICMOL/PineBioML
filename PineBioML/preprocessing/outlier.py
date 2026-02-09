@@ -1,9 +1,10 @@
 import pandas as pd
 from numpy import sqrt
 from . import Normalizer
+from sklearn.base import BaseEstimator
 
 
-class simple_clip():
+class simple_clip(BaseEstimator):
 
     def __init__(self, clip_quantile=0.95):
         """
@@ -13,7 +14,6 @@ class simple_clip():
             clip_quantile (float, optional): . Defaults to 0.95.
         """
         self.clip_quantile = clip_quantile
-        self.fitted = False
 
     def fit(self, x: pd.DataFrame, y: pd.Series = None, sample_weight=None):
         """        
@@ -27,7 +27,7 @@ class simple_clip():
         """
         self.upper = x.quantile(self.clip_quantile)
         self.lower = x.quantile(1 - self.clip_quantile)
-        self.fitted = True
+        self.fitted_ = True
         return self
 
     def transform(self, x: pd.DataFrame):
@@ -40,7 +40,7 @@ class simple_clip():
         Returns:
             pandas.DataFrame or a 2D array: transformed x
         """
-        if not self.fitted:
+        if not self.fitted_:
             raise "please call fit before calling transform."
 
         return x.clip(self.lower, self.upper, axis=1)
@@ -64,7 +64,7 @@ class simple_clip():
         return x
 
 
-class IsolationForest():
+class IsolationForest(BaseEstimator):
     """
     A wrapper for IsolationForest from sklearn. It will remove outliers based on the IsolationForest algorithm.
 
@@ -73,8 +73,7 @@ class IsolationForest():
     """
 
     def __init__(self):
-        self.dropped = []
-        self.fitted = False
+        pass
 
     def fit(self, x: pd.DataFrame, y: pd.Series = None, sample_weight=None):
         """Fit the IsolationForest model.
@@ -86,6 +85,9 @@ class IsolationForest():
         Returns:
             self: fitted self
         """
+        self.dropped = []
+        self.fitted_ = False
+
         from sklearn.ensemble import IsolationForest
 
         n_features = x.shape[1]
@@ -96,7 +98,7 @@ class IsolationForest():
                                      bootstrap=True,
                                      max_samples=0.7)
         self.model.fit(x)
-        self.fitted = True
+        self.fitted_ = True
         return self
 
     def transform(self, x: pd.DataFrame):
@@ -109,7 +111,7 @@ class IsolationForest():
         Returns:
             pandas.DataFrame or a 2D array: filterd x
         """
-        if not self.fitted:
+        if not self.fitted_:
             raise "please call fit before calling transform."
         abnormal = self.model.predict(x)
         self.dropped.append(x.index[abnormal != 1])

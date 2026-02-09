@@ -84,7 +84,7 @@ class basic_plot(ABC):
             x (pd.DataFrame): features
             y (pd.Series, optional): label. Defaults to None.
         """
-
+        plt.rcParams.update({'font.family': 'Arial',})
         self.draw(x, y)
 
         if self.save_fig:
@@ -120,7 +120,7 @@ class pca_plot(basic_plot):
                          show_fig=show_fig)
         self.n_pc = n_pc
         self.discrete_legend = discrete_legend
-        self.name = "PCA plot"
+        self.name = "PCA"
 
     def reference(self) -> dict[str, str]:
 
@@ -178,7 +178,7 @@ class pca_plot(basic_plot):
             # vanilla
             plot = pairplot(data=pcs)
 
-        plot.figure.suptitle("{} {} Scatter plot".format(
+        plot.figure.suptitle("{} {} scatter plot".format(
             self.prefix, self.name),
                              y=1.01)
 
@@ -213,7 +213,7 @@ class pls_plot(basic_plot):
                          show_fig=show_fig)
         self.discrete_legend = discrete_legend
         self.is_classification = is_classification
-        self.name = "PLS plot"
+        self.name = "PLS"
 
     def reference(self) -> dict[str, str]:
 
@@ -295,7 +295,7 @@ class pls_plot(basic_plot):
                                x=self.name + " componet 1",
                                y=self.name + " componet 2")
 
-        plot.set_title("{} {} Scatter plot".format(self.prefix, self.name))
+        plot.set_title("{} {} scatter plot".format(self.prefix, self.name))
 
 
 class umap_plot(basic_plot):
@@ -323,7 +323,7 @@ class umap_plot(basic_plot):
                          save_fig=save_fig,
                          show_fig=show_fig)
         self.discrete_legend = discrete_legend
-        self.name = "UMAP plot"
+        self.name = "UMAP"
 
     def reference(self) -> dict[str, str]:
 
@@ -395,7 +395,7 @@ class umap_plot(basic_plot):
                                x=self.name + " dimension 1",
                                y=self.name + " dimension 2")
 
-        plot.set_title("{} {} Scatter plot".format(self.prefix, self.name))
+        plot.set_title("{} {} scatter plot".format(self.prefix, self.name))
 
 
 class corr_heatmap_plot(basic_plot):
@@ -414,7 +414,7 @@ class corr_heatmap_plot(basic_plot):
                          save_path=save_path,
                          save_fig=save_fig,
                          show_fig=show_fig)
-        self.name = "Correlation Heatmap plot"
+        self.name = "Correlation Heatmap"
 
     def draw(self, x: pd.DataFrame, y: pd.Series = None):
         """

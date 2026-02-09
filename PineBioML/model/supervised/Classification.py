@@ -10,7 +10,8 @@ from sklearn.tree import DecisionTreeClassifier
 from statsmodels.discrete.discrete_model import Logit
 from sklearn.linear_model import LogisticRegression
 from xgboost import XGBClassifier
-from lightgbm import LGBMClassifier, early_stopping
+from lightgbm import LGBMClassifier
+from lightgbm import early_stopping as lgbm_early_stopping
 from catboost import CatBoostClassifier, Pool
 
 import shap
@@ -117,7 +118,6 @@ class ElasticLogit_tuner(Classification_tuner):
         parms = {
             "C": 1.0,
             "l1_ratio": 0.,
-            "penalty": "elasticnet",
             "solver": "saga",
             "random_state": self.kernel_seed,
             "verbose": 0
@@ -247,6 +247,8 @@ class RandomForest_tuner(Classification_tuner):
             default = self.default
         if training is None:
             training = self.training
+
+        # create the model using from this trial
         classifier_obj = self.create_model(trial, default)
 
         if self.using_oob:
@@ -357,8 +359,8 @@ class SVM_tuner(Classification_tuner):
     def parms_range(self) -> dict:
         # scaling penalty: https://scikit-learn.org/stable/auto_examples/svm/plot_svm_scale_c.html#sphx-glr-auto-examples-svm-plot-svm-scale-c-py
         return {
-            "kernel":
-            ('kernel', "category", ["linear", "poly", "rbf", "sigmoid"], None),
+            "kernel": ('kernel', "category", ["linear", "rbf",
+                                              "sigmoid"], None),
             'C': ('C', "float", 1e-3 * np.sqrt(self.n_sample),
                   1e+2 * np.sqrt(self.n_sample))
         }
@@ -368,7 +370,8 @@ class SVM_tuner(Classification_tuner):
             "kernel": "rbf",
             "random_state": self.kernel_seed,
             "probability": True,
-            "gamma": "auto"
+            "gamma": "auto",
+            'cache_size': 2000,
         }
         if not default:
             parms_to_tune = self.parms_range()
@@ -444,14 +447,14 @@ class XGBoost_tuner(Classification_tuner):
             "n_estimators": ('n_estimators', "int", 4, 256),
             "max_depth":
             ("max_depth", "int", round(np.log2(self.n_sample) / 2),
-             int(np.log2(self.n_sample)) + 2),
+             int(np.log2(self.n_sample)) * 2),
             "gamma": ('gamma', "float", 1e-4, 1e-2),
             "min_child_weight": ("min_child_weight", "float", 1,
                                  round(np.sqrt(self.n_sample) / 2)),
-            "learning_rate": ('learning_rate', "float", 1e-1, 1.),
+            "learning_rate": ('learning_rate', "float", 1e-2, 1.),
             "subsample": ('subsample', "float", 0.5, 1),
             "colsample_bytree": ('colsample_bytree', "float", 0.5, 1),
-            "reg_lambda": ('reg_lambda', "float", 1e-3, 1),
+            "reg_lambda": ('reg_lambda', "float", 1e-4, 1),
             "reg_alpha": ('reg_alpha', "float", 1e-4, 1.)
         }
 
@@ -507,7 +510,7 @@ class LightGBM_tuner(Classification_tuner):
     [lightgbm.LGBMClassifier](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html)     
 
     ToDo:    
-        1. compare with optuna.integration.lightgbm.LightGBMTuner    
+        Adapt to lightgbm train api. Each time lightgbm sklearn api was called, the data will be binned once and that is costy when number of features is large.
     """
 
     def __init__(self,
@@ -547,13 +550,13 @@ class LightGBM_tuner(Classification_tuner):
             "n_estimators": ('n_estimators', "int", 4, 256),
             "max_depth":
             ("max_depth", "int", round(np.log2(self.n_sample) / 2),
-             int(np.log2(self.n_sample)) + 2),
+             int(np.log2(self.n_sample)) * 2),
             "min_child_samples":
             ("min_child_samples", "int", 1, round(np.sqrt(self.n_sample) / 2)),
             "learning_rate": ('learning_rate', "float", 1e-2, 1.),
             "subsample": ('subsample', "float", 0.5, 1.),
             "colsample_bytree": ('colsample_bytree', "float", 0.5, 1.),
-            "reg_lambda": ('reg_lambda', "float", 1e-3, 1),
+            "reg_lambda": ('reg_lambda', "float", 1e-4, 1),
             "reg_alpha": ('reg_alpha', "float", 1e-4, 1.)
         }
 
@@ -591,8 +594,9 @@ class LightGBM_tuner(Classification_tuner):
                        sample_weight=sample_weight,
                        eval_set=[valid_data],
                        callbacks=[
-                           early_stopping(round(clr.n_estimators * 0.1) + 2,
-                                          verbose=False)
+                           lgbm_early_stopping(round(clr.n_estimators * 0.1) +
+                                               2,
+                                               verbose=False)
                        ])
 
     def _explainer(self, x):
@@ -645,7 +649,7 @@ class AdaBoost_tuner(Classification_tuner):
     def parms_range(self) -> dict:
         return {
             "n_estimators": ('n_estimators', "int", 4, 64),
-            "learning_rate": ('learning_rate', "float", 1e-2, 1.)
+            "learning_rate": ('learning_rate', "float", 1e-2, 2.)
         }
 
     def create_model(self, trial, default=False, training=False):
@@ -779,7 +783,7 @@ class CatBoost_tuner(Classification_tuner):
             "learning_rate": ('learning_rate', "float", 1e-1, 1.),
             "max_depth":
             ("max_depth", "int", round(np.log2(self.n_sample) / 2),
-             int(np.log2(self.n_sample)) + 2),
+             int(np.log2(self.n_sample)) * 2),
             "reg_lambda": ('reg_lambda', "float", 1e-3, 1.),
             "colsample_bylevel": ('colsample_bytree', "float", 0.5, 1.),
             "subsample": ('subsample', "float", 0.5, 1.)
@@ -803,86 +807,25 @@ class CatBoost_tuner(Classification_tuner):
         train_x, train_y = train_data
         valid_x, valid_y = valid_data
 
-        pool_train = Pool(train_x, train_y)
-        pool_valid = Pool(valid_x, valid_y)
         cat_features = list(train_x.columns[train_x.dtypes == "category"])
+        pool_train = Pool(train_x,
+                          train_y,
+                          weight=sample_weight,
+                          cat_features=cat_features)
+        pool_valid = Pool(valid_x, valid_y, cat_features=cat_features)
 
-        return clr.fit(pool_train,
-                       cat_features=cat_features,
-                       sample_weight=sample_weight,
-                       eval_set=pool_valid,
-                       verbose=False,
-                       early_stopping_rounds=round(clr.n_estimators * 0.1) + 2)
-
-    # TODO: integrate to optimize_fit
-    def _evaluate(self, trial, default=None, training=None):
-        """
-        To evaluate the score of this trial. you should call create_model instead of creating model manually in this function.    
-        catboost need to be used with pool.
-        
-        Args:
-            trial (optuna.trial.Trial): optuna trial in this call.
-            default (bool): To use default hyper parameter. This argument will be passed to creat_model
-        Returns :
-            float: The score.
-        """
-        if default is None:
-            default = self.default
-        if training is None:
-            training = self.training
-        classifier_obj = self.create_model(trial, default)
-
-        cv = StratifiedKFold(n_splits=self.n_cv,
-                             shuffle=True,
-                             random_state=self.valid_seed_tape[trial.number])
-
-        # do cv
-        score = np.zeros(self.n_cv)
-        # thresholds not None only if  self.is_binary and not self.is_regression
-        #cv_thresholds = np.zeros(self.n_cv)
-        cv_stoppoint = np.zeros(self.n_cv)
-        for i, (train_ind, test_ind) in enumerate(cv.split(self.x, self.y)):
-            x_train = self.x.iloc[train_ind]
-            y_train = self.y.iloc[train_ind]
-            pool_train = Pool(x_train, y_train)
-            x_test = self.x.iloc[test_ind]
-            y_test = self.y.iloc[test_ind]
-            pool_test = Pool(x_test, y_test)
-
-            # sample_weight for imbalanced class.
-            if self.is_regression():
-                sample_weight = None
-            else:
-                sample_weight = compute_sample_weight(class_weight="balanced",
-                                                      y=y_train)
-
-            classifier_obj.fit(pool_train,
-                               sample_weight=sample_weight,
-                               eval_set=pool_test,
-                               verbose=False,
-                               early_stopping_rounds=round(
-                                   classifier_obj.n_estimators * 0.1) + 2)
-
-            if self.using_earlystopping() and training:
-                cv_stoppoint[i] = self.clr_best_iteration(classifier_obj)
-
-            train_score = self.metric(classifier_obj, x_train, y_train)
-            test_score = self.metric(classifier_obj, x_test, y_test)
-
-            if self.validate_penalty:
-                score[i] = test_score + 0.1 * (test_score - train_score)
-            else:
-                score[i] = test_score
-
-        # averaging over cv
-        #self.thresholds[trial.number] = cv_thresholds.sum() / self.n_cv
-        self.stop_points[trial.number] = round(cv_stoppoint.sum() /
-                                               (self.n_cv - 1))
-
-        return score.mean()
+        return clr.fit(
+            pool_train,
+            eval_set=pool_valid,
+            verbose=False,
+            early_stopping_rounds=round(clr.get_param('n_estimators') * 0.1) +
+            2)
 
     def using_earlystopping(self):
         return True
+
+    def clr_best_iteration(self, classifier):
+        return classifier.get_best_iteration()
 
     def _explainer(self, x):
         return shap.TreeExplainer(self.best_model)

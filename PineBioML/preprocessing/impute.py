@@ -2,9 +2,10 @@ from sklearn.impute import KNNImputer, SimpleImputer
 import pandas as pd
 from . import Normalizer
 from typing import Literal
+from sklearn.base import BaseEstimator
 
 
-class imputer():
+class imputer(BaseEstimator):
     """
     To impute missing value. Include 4 parts:
 
@@ -25,15 +26,12 @@ class imputer():
         Raises:
             ValueError: missing value threshold must be a float in (0, 1]
         """
-        # threshold sould between 0 ~ 1
-        if 0 < threshold < 1 or threshold == 1:
-            self.threshold = threshold
-        else:
-            raise ValueError(
-                "missing value threshold must be a float in (0, 1]: ",
-                threshold)
-        self.normalizer = Normalizer(center=center, scale=scale)
-        self.fitted = False
+        self.threshold = threshold
+        self.center = center
+        self.scale = scale
+
+    def _set_up(self):
+        self.normalizer = Normalizer(center=self.center, scale=self.scale)
 
     def fit(self, x, y=None, sample_weight=None):
         """
@@ -46,6 +44,8 @@ class imputer():
         Returns:
             inputer: fitted self
         """
+        self._set_up()
+
         # drop too empty features
         self.not_too_empty = x.isna().mean() <= self.threshold
         x = x.loc[:, self.not_too_empty]  # keep those who not too empty
@@ -56,7 +56,7 @@ class imputer():
 
         # call the kernel
         self.kernel.fit(x)
-        self.fitted = True
+        self.fitted_ = True
         return self
 
     def transform(self, x):
@@ -70,7 +70,7 @@ class imputer():
         Returns:
             pandas.DataFrame or a 2D array: imputed x
         """
-        if not self.fitted:
+        if not self.fitted_:
             raise "please call fit before calling transform."
         # drop too empty features
         x = x.loc[:, self.not_too_empty]  # keep those who not too empty
@@ -128,8 +128,11 @@ class knn_imputer(imputer):
             n_neighbor (int, optional): Number of nearest neighbor to use. Defaults to 5.
         """
         super().__init__(threshold)
+        self.n_neighbor = n_neighbor
 
-        self.kernel = KNNImputer(n_neighbors=n_neighbor)
+    def _set_up(self):
+        self.kernel = KNNImputer(n_neighbors=self.n_neighbor)
+        self.normalizer = Normalizer(center=self.center, scale=self.scale)
 
 
 class simple_imputer(imputer):
@@ -146,8 +149,11 @@ class simple_imputer(imputer):
             1. filling value for constant mode.
         """
         super().__init__(threshold, center=False, scale=False)
+        self.strategy = strategy
 
-        self.kernel = SimpleImputer(strategy=strategy)
+    def _set_up(self):
+        self.kernel = SimpleImputer(strategy=self.strategy)
+        self.normalizer = Normalizer(center=self.center, scale=self.scale)
 
 
 class iterative_imputer(imputer):
@@ -166,11 +172,15 @@ class iterative_imputer(imputer):
             max_iter (int, optional): The maximum number of imputation iteration. Defaults to 10.
         """
         super().__init__(threshold)
+        self.max_iter = max_iter
+        self.estimator = estimator
+
+    def _set_up(self):
 
         from sklearn.experimental import enable_iterative_imputer
         from sklearn.impute import IterativeImputer
 
-        if estimator == "RandomForest":
+        if self.estimator == "RandomForest":
             from sklearn.ensemble import RandomForestRegressor
 
             self.kernel = IterativeImputer(estimator=RandomForestRegressor(
@@ -181,10 +191,10 @@ class iterative_imputer(imputer):
                 bootstrap=True,
                 max_samples=0.7,
                 random_state=143),
-                                           max_iter=max_iter,
+                                           max_iter=self.max_iter,
                                            imputation_order="random",
                                            verbose=1)
-        elif estimator == "LightGBM":
+        elif self.estimator == "LightGBM":
             from lightgbm import LGBMRegressor
 
             self.kernel = IterativeImputer(estimator=LGBMRegressor(
@@ -194,7 +204,7 @@ class iterative_imputer(imputer):
                 verbosity=-1,
                 reg_lambda=0.1,
                 random_state=143),
-                                           max_iter=max_iter,
+                                           max_iter=self.max_iter,
                                            imputation_order="random",
                                            verbose=1)
         else:

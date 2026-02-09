@@ -231,9 +231,10 @@ class multi_Lasso_selection(SelectionPipeline):
         if self.k == -1 or self.k is None:
             self.k = min(x.shape[0], x.shape[1]) // 2
         batch_size = self.k // self.n + 1
+        loop_lim = x.shape[1] // batch_size
 
         num_selected = 0
-        #for i in range(self.n):
+        counter = 0
         while (num_selected < self.k):
             kernel = self.backend(k=batch_size).fit(x, y)
             result.append(kernel.selected_score)
@@ -242,6 +243,11 @@ class multi_Lasso_selection(SelectionPipeline):
             num_selected += len(batch_selected)
             if x.shape[1] == 0:
                 break
+
+            counter+=1
+            if counter > loop_lim:
+                break
+            
         result = pd.concat(result).sort_values(ascending=False)
         #result = result - result.min()
         result.name = self.name

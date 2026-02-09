@@ -12,6 +12,9 @@ https://zhuanlan.zhihu.com/p/637640783
 ALS datasets
 https://ampals.synapse.org/Explore/Datasets
 
+Interpretation, Extrapolation, and Perturbation of Single Cells
+https://interp-extrap-perturb.readthedocs.io/en/latest/
+
 ##########################################################
 ### features
 ##########################################################
@@ -55,6 +58,9 @@ https://docs.bokeh.org/en/latest/index.html
 
 holoviews
 https://holoviews.org/gallery/index.html
+
+supertree: tree visualization
+https://pypi.org/project/supertree/
 
 ##########################################################
 ### project management
