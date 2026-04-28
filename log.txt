@@ -1,3 +1,26 @@
+v1.3.0.8:
+    fixed:
+        - report axis name "Componet" => "Component"
+
+v1.3.0.7:
+    description:
+        - essemble selection Plotting revised.
+        - pine model ordering.
+
+v1.3.0.6:
+    fixed:
+        - selection.regression:
+            - atributes name corrected. (scores_, selected_score_)
+            - lassolars crashes when x has repeated columns.
+    bug:
+        - sklearn_wrapper cannot trigger pine's task discriminator.
+
+v1.3.0.5:
+    description:
+        - adaboost shap efficiency improved
+        - limit the svm shap data size
+        - add options to data_overview
+
 v1.3.0.4:
     fixed:
         - xgboost==3.1.3 conflicts to shap
@@ -195,7 +218,7 @@ v1.3.0:
         
     fixed:
         1. C++ 14.0 issue can be solved by: https://blog.csdn.net/Lc_001/article/details/129195335
-        2. IO didn't reset repeatued index.
+        2. IO didn't reset repeated index.
 
     On Going:
         0. A reliable tutorial. (including mac) / Document reference

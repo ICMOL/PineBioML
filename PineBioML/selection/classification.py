@@ -108,7 +108,10 @@ class Lasso_selection(SelectionPipeline):
             # TODO: cross validation, alpha interpolation
             y = y_train[:, i]
             y = (y - y.mean()) / y.std()
-            kernel.fit(x_train, y)
+
+            # add noise to prevent repeated columns
+            noise = np.random.normal(0, 1e-6, x_train.shape)
+            kernel.fit(x_train + noise, y)
 
             coef = np.clip(kernel.coef_path_.T, -1, 1)
             alpha = kernel.alphas_
@@ -781,6 +784,7 @@ class ensemble_selector(SelectionPipeline):
             #"Lightgbm": Lightgbm_selection(k=k)
         }
         self.n_cv = 1
+        self.eps = 1e-4  #TODO: 1e-4 somehow not small enough.
 
     def reference(self) -> dict[str, str]:
         refer = super().reference()
@@ -803,7 +807,9 @@ class ensemble_selector(SelectionPipeline):
                   " is done. Using {t:.4f}\n".format(t=end_time - start_time))
 
         scores = pd.concat(results, axis=1)
-        z_scores = (scores - scores.mean()) / (scores.std() + 1e-4)
+        z_scores = (scores - scores.mean()) / (scores.std() + self.eps)
+
+        # record ensemble score
         scores[self.name] = z_scores.sum(axis=1)
 
         return scores
@@ -814,8 +820,77 @@ class ensemble_selector(SelectionPipeline):
         return super().Select(z_scores)
 
     def what_matters(self):
-        return self.scores_
+        return self.scores_.sort_values("ensemble")
 
-    def Plotting(self):
-        for method in self.kernels:
-            self.kernels[method].Plotting()
+    def Plotting(self, max_feature=24):
+        scores = self.scores_.copy().sort_values("ensemble")
+
+        esemble_score = scores["ensemble"]
+        scores = scores.drop("ensemble", axis=1)
+        z_scores = (scores - scores.mean()) / (scores.std() + self.eps)
+        z_scores.columns = [
+            "C4.5", "Randomforest gini", "Lasso", "Multi lasso", "SVM"
+        ]
+
+        # cut
+        z_scores = z_scores.tail(max_feature)
+        esemble_score = esemble_score.tail(max_feature)
+
+        # configs
+        from matplotlib.lines import Line2D
+
+        plt.rcParams.update({
+            'font.family': 'Arial',
+            'axes.linewidth': 0.8,
+            'xtick.direction': 'in',
+            'ytick.direction': 'in',
+            'xtick.major.size': 5,
+            'ytick.major.size': 5,
+            'axes.grid': False
+        })
+        fig, axes = plt.subplots(constrained_layout=True)
+
+        # base scores
+        z_scores.plot(
+            kind="barh",
+            stacked=True,
+            edgecolor="black",
+            linewidth=0.5,
+            ax=axes,
+        )
+
+        axes.spines['top'].set_visible(False)
+        axes.spines['right'].set_visible(False)
+        axes.spines['left'].set_visible(False)
+        axes.axvline(x=0,
+                     color='black',
+                     linestyle='-',
+                     zorder=2,
+                     linewidth=0.8)
+        axes.tick_params(axis='y', length=0)
+
+        # ensemble score
+        ### marker
+        for i, total in enumerate(esemble_score):
+            axes.scatter(total,
+                         i,
+                         marker='*',
+                         s=70,
+                         color='black',
+                         linewidths=0.5,
+                         zorder=5)
+
+        ### legend
+        handles, labels = axes.get_legend_handles_labels()
+        star_marker = Line2D([0], [0],
+                             marker='*',
+                             color='w',
+                             markerfacecolor='black',
+                             markersize=12,
+                             linestyle='None',
+                             label='Ensemble Marker')
+        handles.append(star_marker)
+        labels.append("Ensemble score")
+        axes.legend(handles=handles, labels=labels, loc='best')
+
+        plt.show()
