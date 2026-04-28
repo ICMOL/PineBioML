@@ -83,15 +83,14 @@ class Basic_tuner(ABC, BaseEstimator):
         self.kernel_seed = kernel_seed
         self.valid_seed = valid_seed
         self.optuna_seed = optuna_seed
-        
-    
+
     def _set_up(self):
         if self.validate_penalty == True:
             warnings.warn(
                 "validate_penalty will be remove in future. Use argument TT_coef.",
                 DeprecationWarning,
                 stacklevel=2)
-            
+
         self.y_mapping = LabelEncoder()
         self.fitted_ = None
         self.optuna_early_stop_counter = self.n_cv // 10 + 2
@@ -117,8 +116,10 @@ class Basic_tuner(ABC, BaseEstimator):
             self.optuna_seed = self.optuna_seed
 
         # The random seed tapes for cross validation along the optuna's optimization trials.
-        self.valid_seed_tape = RandomState(self.valid_seed).randint(low=0, high=16384, size=self.n_try)
-        self.kernel_seed_tape = RandomState(self.kernel_seed).randint(low=0, high=16384, size=self.n_try)
+        self.valid_seed_tape = RandomState(self.valid_seed).randint(
+            low=0, high=16384, size=self.n_try)
+        self.kernel_seed_tape = RandomState(self.kernel_seed).randint(
+            low=0, high=16384, size=self.n_try)
 
         self.metric = self.get_scorer(self.target)
 
@@ -157,6 +158,16 @@ class Basic_tuner(ABC, BaseEstimator):
 
     @abstractmethod
     def name(self) -> str:
+        """
+        To be determined.
+
+        Returns:
+            str: Name of this tuner.
+        """
+        pass
+
+    @abstractmethod
+    def pine_ordering(self) -> float:
         """
         To be determined.
 
@@ -447,7 +458,7 @@ class Basic_tuner(ABC, BaseEstimator):
         """
         if retune:
             self._set_up()
-            
+
         if hasattr(y, "name"):
             self.label_name_ = y.name
         else:
@@ -504,7 +515,7 @@ class Basic_tuner(ABC, BaseEstimator):
             idx = x.index
         else:
             idx = None
-            
+
         y_pred = Series(y_pred, index=idx, name=self.label_name_)
 
         return y_pred

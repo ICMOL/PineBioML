@@ -94,7 +94,10 @@ class Lasso_selection(SelectionPipeline):
         result = []
         y = y_train
         y = (y - y.mean()) / y.std()
-        kernel.fit(x_train, y)
+
+        # add noise to prevent repeated columns
+        noise = np.random.normal(0, 1e-6, x_train.shape)
+        kernel.fit(x_train + noise, y)
 
         coef = np.clip(kernel.coef_path_.T, -1, 1)
         alpha = kernel.alphas_
@@ -120,7 +123,7 @@ class Lasso_selection(SelectionPipeline):
     def Plotting(self):
         super().Plotting()
 
-        global_selected = self.selected_score.index
+        global_selected = self.selected_score_.index
         for i_th in range(len(self.result)):
             s = self.result[-i_th - 1]
 
@@ -217,8 +220,7 @@ class multi_Lasso_selection(SelectionPipeline):
         self.name = "multi_Lasso"
         self.backend = Lasso_selection  #Lasso_bisection_selection
         self.n = n
-        self.n_cv = 1 # multi lasso calls lasso which already applied cv
-
+        self.n_cv = 1  # multi lasso calls lasso which already applied cv
 
     def reference(self) -> dict[str, str]:
         refer = super().reference()
@@ -237,22 +239,23 @@ class multi_Lasso_selection(SelectionPipeline):
         counter = 0
         while (num_selected < self.k):
             kernel = self.backend(k=batch_size).fit(x, y)
-            result.append(kernel.selected_score)
+            result.append(kernel.selected_score_)
             batch_selected = result[-1].index
             x = x.drop(batch_selected, axis=1)
             num_selected += len(batch_selected)
             if x.shape[1] == 0:
                 break
 
-            counter+=1
+            counter += 1
             if counter > loop_lim:
                 break
-            
+
         result = pd.concat(result).sort_values(ascending=False)
         #result = result - result.min()
         result.name = self.name
 
         return result
+
 
 class SVM_selection(SelectionPipeline):
     """
@@ -292,7 +295,7 @@ class SVM_selection(SelectionPipeline):
         svm_weights /= svm_weights.sum()
 
         scores = pd.Series(svm_weights, index=x.columns,
-                                name=self.name).sort_values(ascending=False)
+                           name=self.name).sort_values(ascending=False)
         return scores
 
 
@@ -432,7 +435,7 @@ class RF_selection(SelectionPipeline):
             self.kernel.fit(x, y)
         score = self.kernel.feature_importances_
         scores = pd.Series(score, index=x.columns,
-                                name=self.name).sort_values(ascending=False)
+                           name=self.name).sort_values(ascending=False)
         return scores
 
 
@@ -478,7 +481,7 @@ class XGboost_selection(SelectionPipeline):
         self.kernel.fit(x, y)
         score = self.kernel.feature_importances_
         scores = pd.Series(score, index=x.columns,
-                                name=self.name).sort_values(ascending=False)
+                           name=self.name).sort_values(ascending=False)
         return scores
 
 
@@ -524,7 +527,7 @@ class Lightgbm_selection(SelectionPipeline):
         self.kernel.fit(x, y)
         score = self.kernel.feature_importances_
         scores = pd.Series(score, index=x.columns,
-                                name=self.name).sort_values(ascending=False)
+                           name=self.name).sort_values(ascending=False)
         return scores
 
 
@@ -573,7 +576,7 @@ class AdaBoost_selection(SelectionPipeline):
         self.kernel.fit(x, y)
         score = self.kernel.feature_importances_
         scores = pd.Series(score, index=x.columns,
-                                name=self.name).sort_values(ascending=False)
+                           name=self.name).sort_values(ascending=False)
         return scores
 
 
@@ -592,18 +595,18 @@ class ensemble_selector(SelectionPipeline):
                  k: int = None,
                  z_importance_threshold: float = 1.,
                  n_cv=5):
-        
+
         super().__init__(k=k,
                          z_importance_threshold=z_importance_threshold,
                          n_cv=n_cv)
-        
+
         self.name = "ensemble"
         self.kernels = {
             "RF_gini": RF_selection(k=k),
             "Lasso": Lasso_selection(k=k),
             "multi_Lasso": multi_Lasso_selection(k=k),
             "SVM": SVM_selection(k=k),
-
+            #TODO: f-score
             #"AdaBoost": AdaBoost_selection(k=k),
             #"XGboost": XGboost_selection(k=k),
             #"Lightgbm": Lightgbm_selection(k=k)
@@ -625,7 +628,7 @@ class ensemble_selector(SelectionPipeline):
 
             self.kernels[method].fit(x, y)
 
-            results.append(self.kernels[method].selected_score)
+            results.append(self.kernels[method].selected_score_)
             end_time = time.time()
             print(method,
                   " is done. Using {t:.4f}\n".format(t=end_time - start_time))
@@ -642,8 +645,75 @@ class ensemble_selector(SelectionPipeline):
         return super().Select(z_scores)
 
     def what_matters(self):
-        return self.scores
+        return self.scores_
 
-    def Plotting(self):
-        for method in self.kernels:
-            self.kernels[method].Plotting()
+    def Plotting(self, max_feature=24):
+        scores = self.scores_.copy().sort_values("ensemble")
+
+        esemble_score = scores["ensemble"]
+        scores = scores.drop("ensemble", axis=1)
+        z_scores = (scores - scores.mean()) / (scores.std() + self.eps)
+        z_scores.columns = ["Randomforest gini", "Lasso", "Multi lasso", "SVM"]
+
+        # cut
+        z_scores = z_scores.tail(max_feature)
+        esemble_score = esemble_score.tail(max_feature)
+
+        # configs
+        from matplotlib.lines import Line2D
+
+        plt.rcParams.update({
+            'font.family': 'Arial',
+            'axes.linewidth': 0.8,
+            'xtick.direction': 'in',
+            'ytick.direction': 'in',
+            'xtick.major.size': 5,
+            'ytick.major.size': 5,
+            'axes.grid': False
+        })
+        fig, axes = plt.subplots(constrained_layout=True)
+
+        # base scores
+        z_scores.plot(
+            kind="barh",
+            stacked=True,
+            edgecolor="black",
+            linewidth=0.5,
+            ax=axes,
+        )
+
+        axes.spines['top'].set_visible(False)
+        axes.spines['right'].set_visible(False)
+        axes.spines['left'].set_visible(False)
+        axes.axvline(x=0,
+                     color='black',
+                     linestyle='-',
+                     zorder=2,
+                     linewidth=0.8)
+        axes.tick_params(axis='y', length=0)
+
+        # ensemble score
+        ### marker
+        for i, total in enumerate(esemble_score):
+            axes.scatter(total,
+                         i,
+                         marker='*',
+                         s=70,
+                         color='black',
+                         linewidths=0.5,
+                         zorder=5)
+
+        ### legend
+        handles, labels = axes.get_legend_handles_labels()
+        star_marker = Line2D([0], [0],
+                             marker='*',
+                             color='w',
+                             markerfacecolor='black',
+                             markersize=12,
+                             linestyle='None',
+                             label='Ensemble Marker')
+        handles.append(star_marker)
+        labels.append("Ensemble score")
+        axes.legend(handles=handles, labels=labels, loc='best')
+
+        plt.show()

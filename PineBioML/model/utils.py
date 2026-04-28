@@ -3,6 +3,7 @@ from sklearn.model_selection import StratifiedKFold, KFold
 from sklearn.pipeline import Pipeline
 from pandas import DataFrame, Series, concat
 from sklearn.base import is_classifier, is_regressor
+from numpy import sqrt
 import time
 from sklearn.base import BaseEstimator
 
@@ -104,6 +105,9 @@ class sklearn_esitimator_wrapper(BaseEstimator):
 
     def is_regression(self) -> bool:
         return is_regressor(self.kernel)
+
+    def pine_ordering(self):
+        return 0
 
     def detail(self):
         return None
@@ -323,6 +327,8 @@ class Pine():
             # the last layer, it should be models
             else:
                 model = opt
+                record_path["model_ordering"] = model.pine_ordering()
+
                 if "predict_proba" in dir(model):
                     # is not regression
                     f = model.predict_proba
@@ -401,7 +407,9 @@ class Pine():
                     self.cv_pred.append(concat(cv_pred, axis=0))
                     valid_scores = DataFrame(fold_scores).mean().to_dict()
                     # TODO accurate statistic estimate of std.
-                    valid_std = DataFrame(fold_scores).std().to_dict()
+                    valid_std = (DataFrame(fold_scores).std() *
+                                 sqrt(self.evaluate_ncv /
+                                      (self.evaluate_ncv - 1))).to_dict()
                     valid_std = {f"{k}_std": v for k, v in valid_std.items()}
                 else:
                     valid_scores = {}
@@ -443,6 +451,7 @@ class Pine():
         Returns:
             DataFrame: The experiment results.
         """
+
         result = DataFrame(self.result)
         to_drop = []
         if not timer:

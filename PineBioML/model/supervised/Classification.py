@@ -1,5 +1,5 @@
 from . import Basic_tuner
-from joblib import parallel_config
+from joblib import parallel_config, Parallel, delayed
 
 from sklearn.model_selection import StratifiedKFold
 from sklearn.utils.class_weight import compute_sample_weight
@@ -101,6 +101,9 @@ class ElasticLogit_tuner(Classification_tuner):
     def name(self):
         return "ElasticNetLogisticRegression"
 
+    def pine_ordering(self):
+        return 8
+
     def reference(self) -> dict[str, str]:
         refer = super().reference()
         refer[
@@ -194,6 +197,9 @@ class RandomForest_tuner(Classification_tuner):
 
     def name(self):
         return "RandomForest"
+
+    def pine_ordering(self):
+        return 10
 
     def reference(self) -> dict[str, str]:
         refer = super().reference()
@@ -338,6 +344,9 @@ class SVM_tuner(Classification_tuner):
     def name(self):
         return "SVM"
 
+    def pine_ordering(self):
+        return 8
+
     def reference(self) -> dict[str, str]:
         """
         This function will return reference of this method in python dict.    
@@ -362,7 +371,7 @@ class SVM_tuner(Classification_tuner):
             "kernel": ('kernel', "category", ["linear", "rbf",
                                               "sigmoid"], None),
             'C': ('C', "float", 1e-3 * np.sqrt(self.n_sample),
-                  1e+2 * np.sqrt(self.n_sample))
+                  1e+1 * np.sqrt(self.n_sample))
         }
 
     def create_model(self, trial, default=False, training=False):
@@ -383,7 +392,13 @@ class SVM_tuner(Classification_tuner):
         return svm
 
     def _explainer(self, x):
-        return shap.KernelExplainer(self.best_model.predict_proba, x)
+        if x.shape[0] * x.shape[1] > 128 * 128:
+            print(
+                f'the data with shape ({x.shape}) is too big for svm to be explained.'
+            )
+            return None
+        else:
+            return shap.KernelExplainer(self.best_model.predict_proba, x)
 
 
 # Todo: learning rate and number of iteration adjustment
@@ -430,6 +445,9 @@ class XGBoost_tuner(Classification_tuner):
 
     def name(self):
         return "XGBoost"
+
+    def pine_ordering(self):
+        return 7
 
     def reference(self) -> dict[str, str]:
 
@@ -534,6 +552,9 @@ class LightGBM_tuner(Classification_tuner):
     def name(self):
         return "LightGBM"
 
+    def pine_ordering(self):
+        return 7
+
     def reference(self) -> dict[str, str]:
         refer = super().reference()
         refer[
@@ -632,6 +653,9 @@ class AdaBoost_tuner(Classification_tuner):
     def name(self):
         return "AdaBoost"
 
+    def pine_ordering(self):
+        return 6
+
     def reference(self) -> dict[str, str]:
         refer = super().reference()
         refer[
@@ -666,7 +690,33 @@ class AdaBoost_tuner(Classification_tuner):
         return ada
 
     def _explainer(self, x):
-        return shap.KernelExplainer(self.best_model.predict_proba, x)
+        pass
+
+    def _calculate_single_weighted_shap(self, estimator, weight, x):
+        explainer = shap.TreeExplainer(estimator)
+        sv = explainer(x) * weight
+        return sv
+
+    def _weighted_shap_adaboost_streaming(self, x, n_jobs=-1):
+        estimators = self.best_model.estimators_
+        weights = self.best_model.estimator_weights_
+
+        results_gen = Parallel(
+            n_jobs=n_jobs, return_as="generator", backend='loky')(
+                delayed(self._calculate_single_weighted_shap)(est, w, x)
+                for est, w in zip(estimators, weights))
+
+        total_shap_values = None
+        for i, sv in enumerate(results_gen):
+            if total_shap_values is None:
+                total_shap_values = sv
+            else:
+                total_shap_values += sv
+
+        return total_shap_values
+
+    def shap_explain(self, x: DataFrame):
+        return self._weighted_shap_adaboost_streaming(x)
 
 
 # DT
@@ -697,6 +747,9 @@ class DecisionTree_tuner(Classification_tuner):
 
     def name(self):
         return "DecisionTree"
+
+    def pine_ordering(self):
+        return 5
 
     def reference(self) -> dict[str, str]:
         refer = super().reference()
@@ -766,6 +819,9 @@ class CatBoost_tuner(Classification_tuner):
 
     def name(self):
         return "CatBoost"
+
+    def pine_ordering(self):
+        return 7
 
     def reference(self) -> dict[str, str]:
 

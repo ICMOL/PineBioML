@@ -84,7 +84,9 @@ class basic_plot(ABC):
             x (pd.DataFrame): features
             y (pd.Series, optional): label. Defaults to None.
         """
-        plt.rcParams.update({'font.family': 'Arial',})
+        plt.rcParams.update({
+            'font.family': 'Arial',
+        })
         self.draw(x, y)
 
         if self.save_fig:
@@ -260,7 +262,7 @@ class pls_plot(basic_plot):
         plscs = pd.DataFrame(
             plscs,
             index=x.index,
-            columns=[self.name + " componet 1", self.name + " componet 2"])
+            columns=[self.name + " component 1", self.name + " component 2"])
 
         if y is None:
             y_name = None
@@ -272,8 +274,8 @@ class pls_plot(basic_plot):
         if self.discrete_legend:
             # discrete legend
             plot = scatterplot(data=plscs,
-                               x=self.name + " componet 1",
-                               y=self.name + " componet 2",
+                               x=self.name + " component 1",
+                               y=self.name + " component 2",
                                hue=y_name)
             plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         elif not y is None:
@@ -281,8 +283,8 @@ class pls_plot(basic_plot):
             cmap = color_palette('ch:', as_cmap=True)
             sm = plt.cm.ScalarMappable(cmap=cmap, norm=Normalize())
             plot = scatterplot(data=plscs,
-                               x=self.name + " componet 1",
-                               y=self.name + " componet 2",
+                               x=self.name + " component 1",
+                               y=self.name + " component 2",
                                hue=y_name,
                                hue_norm=sm.norm,
                                palette=cmap,
@@ -292,8 +294,8 @@ class pls_plot(basic_plot):
         else:
             # vanilla
             plot = scatterplot(data=plscs,
-                               x=self.name + " componet 1",
-                               y=self.name + " componet 2")
+                               x=self.name + " component 1",
+                               y=self.name + " component 2")
 
         plot.set_title("{} {} scatter plot".format(self.prefix, self.name))
 
@@ -551,7 +553,8 @@ def data_overview(input_x: pd.DataFrame,
                   prefix="",
                   save_fig=True,
                   save_path="./output/images/",
-                  show_fig=True):
+                  show_fig=True,
+                  use_heatmap=True):
     """
     Make a glance to data. Specifically it will:    
         1. make a pca plot.    
@@ -594,16 +597,17 @@ def data_overview(input_x: pd.DataFrame,
               show_fig=show_fig).make_figure(x, y)
 
     # Correlation heatmap
-    if y.dtype == "O":
-        corr_heatmap_plot(prefix=prefix,
-                          save_path=save_path,
-                          save_fig=save_fig,
-                          show_fig=show_fig).make_figure(x)
-    else:
-        corr_heatmap_plot(prefix=prefix,
-                          save_path=save_path,
-                          save_fig=save_fig,
-                          show_fig=show_fig).make_figure(x, y)
+    if use_heatmap:
+        if y.dtype == "O":
+            corr_heatmap_plot(prefix=prefix,
+                              save_path=save_path,
+                              save_fig=save_fig,
+                              show_fig=show_fig).make_figure(x)
+        else:
+            corr_heatmap_plot(prefix=prefix,
+                              save_path=save_path,
+                              save_fig=save_fig,
+                              show_fig=show_fig).make_figure(x, y)
 
 
 def classification_summary(y_true,
